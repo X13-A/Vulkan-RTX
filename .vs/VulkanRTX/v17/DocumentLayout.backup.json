@@ -1,9 +1,9 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\GV302\\Git\\VulkanRTX\\",
+  "WorkspaceRootPath": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{8974FEB8-DB57-4309-93D6-D4BC51CF7E18}|VulkanRTX.vcxproj|C:\\Users\\GV302\\Git\\VulkanRTX\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{8974FEB8-DB57-4309-93D6-D4BC51CF7E18}|VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\Vulkan-RTX\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{8974FEB8-DB57-4309-93D6-D4BC51CF7E18}|VulkanRTX.vcxproj|solutionrelative:main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
@@ -20,13 +20,14 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "main.cpp",
-              "DocumentMoniker": "C:\\Users\\GV302\\Git\\VulkanRTX\\main.cpp",
+              "DocumentMoniker": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\main.cpp",
               "RelativeDocumentMoniker": "main.cpp",
-              "ToolTip": "C:\\Users\\GV302\\Git\\VulkanRTX\\main.cpp",
+              "ToolTip": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\main.cpp",
               "RelativeToolTip": "main.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAALQAAAAAAAAAAAAAANkAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-01-25T22:59:25.912Z",
+              "IsPinned": true,
               "EditorCaption": ""
             }
           ]
