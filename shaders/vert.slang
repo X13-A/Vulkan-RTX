@@ -19,19 +19,10 @@ struct VertexOutput {
 };
 
 // Vertex shader
-VertexOutput vertexMain(uint vertexID : SV_VertexID) {
+VertexOutput main(uint vertexID : SV_VertexID) 
+{
     VertexOutput output;
     output.svPosition = float4(positions[vertexID], 0.0, 1.0);
     output.fragColor = colors[vertexID];
     return output;
-}
-
-// Structure for fragment shader input
-struct FragmentInput {
-    float3 fragColor : COLOR0;
-};
-
-// Fragment shader
-void main(FragmentInput input, out float4 outColor : SV_Target0) {
-    outColor = float4(input.fragColor, 1.0);
 }

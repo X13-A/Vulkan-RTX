@@ -32,7 +32,7 @@
               "RelativeDocumentMoniker": "main.cpp",
               "ToolTip": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\main.cpp",
               "RelativeToolTip": "main.cpp",
-              "ViewState": "AgIAAKIAAAAAAAAAAAAAALEAAABNAAAAAAAAAA==",
+              "ViewState": "AgIAAKcDAAAAAAAAAAAiwLgDAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-01-25T22:59:25.912Z",
               "IsPinned": true,
@@ -46,9 +46,9 @@
               "RelativeDocumentMoniker": "shaders\\vert.slang",
               "ToolTip": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\shaders\\vert.slang",
               "RelativeToolTip": "shaders\\vert.slang",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAACAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-03-01T12:43:27.094Z",
+              "WhenOpened": "2025-03-15T22:23:24.093Z",
               "EditorCaption": ""
             },
             {
@@ -61,8 +61,7 @@
               "RelativeToolTip": "shaders\\frag.slang",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-03-01T12:43:23.636Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-01T12:43:23.636Z"
             }
           ]
         }
