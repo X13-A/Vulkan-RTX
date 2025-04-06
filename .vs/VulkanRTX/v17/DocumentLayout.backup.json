@@ -32,7 +32,7 @@
               "RelativeDocumentMoniker": "main.cpp",
               "ToolTip": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\main.cpp",
               "RelativeToolTip": "main.cpp",
-              "ViewState": "AgIAALkDAAAAAAAAAAAiwOIDAAAzAAAAAAAAAA==",
+              "ViewState": "AgIAAHgAAAAAAAAAAAAAAJMAAAAoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-01-25T22:59:25.912Z",
               "IsPinned": true,
@@ -48,8 +48,7 @@
               "RelativeToolTip": "shaders\\vert.slang",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-03-15T22:23:24.093Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-15T22:23:24.093Z"
             },
             {
               "$type": "Document",
