@@ -26,12 +26,13 @@
 #include <array>
 
 #pragma region consts
-const int MAX_FRAMES_IN_FLIGHT = 3;
+const int MAX_FRAMES_IN_FLIGHT = 2;
 const uint32_t GLFW_WINDOW_WIDTH = 800;
 const uint32_t GLFW_WINDOW_HEIGHT = 600;
 const char* GLFW_WINDOW_NAME = "Vulkan";
 
-const std::vector<const char*> validationLayers = {
+const std::vector<const char*> validationLayers = 
+{
     "VK_LAYER_KHRONOS_validation"
 };
 
@@ -169,9 +170,9 @@ const std::vector<uint32_t> indices =
 
 struct UniformBufferObject 
 {
-    glm::mat4 model;
-    glm::mat4 view;
-    glm::mat4 proj;
+    alignas(16) glm::mat4 model;
+    alignas(16) glm::mat4 view;
+    alignas(16) glm::mat4 proj;
 };
 
 class VulkanApplication 
@@ -249,9 +250,9 @@ private:
         createCommandPool();
         createVertexBuffer();
         createIndexBuffer();
+        createUniformBuffers();
         createDescriptorPool();
         createDescriptorSets();
-        createUniformBuffers();
         createCommandBuffers();
         createSyncObjects();
         std::cout << "VK initialization finished !" << std::endl;
@@ -1315,8 +1316,6 @@ private:
             descriptorWrite.descriptorCount = 1;
 
             descriptorWrite.pBufferInfo = &bufferInfo;
-            descriptorWrite.pImageInfo = nullptr; // Optional
-            descriptorWrite.pTexelBufferView = nullptr; // Optional
             vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
         }
     }
