@@ -71,11 +71,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <PublicIncludeDirectories>C:\Dev\glfw-3.4.bin.WIN64\include;%VULKAN_SDK%\Include</PublicIncludeDirectories>
+    <PublicIncludeDirectories>C:\Dev\glfw-3.4.bin.WIN64\include;%VULKAN_SDK%\Include;C:\Dev\Libraries\stb_image;C:\Dev\Libraries\tiny_obj_loader</PublicIncludeDirectories>
     <PublicModuleDirectories>C:\Dev\glfw-3.4.bin.WIN64\lib-vc2022;%VULKAN_SDK%\Lib</PublicModuleDirectories>
     <AllProjectIncludesArePublic>false</AllProjectIncludesArePublic>
     <AllProjectBMIsArePublic>false</AllProjectBMIsArePublic>
-    <IncludePath>%VULKAN_SDK%\Include;C:\Dev\glfw-3.4.bin.WIN64\include;$(IncludePath);$(VULKAN_SDK)\Include</IncludePath>
+    <IncludePath>%VULKAN_SDK%\Include;C:\Dev\glfw-3.4.bin.WIN64\include;$(IncludePath);$(VULKAN_SDK)\Include;C:\Dev\Libraries\stb_image;C:\Dev\Libraries\tiny_obj_loader</IncludePath>
     <LibraryPath>C:\Dev\glfw-3.4.bin.WIN64\lib-vc2022;%VULKAN_SDK%\Lib;$(LibraryPath);$(VULKAN_SDK)\Lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -128,7 +128,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Dev\Libraries;$(VULKAN_SDK)\Include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Dev\Libraries;$(VULKAN_SDK)\Include;C:\Dev\Libraries\stb_image</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>

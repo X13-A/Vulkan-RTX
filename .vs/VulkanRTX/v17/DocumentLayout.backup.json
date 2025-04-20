@@ -7,12 +7,15 @@
       "RelativeMoniker": "D:0:0:{8974FEB8-DB57-4309-93D6-D4BC51CF7E18}|VulkanRTX.vcxproj|solutionrelative:main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Alex\\Git\\Vulkan-RTX\\shaders\\vert.slang||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:shaders\\vert.slang||{8B382828-6202-11D1-8870-0000F87579D2}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Dev\\Libraries\\tiny_obj_loader\\tiny_obj_loader.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Alex\\Git\\Vulkan-RTX\\shaders\\frag.slang||{8B382828-6202-11D1-8870-0000F87579D2}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:shaders\\frag.slang||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Alex\\Git\\Vulkan-RTX\\shaders\\vert.slang||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:shaders\\vert.slang||{8B382828-6202-11D1-8870-0000F87579D2}"
     }
   ],
   "DocumentGroupContainers": [
@@ -32,7 +35,7 @@
               "RelativeDocumentMoniker": "main.cpp",
               "ToolTip": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\main.cpp",
               "RelativeToolTip": "main.cpp",
-              "ViewState": "AgIAAPcEAAAAAAAAAAAvwCQFAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAIsBAAAAAAAAAAAIwJkBAABJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-01-25T22:59:25.912Z",
               "IsPinned": true,
@@ -41,15 +44,27 @@
             {
               "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "tiny_obj_loader.h",
+              "DocumentMoniker": "C:\\Dev\\Libraries\\tiny_obj_loader\\tiny_obj_loader.h",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\Dev\\Libraries\\tiny_obj_loader\\tiny_obj_loader.h",
+              "ToolTip": "C:\\Dev\\Libraries\\tiny_obj_loader\\tiny_obj_loader.h",
+              "RelativeToolTip": "..\\..\\..\\..\\Dev\\Libraries\\tiny_obj_loader\\tiny_obj_loader.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-04-20T16:33:44.255Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "vert.slang",
               "DocumentMoniker": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\shaders\\vert.slang",
               "RelativeDocumentMoniker": "shaders\\vert.slang",
               "ToolTip": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\shaders\\vert.slang",
               "RelativeToolTip": "shaders\\vert.slang",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB4AAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2025-03-15T22:23:24.093Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-03-15T22:23:24.093Z"
             },
             {
               "$type": "Document",
@@ -59,7 +74,7 @@
               "RelativeDocumentMoniker": "shaders\\frag.slang",
               "ToolTip": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\shaders\\frag.slang",
               "RelativeToolTip": "shaders\\frag.slang",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAjAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
               "WhenOpened": "2025-03-01T12:43:23.636Z"
             }
