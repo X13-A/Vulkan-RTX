@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -158,6 +158,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="VulkanCommandBuffers.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="VulkanGraphicsPipeline.hpp" />
+    <ClInclude Include="VulkanSwapChain.hpp" />
+    <ClInclude Include="VulkanContext.hpp" />
+    <ClInclude Include="VulkanTexture.hpp" />
+    <ClInclude Include="VulkanUtils..hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
