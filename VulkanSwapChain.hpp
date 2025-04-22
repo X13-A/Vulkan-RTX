@@ -8,7 +8,7 @@
 #include <iostream>
 #include <vector>
 #include "VulkanUtils..hpp"
-#include "VulkanContext.h"
+#include "VulkanContext.hpp"
 
 
 struct SwapChainSupportDetails
@@ -18,7 +18,7 @@ struct SwapChainSupportDetails
     std::vector<VkPresentModeKHR> presentModes;
 };
 
-class VulkanSwapChain
+class VulkanSwapChainManager
 {
 public:
     VkSwapchainKHR swapChain;
@@ -32,6 +32,9 @@ public:
     VkImage depthImage;
     VkDeviceMemory depthImageMemory;
     VkImageView depthImageView;
+
+    // Buffering
+    bool framebufferResized = false;
 
 public:
     static SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface)
@@ -165,22 +168,22 @@ public:
         vkGetSwapchainImagesKHR(context.device, swapChain, &imageCount, swapChainImages.data());
     }
 
-    void createImageViews(VkDevice device)
+    void createImageViews(const VulkanContext& context)
     {
         swapChainImageViews.resize(swapChainImages.size());
 
         for (uint32_t i = 0; i < swapChainImages.size(); i++)
         {
-            swapChainImageViews[i] = VulkanUtils::Image::createImageView(device, swapChainImages[i], swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+            swapChainImageViews[i] = VulkanUtils::Image::createImageView(context, swapChainImages[i], swapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
         }
     }
 
-    void createDepthResources(VkPhysicalDevice physicalDevice, VkDevice device)
+    void createDepthResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager)
     {
-        VkFormat depthFormat = VulkanUtils::DepthStencil::findDepthFormat(physicalDevice);
-        VulkanUtils::Image::createImage(device, swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
-        depthImageView = VulkanUtils::Image::createImageView(device, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
-        VulkanUtils::Image::transitionImageLayout(depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+        VkFormat depthFormat = VulkanUtils::DepthStencil::findDepthFormat(context.physicalDevice);
+        VulkanUtils::Image::createImage(context, swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
+        depthImageView = VulkanUtils::Image::createImageView(context, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+        VulkanUtils::Image::transitionImageLayout(context, commandBufferManager, depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     }
 
     void cleanupSwapChain(VkDevice device)
@@ -200,7 +203,7 @@ public:
         vkDestroySwapchainKHR(device, swapChain, nullptr);
     }
 
-    void createFramebuffers(VkDevice device, VkRenderPass renderPass)
+    void createFramebuffers(const VulkanContext& context, VkRenderPass renderPass)
     {
         swapChainFramebuffers.resize(swapChainImageViews.size());
 
@@ -221,7 +224,7 @@ public:
             framebufferInfo.height = swapChainExtent.height;
             framebufferInfo.layers = 1;
 
-            if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS)
+            if (vkCreateFramebuffer(context.device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS)
             {
                 throw std::runtime_error("failed to create framebuffer!");
             }

@@ -6,8 +6,9 @@
 #include <GLFW/glfw3native.h>
 #include <iostream>
 #include <optional>
-#include "VulkanSwapChain.h"
+#include "VulkanSwapChain.hpp"
 #include <set>
+#include "Constants.hpp"
 
 struct QueueFamilyIndices
 {
@@ -262,7 +263,7 @@ public:
         bool swapChainAdequate = false;
         if (extensionsSupported)
         {
-            SwapChainSupportDetails swapChainSupport = VulkanSwapChain::querySwapChainSupport(physicalDevice, surface);
+            SwapChainSupportDetails swapChainSupport = VulkanSwapChainManager::querySwapChainSupport(physicalDevice, surface);
             swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
             std::cout << "Required VK extensions are all suported" << std::endl;
         }

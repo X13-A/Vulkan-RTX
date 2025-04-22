@@ -1,3 +1,5 @@
+#pragma once
+
 #define VK_USE_PLATFORM_WIN32_KHR
 #define GLFW_INCLUDE_VULKAN
 
@@ -5,32 +7,32 @@
 #include <GLFW/glfw3native.h>
 #include <iostream>
 #include <vector>
-#include "VulkanCommandBuffers.hpp"
+#include "VulkanCommandBufferManager.hpp"
 
 class VulkanUtils
 {
 public:
     class Hardware
     {
+    public:
         static VkFormat findSupportedFormat(VkPhysicalDevice physicalDevice, const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
-    {
-        for (VkFormat format : candidates)
         {
-            VkFormatProperties props;
-            vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
+            for (VkFormat format : candidates)
+            {
+                VkFormatProperties props;
+                vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &props);
 
-            if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
-            {
-                return format;
+                if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features)
+                {
+                    return format;
+                }
+                else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features)
+                {
+                    return format;
+                }
             }
-            else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features)
-            {
-                return format;
-            }
+            throw std::runtime_error("failed to find supported format!");
         }
-
-        throw std::runtime_error("failed to find supported format!");
-    }
     };
 
     class DepthStencil
@@ -43,7 +45,7 @@ public:
 
         static VkFormat findDepthFormat(VkPhysicalDevice physicalDevice)
         {
-            return findSupportedFormat(
+            return VulkanUtils::Hardware::findSupportedFormat(
                 physicalDevice,
                 { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
                 VK_IMAGE_TILING_OPTIMAL,
@@ -75,7 +77,31 @@ public:
     class Image
     {
     public:
-        static void createImage(VkDevice device, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
+        static void copyBufferToImage(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
+        {
+            VkCommandBuffer commandBuffer = commandBufferManager.beginSingleTimeCommands(context.device);
+
+            VkBufferImageCopy region{};
+            region.bufferOffset = 0;
+            region.bufferRowLength = 0;
+            region.bufferImageHeight = 0;
+            region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            region.imageSubresource.mipLevel = 0;
+            region.imageSubresource.baseArrayLayer = 0;
+            region.imageSubresource.layerCount = 1;
+            region.imageOffset = { 0, 0, 0 };
+            region.imageExtent = {
+                width,
+                height,
+                1
+            };
+
+            vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+            commandBufferManager.endSingleTimeCommands(context.device, context.graphicsQueue, commandBuffer);
+        }
+
+        static void createImage(const VulkanContext& context, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
         {
             VkImageCreateInfo imageInfo{};
             imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -92,52 +118,52 @@ public:
             imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-            if (vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS)
+            if (vkCreateImage(context.device, &imageInfo, nullptr, &image) != VK_SUCCESS)
             {
                 throw std::runtime_error("failed to create image!");
             }
 
             VkMemoryRequirements memRequirements;
-            vkGetImageMemoryRequirements(device, image, &memRequirements);
+            vkGetImageMemoryRequirements(context.device, image, &memRequirements);
 
             VkMemoryAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
             allocInfo.allocationSize = memRequirements.size;
-            allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+            allocInfo.memoryTypeIndex = VulkanUtils::Memory::findMemoryType(context.physicalDevice, memRequirements.memoryTypeBits, properties);
 
-            if (vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
+            if (vkAllocateMemory(context.device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS)
             {
                 throw std::runtime_error("failed to allocate image memory!");
             }
 
-            vkBindImageMemory(device, image, imageMemory, 0);
+            vkBindImageMemory(context.device, image, imageMemory, 0);
         }
 
-        static VkImageView createImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
-    {
-        VkImageViewCreateInfo viewInfo{};
-        viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        viewInfo.image = image;
-        viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        viewInfo.format = format;
-        viewInfo.subresourceRange.baseMipLevel = 0;
-        viewInfo.subresourceRange.levelCount = 1;
-        viewInfo.subresourceRange.baseArrayLayer = 0;
-        viewInfo.subresourceRange.layerCount = 1;
-        viewInfo.subresourceRange.aspectMask = aspectFlags;
-
-        VkImageView imageView;
-        if (vkCreateImageView(device, &viewInfo, nullptr, &imageView) != VK_SUCCESS)
+        static VkImageView createImageView(const VulkanContext& context, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
         {
-            throw std::runtime_error("failed to create texture image view!");
-        }
+            VkImageViewCreateInfo viewInfo{};
+            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            viewInfo.image = image;
+            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            viewInfo.format = format;
+            viewInfo.subresourceRange.baseMipLevel = 0;
+            viewInfo.subresourceRange.levelCount = 1;
+            viewInfo.subresourceRange.baseArrayLayer = 0;
+            viewInfo.subresourceRange.layerCount = 1;
+            viewInfo.subresourceRange.aspectMask = aspectFlags;
 
-        return imageView;
-    }
+            VkImageView imageView;
+            if (vkCreateImageView(context.device, &viewInfo, nullptr, &imageView) != VK_SUCCESS)
+            {
+                throw std::runtime_error("failed to create texture image view!");
+            }
+
+            return imageView;
+        }
     
-        static void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
+        static void transitionImageLayout(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
         {
-            VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+            VkCommandBuffer commandBuffer = commandBufferManager.beginSingleTimeCommands(context.device);
 
             VkImageMemoryBarrier barrier{};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -159,7 +185,7 @@ public:
             {
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-                if (hasStencilComponent(format))
+                if (VulkanUtils::DepthStencil::hasStencilComponent(format))
                 {
                     barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
                 }
@@ -207,7 +233,7 @@ public:
                 1, &barrier
             );
 
-            endSingleTimeCommands(commandBuffer);
+            commandBufferManager.endSingleTimeCommands(context.device, context.graphicsQueue, commandBuffer);
         }
     };
 
@@ -243,7 +269,7 @@ public:
             vkBindBufferMemory(context.device, buffer, bufferMemory, 0);
         }
 
-        static void createVertexBuffer(const VulkanContext& context, VulkanCommandBuffers& commandBuffers, const std::vector<Vertex>& vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory)
+        static void createVertexBuffer(const VulkanContext& context, VulkanCommandBufferManager& commandBuffers, const std::vector<VulkanVertex>& vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory)
         {
             VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
@@ -263,7 +289,7 @@ public:
             vkFreeMemory(context.device, stagingBufferMemory, nullptr);
         }
 
-        static void createIndexBuffer(const VulkanContext& context, VulkanCommandBuffers& commandBuffers, const std::vector<uint32_t>& indices, VkBuffer& indexBuffer, VkDeviceMemory& indexBufferMemory)
+        static void createIndexBuffer(const VulkanContext& context, VulkanCommandBufferManager& commandBuffers, const std::vector<uint32_t>& indices, VkBuffer& indexBuffer, VkDeviceMemory& indexBufferMemory)
         {
             VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 
@@ -284,7 +310,7 @@ public:
             vkFreeMemory(context.device, stagingBufferMemory, nullptr);
         }
 
-        static void copyBuffer(const VulkanContext& context, VulkanCommandBuffers& commandBuffers, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+        static void copyBuffer(const VulkanContext& context, VulkanCommandBufferManager& commandBuffers, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
         {
             VkCommandBuffer commandBuffer = commandBuffers.beginSingleTimeCommands(context.device);
 

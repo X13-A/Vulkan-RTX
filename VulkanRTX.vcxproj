@@ -158,10 +158,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="VulkanCommandBuffers.hpp" />
+    <ClCompile Include="VulkanCommandBufferManager.hpp" />
+    <ClCompile Include="VulkanModel.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Constants.hpp" />
+    <ClInclude Include="Utils.hpp" />
+    <ClInclude Include="VulkanGeometry.hpp" />
     <ClInclude Include="VulkanGraphicsPipeline.hpp" />
+    <ClInclude Include="VulkanRenderer.hpp" />
     <ClInclude Include="VulkanSwapChain.hpp" />
     <ClInclude Include="VulkanContext.hpp" />
     <ClInclude Include="VulkanTexture.hpp" />
