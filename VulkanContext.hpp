@@ -67,7 +67,7 @@ public:
 
     void setupDebugMessenger()
     {
-        if (!enableValidationLayers) return;
+        if (!ENABLE_VALIDATION_LAYERS) return;
 
         VkDebugUtilsMessengerCreateInfoEXT createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -93,7 +93,7 @@ public:
         std::vector<VkLayerProperties> availableLayers(layerCount);
         vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-        for (const char* layerName : validationLayers)
+        for (const char* layerName : VALIDATION_LAYERS)
         {
             bool layerFound = false;
 
@@ -123,7 +123,7 @@ public:
 
         std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-        if (enableValidationLayers)
+        if (ENABLE_VALIDATION_LAYERS)
         {
             extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         }
@@ -139,7 +139,7 @@ public:
 
     void createInstance()
     {
-        if (enableValidationLayers && !checkValidationLayerSupport())
+        if (ENABLE_VALIDATION_LAYERS && !checkValidationLayerSupport())
         {
             throw std::runtime_error("VK validation layers requested, but not available!");
         }
@@ -163,10 +163,10 @@ public:
         createInfo.enabledLayerCount = 0;
 
         // Validation layers
-        if (enableValidationLayers)
+        if (ENABLE_VALIDATION_LAYERS)
         {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-            createInfo.ppEnabledLayerNames = validationLayers.data();
+            createInfo.enabledLayerCount = static_cast<uint32_t>(VALIDATION_LAYERS.size());
+            createInfo.ppEnabledLayerNames = VALIDATION_LAYERS.data();
         }
         else
         {
@@ -207,13 +207,13 @@ public:
         createInfo.pEnabledFeatures = &deviceFeatures;
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredDeviceExtensions.size());
-        createInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(REQUIRED_DEVICE_EXTENSIONS.size());
+        createInfo.ppEnabledExtensionNames = REQUIRED_DEVICE_EXTENSIONS.data();
 
-        if (enableValidationLayers)
+        if (ENABLE_VALIDATION_LAYERS)
         {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-            createInfo.ppEnabledLayerNames = validationLayers.data();
+            createInfo.enabledLayerCount = static_cast<uint32_t>(VALIDATION_LAYERS.size());
+            createInfo.ppEnabledLayerNames = VALIDATION_LAYERS.data();
         }
         else
         {
@@ -286,7 +286,7 @@ public:
         std::vector<VkExtensionProperties> availableExtensions(extensionCount);
         vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data());
 
-        std::set<std::string> requiredExtensions(requiredDeviceExtensions.begin(), requiredDeviceExtensions.end());
+        std::set<std::string> requiredExtensions(REQUIRED_DEVICE_EXTENSIONS.begin(), REQUIRED_DEVICE_EXTENSIONS.end());
 
         for (const VkExtensionProperties& extension : availableExtensions)
         {

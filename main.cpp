@@ -41,16 +41,6 @@
 #include "Constants.hpp"
 #include "VulkanRenderer.hpp"
 
-const std::vector<const char*> validationLayers = 
-{
-    "VK_LAYER_KHRONOS_validation"
-};
-
-const std::vector<const char*> requiredDeviceExtensions =
-{
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME
-};
-
 class VulkanApplication 
 {
 private:

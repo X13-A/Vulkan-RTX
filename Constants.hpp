@@ -12,7 +12,17 @@ const std::string TEXTURE_PATH = "models/viking_room/viking_room.png";
 
 
 #ifdef NDEBUG
-const bool enableValidationLayers = false;
+const bool ENABLE_VALIDATION_LAYERS = false;
 #else
-const bool enableValidationLayers = true;
+const bool ENABLE_VALIDATION_LAYERS = true;
 #endif
+
+const std::vector<const char*> VALIDATION_LAYERS =
+{
+    "VK_LAYER_KHRONOS_validation"
+};
+
+const std::vector<const char*> REQUIRED_DEVICE_EXTENSIONS =
+{
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
