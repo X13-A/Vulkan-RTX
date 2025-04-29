@@ -1,30 +1,22 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\",
+  "WorkspaceRootPath": "C:\\Users\\Alex\\Git\\VulkanRTX\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{8974FEB8-DB57-4309-93D6-D4BC51CF7E18}|VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\Vulkan-RTX\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{8974FEB8-DB57-4309-93D6-D4BC51CF7E18}|VulkanRTX.vcxproj|solutionrelative:main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanApplication.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|solutionrelative:VulkanRTX\\VulkanApplication.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8974FEB8-DB57-4309-93D6-D4BC51CF7E18}|VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\Vulkan-RTX\\VulkanUtils.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{8974FEB8-DB57-4309-93D6-D4BC51CF7E18}|VulkanRTX.vcxproj|solutionrelative:VulkanUtils.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|solutionrelative:VulkanRTX\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8974FEB8-DB57-4309-93D6-D4BC51CF7E18}|VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\Vulkan-RTX\\VulkanUtils.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{8974FEB8-DB57-4309-93D6-D4BC51CF7E18}|VulkanRTX.vcxproj|solutionrelative:VulkanUtils.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\WindowManager.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|solutionrelative:VulkanRTX\\WindowManager.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8974FEB8-DB57-4309-93D6-D4BC51CF7E18}|VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\Vulkan-RTX\\Constants.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{8974FEB8-DB57-4309-93D6-D4BC51CF7E18}|VulkanRTX.vcxproj|solutionrelative:Constants.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8974FEB8-DB57-4309-93D6-D4BC51CF7E18}|VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\Vulkan-RTX\\Constants.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{8974FEB8-DB57-4309-93D6-D4BC51CF7E18}|VulkanRTX.vcxproj|solutionrelative:Constants.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8974FEB8-DB57-4309-93D6-D4BC51CF7E18}|VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\Vulkan-RTX\\VulkanSwapChainManager.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{8974FEB8-DB57-4309-93D6-D4BC51CF7E18}|VulkanRTX.vcxproj|solutionrelative:VulkanSwapChainManager.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\WindowManager.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|solutionrelative:VulkanRTX\\WindowManager.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -33,93 +25,58 @@
       "VerticalTabListWidth": 256,
       "DocumentGroups": [
         {
-          "DockedWidth": 259,
-          "SelectedChildIndex": 1,
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Constants.cpp",
-              "DocumentMoniker": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\Constants.cpp",
-              "RelativeDocumentMoniker": "Constants.cpp",
-              "ToolTip": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\Constants.cpp",
-              "RelativeToolTip": "Constants.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAnAAAAAAAAAA==",
+              "DocumentIndex": 1,
+              "Title": "main.cpp",
+              "DocumentMoniker": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\main.cpp",
+              "RelativeDocumentMoniker": "VulkanRTX\\main.cpp",
+              "ToolTip": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\main.cpp",
+              "RelativeToolTip": "VulkanRTX\\main.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-04-27T16:31:09.754Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "WhenOpened": "2025-04-28T22:36:51.499Z",
+              "IsPinned": true
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "WindowManager.cpp",
+              "DocumentMoniker": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\WindowManager.cpp",
+              "RelativeDocumentMoniker": "VulkanRTX\\WindowManager.cpp",
+              "ToolTip": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\WindowManager.cpp",
+              "RelativeToolTip": "VulkanRTX\\WindowManager.cpp",
+              "ViewState": "AgIAAAwAAAAAAAAAAAAAAB4AAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-04-29T22:46:54.215Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "main.cpp",
-              "DocumentMoniker": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\main.cpp",
-              "RelativeDocumentMoniker": "main.cpp",
-              "ToolTip": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\main.cpp",
-              "RelativeToolTip": "main.cpp",
-              "ViewState": "AgIAAL4AAAAAAAAAAAAAANcAAAANAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-04-27T17:25:01.656Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "VulkanUtils.cpp",
-              "DocumentMoniker": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\VulkanUtils.cpp",
-              "RelativeDocumentMoniker": "VulkanUtils.cpp",
-              "ToolTip": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\VulkanUtils.cpp",
-              "RelativeToolTip": "VulkanUtils.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAARAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-04-27T17:23:54.104Z",
+              "Title": "VulkanApplication.hpp",
+              "DocumentMoniker": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanApplication.hpp",
+              "RelativeDocumentMoniker": "VulkanRTX\\VulkanApplication.hpp",
+              "ToolTip": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanApplication.hpp",
+              "RelativeToolTip": "VulkanRTX\\VulkanApplication.hpp",
+              "ViewState": "AgIAAAEAAAAAAAAAAAAQwBkAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-04-29T22:43:13.323Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "VulkanUtils.hpp",
-              "DocumentMoniker": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\VulkanUtils.hpp",
-              "RelativeDocumentMoniker": "VulkanUtils.hpp",
-              "ToolTip": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\VulkanUtils.hpp",
-              "RelativeToolTip": "VulkanUtils.hpp",
-              "ViewState": "AgIAAA8AAAAAAAAAAAAAAAMAAAARAAAAAAAAAA==",
+              "Title": "WindowManager.hpp",
+              "DocumentMoniker": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\WindowManager.hpp",
+              "RelativeDocumentMoniker": "VulkanRTX\\WindowManager.hpp",
+              "ToolTip": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\WindowManager.hpp",
+              "RelativeToolTip": "VulkanRTX\\WindowManager.hpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-04-27T17:23:49.217Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "VulkanSwapChainManager.hpp",
-              "DocumentMoniker": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\VulkanSwapChainManager.hpp",
-              "RelativeDocumentMoniker": "VulkanSwapChainManager.hpp",
-              "ToolTip": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\VulkanSwapChainManager.hpp",
-              "RelativeToolTip": "VulkanSwapChainManager.hpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAqAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-04-27T17:20:56.902Z",
-              "EditorCaption": ""
-            }
-          ]
-        },
-        {
-          "DockedWidth": 141,
-          "SelectedChildIndex": 0,
-          "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "Constants.hpp",
-              "DocumentMoniker": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\Constants.hpp",
-              "RelativeDocumentMoniker": "Constants.hpp",
-              "ToolTip": "C:\\Users\\Alex\\Git\\Vulkan-RTX\\Constants.hpp",
-              "RelativeToolTip": "Constants.hpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-04-26T12:28:43.538Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-04-29T22:20:22.755Z"
             }
           ]
         }

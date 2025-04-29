@@ -400,6 +400,7 @@ FodyWeavers.xsd
 *.sln.iml
 
 # Custom changes
-VulkanRTX/
+VulkanRTX/x64
+VulkanRTX/x86
 x64/
 x86/
