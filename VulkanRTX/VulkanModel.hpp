@@ -29,8 +29,8 @@ public:
     glm::mat4x4 modelMatrix;
 
 public:
-    void load(std::string path, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager);
-    void init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanGraphicsPipeline& graphicsPipeline);
+    void loadObj(std::string objPath);
+    void init(std::string objPath, std::string texturePath, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanGraphicsPipeline& graphicsPipeline);
     void createDescriptorSets(const VulkanContext& context, const VulkanGraphicsPipeline& graphicsPipeline);
     void createUniformBuffers(const VulkanContext& context);
     void cleanup(VkDevice device);

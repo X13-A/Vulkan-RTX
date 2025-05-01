@@ -29,7 +29,7 @@ public:
 public:
     void init(const VulkanContext& context, const VulkanSwapChainManager& swapChainManager);
     void createDescriptorSetLayout(const VulkanContext& context);
-    void createDescriptorPool(const VulkanContext& context, int modelCount);
+    void createDescriptorPool(const VulkanContext& context, size_t modelCount);
     void createRenderPass(const VulkanContext& context, const VulkanSwapChainManager& swapChainManager);
     void createGraphicsPipeline(const VulkanContext& context, const VulkanSwapChainManager& swapChain);
     VkShaderModule createShaderModule(const VulkanContext& context, const std::vector<char>& code);

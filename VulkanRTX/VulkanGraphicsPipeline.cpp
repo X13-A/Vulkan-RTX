@@ -42,7 +42,7 @@ void VulkanGraphicsPipeline::createDescriptorSetLayout(const VulkanContext& cont
     }
 }
 
-void VulkanGraphicsPipeline::createDescriptorPool(const VulkanContext& context, int modelCount)
+void VulkanGraphicsPipeline::createDescriptorPool(const VulkanContext& context, size_t modelCount)
 {
     uint32_t descriptorSetCount = static_cast<uint32_t>(modelCount * MAX_FRAMES_IN_FLIGHT);
 
@@ -158,7 +158,7 @@ void VulkanGraphicsPipeline::createGraphicsPipeline(const VulkanContext& context
     dynamicState.pDynamicStates = dynamicStates.data();
 
     VkVertexInputBindingDescription bindingDescription = VulkanVertex::getBindingDescription();
-    std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = VulkanVertex::getAttributeDescriptions();
+    std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions = VulkanVertex::getAttributeDescriptions();
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

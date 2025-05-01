@@ -9,9 +9,9 @@
     #include <stb_image.h>
 #endif
 
-void VulkanTexture::init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager)
+void VulkanTexture::init(std::string path, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager)
 {
-    createTextureImage(context, commandBufferManager);
+    createTextureImage(path, context, commandBufferManager);
     createTextureImageView(context);
     createTextureSampler(context);
 }
@@ -53,10 +53,10 @@ void VulkanTexture::createTextureImageView(const VulkanContext& context)
     textureImageView = VulkanUtils::Image::createImageView(context, textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
-void VulkanTexture::createTextureImage(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager)
+void VulkanTexture::createTextureImage(std::string path, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager)
 {
     int texWidth, texHeight, texChannels;
-    stbi_uc* pixels = stbi_load(TEXTURE_PATH.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    stbi_uc* pixels = stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     VkDeviceSize imageSize = texWidth * texHeight * 4;
 
     if (!pixels)

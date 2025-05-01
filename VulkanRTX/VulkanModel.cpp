@@ -8,14 +8,14 @@
 #endif
 
 
-void VulkanModel::load(std::string path, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager)
+void VulkanModel::loadObj(std::string objPath)
 {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
     std::string warn, err;
 
-    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path.c_str()))
+    if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, objPath.c_str()))
     {
         throw std::runtime_error(warn + err);
     }
@@ -39,6 +39,12 @@ void VulkanModel::load(std::string path, const VulkanContext& context, VulkanCom
                 1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
             };
 
+            vertex.normal = {
+                attrib.normals[3 * index.normal_index + 0],
+                attrib.normals[3 * index.normal_index + 1],
+                attrib.normals[3 * index.normal_index + 2]
+            };
+
             if (uniqueVertices.count(vertex) == 0)
             {
                 uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
@@ -49,12 +55,14 @@ void VulkanModel::load(std::string path, const VulkanContext& context, VulkanCom
     }
 }
 
-void VulkanModel::init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanGraphicsPipeline& graphicsPipeline)
+void VulkanModel::init(std::string objPath, std::string texturePath, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanGraphicsPipeline& graphicsPipeline)
 {
+    loadObj(objPath);
+
     VulkanUtils::Buffers::createVertexBuffer(context, commandBufferManager, vertices, vertexBuffer, vertexBufferMemory);
     VulkanUtils::Buffers::createIndexBuffer(context, commandBufferManager, indices, indexBuffer, indexBufferMemory);
 
-    texture.init(context, commandBufferManager);
+    texture.init(texturePath, context, commandBufferManager);
     createUniformBuffers(context);
     createDescriptorSets(context, graphicsPipeline);
 }

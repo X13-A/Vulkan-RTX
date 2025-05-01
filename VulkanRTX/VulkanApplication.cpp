@@ -30,20 +30,13 @@ void VulkanApplication::initVulkan()
     swapChainManager.createFramebuffers(context, graphicsPipeline.renderPass);
 
     // Models
-    VulkanModel model1;
-    VulkanModel model2;
+    
+    VulkanModel portalGun;
+    models.push_back(portalGun);
 
-    models.push_back(model1);
-    models.push_back(model2);
-
-    // Pipeline ressources
     graphicsPipeline.createDescriptorPool(context, models.size());
-
-    models[0].load(MODEL_PATH, context, commandBufferManager);
-    models[1].load(MODEL_PATH, context, commandBufferManager);
-
-    models[0].init(context, commandBufferManager, graphicsPipeline);
-    models[1].init(context, commandBufferManager, graphicsPipeline);
+    models[0].init("models/portal_gun/portal_gun.obj", "models/portal_gun/PortalGun_Albedo.png", context, commandBufferManager, graphicsPipeline);
+    //models[1].init("models/viking_room/viking_room.obj", "models/viking_room/viking_room.png", context, commandBufferManager, graphicsPipeline);
 
     // Renderer
     renderer.createSyncObjects(context);
@@ -58,12 +51,16 @@ void VulkanApplication::updateScene()
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
     models[0].modelMatrix = glm::mat4(1.0f);
-    models[0].modelMatrix = glm::translate(models[0].modelMatrix, glm::vec3(-2, 0, 0));
-    models[0].modelMatrix = glm::rotate(models[0].modelMatrix, time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    
-    models[1].modelMatrix = glm::mat4(1.0f);
-    models[1].modelMatrix = glm::translate(models[1].modelMatrix, glm::vec3(2, 0, 0));
-    models[1].modelMatrix = glm::rotate(models[1].modelMatrix, -time * 2* glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    //models[0].modelMatrix = glm::translate(models[0].modelMatrix, glm::vec3(-2, 0, 0));
+    float scale = 5.0f;
+    models[0].modelMatrix = glm::scale(models[0].modelMatrix, glm::vec3(scale, scale, scale));
+    models[0].modelMatrix = glm::rotate(models[0].modelMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    models[0].modelMatrix = glm::rotate(models[0].modelMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    models[0].modelMatrix = glm::rotate(models[0].modelMatrix, time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    //models[1].modelMatrix = glm::mat4(1.0f);
+    //models[1].modelMatrix = glm::translate(models[1].modelMatrix, glm::vec3(2, 0, 0));
+    //models[1].modelMatrix = glm::rotate(models[1].modelMatrix, -time * 0.5f * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 }
 
 void VulkanApplication::mainLoop()
