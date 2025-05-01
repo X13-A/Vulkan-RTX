@@ -29,7 +29,7 @@ void VulkanRenderer::createSyncObjects(const VulkanContext& context)
     }
 }
 
-void VulkanRenderer::recordCommandBuffer(VkCommandBuffer commandBuffer, const VulkanSwapChainManager& swapChainManager, const VulkanGraphicsPipeline& graphicsPipeline, uint32_t imageIndex, const VulkanModel& model)
+void VulkanRenderer::recordCommandBuffer(VkCommandBuffer commandBuffer, const VulkanSwapChainManager& swapChainManager, const VulkanGraphicsPipeline& graphicsPipeline, uint32_t imageIndex, const std::vector<VulkanModel>& models)
 {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -71,13 +71,18 @@ void VulkanRenderer::recordCommandBuffer(VkCommandBuffer commandBuffer, const Vu
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.graphicsPipeline);
-    VkBuffer vertexBuffers[] = { model.vertexBuffer };
-    VkDeviceSize offsets[] = { 0 };
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-    vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.pipelineLayout, 0, 1, &graphicsPipeline.descriptorSets[currentFrame], 0, nullptr);
 
-    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(model.indices.size()), 1, 0, 0, 0);
+    for (const VulkanModel& model : models)
+    {
+        VkBuffer vertexBuffers[] = { model.vertexBuffer };
+        VkDeviceSize offsets[] = { 0 };
+        vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+        vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.pipelineLayout, 0, 1, &model.descriptorSets[currentFrame], 0, nullptr);
+
+        vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(model.indices.size()), 1, 0, 0, 0);
+    }
+
     vkCmdEndRenderPass(commandBuffer);
 
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
@@ -86,7 +91,7 @@ void VulkanRenderer::recordCommandBuffer(VkCommandBuffer commandBuffer, const Vu
     }
 }
 
-void VulkanRenderer::drawFrame(GLFWwindow* window, const VulkanContext& context, VulkanSwapChainManager& swapChainManager, const VulkanGraphicsPipeline& graphicsPipeline, VulkanCommandBufferManager& commandBufferManager, const VulkanModel& model)
+void VulkanRenderer::drawFrame(GLFWwindow* window, const VulkanContext& context, VulkanSwapChainManager& swapChainManager, const VulkanGraphicsPipeline& graphicsPipeline, VulkanCommandBufferManager& commandBufferManager, const std::vector<VulkanModel>& models)
 {
     vkWaitForFences(context.device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -105,9 +110,9 @@ void VulkanRenderer::drawFrame(GLFWwindow* window, const VulkanContext& context,
 
     vkResetFences(context.device, 1, &inFlightFences[currentFrame]);
     vkResetCommandBuffer(commandBufferManager.commandBuffers[currentFrame], 0);
-    recordCommandBuffer(commandBufferManager.commandBuffers[currentFrame], swapChainManager, graphicsPipeline, imageIndex, model);
+    recordCommandBuffer(commandBufferManager.commandBuffers[currentFrame], swapChainManager, graphicsPipeline, imageIndex, models);
 
-    updateUniformBuffer(graphicsPipeline, swapChainManager, currentFrame);
+    updateUniformBuffers(models, swapChainManager, currentFrame);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -153,19 +158,20 @@ void VulkanRenderer::drawFrame(GLFWwindow* window, const VulkanContext& context,
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void VulkanRenderer::updateUniformBuffer(const VulkanGraphicsPipeline& graphicsPipeline, const VulkanSwapChainManager& swapChain, uint32_t currentImage)
+void VulkanRenderer::updateUniformBuffers(const std::vector<VulkanModel>& models, const VulkanSwapChainManager& swapChain, uint32_t currentImage)
 {
-    static auto startTime = std::chrono::high_resolution_clock::now();
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+    for (int i = 0; i < models.size(); i++)
+    {
+        UniformBufferObject ubo{};
+        ubo.model = models[i].modelMatrix;
 
-    UniformBufferObject ubo{};
-    ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.swapChainExtent.width / (float)swapChain.swapChainExtent.height, 0.1f, 10.0f);
-    ubo.proj[1][1] *= -1;
+        // TODO: create a real camera object
+        ubo.view = glm::lookAt(glm::vec3(0.0f, 4.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.swapChainExtent.width / (float)swapChain.swapChainExtent.height, 0.1f, 10.0f);
+        ubo.proj[1][1] *= -1;
 
-    memcpy(graphicsPipeline.uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
+        memcpy(models[i].uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
+    }
 }
 
 void VulkanRenderer::cleanup(VkDevice device)

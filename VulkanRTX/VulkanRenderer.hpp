@@ -19,8 +19,8 @@ public:
 
 public:
     void createSyncObjects(const VulkanContext& context);
-    void recordCommandBuffer(VkCommandBuffer commandBuffer, const VulkanSwapChainManager& swapChainManager, const VulkanGraphicsPipeline& graphicsPipeline, uint32_t imageIndex, const VulkanModel& model);
-    void drawFrame(GLFWwindow* window, const VulkanContext& context, VulkanSwapChainManager& swapChainManager, const VulkanGraphicsPipeline& graphicsPipeline, VulkanCommandBufferManager& commandBufferManager, const VulkanModel& model);
-    void updateUniformBuffer(const VulkanGraphicsPipeline& graphicsPipeline, const VulkanSwapChainManager& swapChain, uint32_t currentImage);
+    void recordCommandBuffer(VkCommandBuffer commandBuffer, const VulkanSwapChainManager& swapChainManager, const VulkanGraphicsPipeline& graphicsPipeline, uint32_t imageIndex, const std::vector<VulkanModel>& models);
+    void drawFrame(GLFWwindow* window, const VulkanContext& context, VulkanSwapChainManager& swapChainManager, const VulkanGraphicsPipeline& graphicsPipeline, VulkanCommandBufferManager& commandBufferManager, const std::vector<VulkanModel>& models);
+    void updateUniformBuffers(const std::vector<VulkanModel>& models, const VulkanSwapChainManager& swapChain, uint32_t currentImage);
     void cleanup(VkDevice device);
 };

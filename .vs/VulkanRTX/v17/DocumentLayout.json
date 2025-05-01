@@ -3,20 +3,51 @@
   "WorkspaceRootPath": "C:\\Users\\Alex\\Git\\VulkanRTX\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanApplication.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|solutionrelative:VulkanRTX\\VulkanApplication.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|solutionrelative:VulkanRTX\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\WindowManager.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|solutionrelative:VulkanRTX\\WindowManager.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+      "AbsoluteMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanGraphicsPipeline.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|solutionrelative:VulkanRTX\\VulkanGraphicsPipeline.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\WindowManager.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|solutionrelative:VulkanRTX\\WindowManager.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanApplication.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|solutionrelative:VulkanRTX\\VulkanApplication.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\Constants.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|solutionrelative:VulkanRTX\\Constants.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanRenderer.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|solutionrelative:VulkanRTX\\VulkanRenderer.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanApplication.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|solutionrelative:VulkanRTX\\VulkanApplication.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanModel.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|solutionrelative:VulkanRTX\\VulkanModel.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanModel.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|solutionrelative:VulkanRTX\\VulkanModel.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\include\\vector||{3B902123-F8A7-4915-9F01-361F908088D0}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanGraphicsPipeline.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|solutionrelative:VulkanRTX\\VulkanGraphicsPipeline.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\GLM_defines.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|solutionrelative:VulkanRTX\\GLM_defines.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanRenderer.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{F8315BBA-1047-4195-9835-11818C231C8C}|VulkanRTX\\VulkanRTX.vcxproj|solutionrelative:VulkanRTX\\VulkanRenderer.hpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,57 +57,163 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 6,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "main.cpp",
-              "DocumentMoniker": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\main.cpp",
-              "RelativeDocumentMoniker": "VulkanRTX\\main.cpp",
-              "ToolTip": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\main.cpp",
-              "RelativeToolTip": "VulkanRTX\\main.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAVAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-04-28T22:36:51.499Z",
-              "IsPinned": true
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "WindowManager.cpp",
-              "DocumentMoniker": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\WindowManager.cpp",
-              "RelativeDocumentMoniker": "VulkanRTX\\WindowManager.cpp",
-              "ToolTip": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\WindowManager.cpp",
-              "RelativeToolTip": "VulkanRTX\\WindowManager.cpp",
-              "ViewState": "AgIAAAwAAAAAAAAAAAAAAB4AAAAFAAAAAAAAAA==",
+              "Title": "Constants.cpp",
+              "DocumentMoniker": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\Constants.cpp",
+              "RelativeDocumentMoniker": "VulkanRTX\\Constants.cpp",
+              "ToolTip": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\Constants.cpp",
+              "RelativeToolTip": "VulkanRTX\\Constants.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
-              "WhenOpened": "2025-04-29T22:46:54.215Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "VulkanApplication.hpp",
-              "DocumentMoniker": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanApplication.hpp",
-              "RelativeDocumentMoniker": "VulkanRTX\\VulkanApplication.hpp",
-              "ToolTip": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanApplication.hpp",
-              "RelativeToolTip": "VulkanRTX\\VulkanApplication.hpp",
-              "ViewState": "AgIAAAEAAAAAAAAAAAAQwBkAAAAMAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-04-29T22:43:13.323Z",
+              "WhenOpened": "2025-05-01T14:27:15.438Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "WindowManager.hpp",
-              "DocumentMoniker": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\WindowManager.hpp",
-              "RelativeDocumentMoniker": "VulkanRTX\\WindowManager.hpp",
-              "ToolTip": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\WindowManager.hpp",
-              "RelativeToolTip": "VulkanRTX\\WindowManager.hpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Title": "VulkanApplication.cpp",
+              "DocumentMoniker": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanApplication.cpp",
+              "RelativeDocumentMoniker": "VulkanRTX\\VulkanApplication.cpp",
+              "ToolTip": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanApplication.cpp",
+              "RelativeToolTip": "VulkanRTX\\VulkanApplication.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAfAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-05-01T13:12:47.32Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "VulkanGraphicsPipeline.hpp",
+              "DocumentMoniker": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanGraphicsPipeline.hpp",
+              "RelativeDocumentMoniker": "VulkanRTX\\VulkanGraphicsPipeline.hpp",
+              "ToolTip": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanGraphicsPipeline.hpp",
+              "RelativeToolTip": "VulkanRTX\\VulkanGraphicsPipeline.hpp",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAawB8AAAAdAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
-              "WhenOpened": "2025-04-29T22:20:22.755Z"
+              "WhenOpened": "2025-04-30T18:50:30.365Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "VulkanModel.cpp",
+              "DocumentMoniker": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanModel.cpp",
+              "RelativeDocumentMoniker": "VulkanRTX\\VulkanModel.cpp",
+              "ToolTip": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanModel.cpp",
+              "RelativeToolTip": "VulkanRTX\\VulkanModel.cpp",
+              "ViewState": "AgIAACkAAAAAAAAAAAAvwDUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-04-30T18:50:07.526Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "VulkanModel.hpp",
+              "DocumentMoniker": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanModel.hpp",
+              "RelativeDocumentMoniker": "VulkanRTX\\VulkanModel.hpp",
+              "ToolTip": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanModel.hpp",
+              "RelativeToolTip": "VulkanRTX\\VulkanModel.hpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-04-30T18:47:22.152Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "WindowManager.cpp",
+              "DocumentMoniker": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\WindowManager.cpp",
+              "RelativeDocumentMoniker": "VulkanRTX\\WindowManager.cpp",
+              "ToolTip": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\WindowManager.cpp",
+              "RelativeToolTip": "VulkanRTX\\WindowManager.cpp",
+              "ViewState": "AgIAABIAAAAAAAAAAAAiwCUAAABBAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-04-29T22:46:54.215Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "VulkanGraphicsPipeline.cpp",
+              "DocumentMoniker": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanGraphicsPipeline.cpp",
+              "RelativeDocumentMoniker": "VulkanRTX\\VulkanGraphicsPipeline.cpp",
+              "ToolTip": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanGraphicsPipeline.cpp",
+              "RelativeToolTip": "VulkanRTX\\VulkanGraphicsPipeline.cpp",
+              "ViewState": "AgIAALQAAAAAAAAAAAAiwMcAAAAqAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-05-01T13:44:56.944Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "VulkanRenderer.cpp",
+              "DocumentMoniker": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanRenderer.cpp",
+              "RelativeDocumentMoniker": "VulkanRTX\\VulkanRenderer.cpp",
+              "ToolTip": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanRenderer.cpp",
+              "RelativeToolTip": "VulkanRTX\\VulkanRenderer.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAHAAAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-05-01T13:14:32.162Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "VulkanRenderer.hpp",
+              "DocumentMoniker": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanRenderer.hpp",
+              "RelativeDocumentMoniker": "VulkanRTX\\VulkanRenderer.hpp",
+              "ToolTip": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanRenderer.hpp",
+              "RelativeToolTip": "VulkanRTX\\VulkanRenderer.hpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-05-01T13:15:21.66Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "vector",
+              "DocumentMoniker": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\include\\vector",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\include\\vector",
+              "ToolTip": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\include\\vector",
+              "RelativeToolTip": "..\\..\\..\\..\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Tools\\MSVC\\14.43.34808\\include\\vector",
+              "ViewState": "AgIAAHQHAAAAAAAAAADgv4wHAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-05-01T13:52:57.388Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "VulkanApplication.hpp",
+              "DocumentMoniker": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanApplication.hpp",
+              "RelativeDocumentMoniker": "VulkanRTX\\VulkanApplication.hpp",
+              "ToolTip": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\VulkanApplication.hpp",
+              "RelativeToolTip": "VulkanRTX\\VulkanApplication.hpp",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAiwBQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-05-01T13:37:50.026Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "GLM_defines.hpp",
+              "DocumentMoniker": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\GLM_defines.hpp",
+              "RelativeDocumentMoniker": "VulkanRTX\\GLM_defines.hpp",
+              "ToolTip": "C:\\Users\\Alex\\Git\\VulkanRTX\\VulkanRTX\\GLM_defines.hpp",
+              "RelativeToolTip": "VulkanRTX\\GLM_defines.hpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAbAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-05-01T13:38:55.629Z",
+              "EditorCaption": ""
             }
           ]
         }

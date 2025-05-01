@@ -21,22 +21,15 @@ class VulkanGraphicsPipeline
 public:
     VkDescriptorSetLayout descriptorSetLayout;
     VkDescriptorPool descriptorPool;
-    std::vector<VkDescriptorSet> descriptorSets;
 
     VkRenderPass renderPass;
     VkPipelineLayout pipelineLayout;
     VkPipeline graphicsPipeline;
 
-    std::vector<VkBuffer> uniformBuffers;
-    std::vector<VkDeviceMemory> uniformBuffersMemory;
-    std::vector<void*> uniformBuffersMapped;
-
 public:
     void init(const VulkanContext& context, const VulkanSwapChainManager& swapChainManager);
     void createDescriptorSetLayout(const VulkanContext& context);
-    void createDescriptorSets(const VulkanContext& context, const std::vector<VkBuffer>& uniformBuffers, const VulkanTexture& texture);
-    void createDescriptorPool(const VulkanContext& context);
-    void createUniformBuffers(const VulkanContext& context);
+    void createDescriptorPool(const VulkanContext& context, int modelCount);
     void createRenderPass(const VulkanContext& context, const VulkanSwapChainManager& swapChainManager);
     void createGraphicsPipeline(const VulkanContext& context, const VulkanSwapChainManager& swapChain);
     VkShaderModule createShaderModule(const VulkanContext& context, const std::vector<char>& code);

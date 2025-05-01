@@ -16,7 +16,7 @@ private:
     VulkanSwapChainManager swapChainManager;
     VulkanCommandBufferManager commandBufferManager;
     VulkanGraphicsPipeline graphicsPipeline;
-    VulkanModel model;
+    std::vector<VulkanModel> models;
     VulkanRenderer renderer;
 
     std::chrono::time_point<std::chrono::high_resolution_clock> lastTime;
@@ -29,6 +29,8 @@ public:
 
 private:
     void initVulkan();
+
+    void updateScene();
 
     void mainLoop();
 

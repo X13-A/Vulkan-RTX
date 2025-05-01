@@ -1,5 +1,6 @@
 #include "VulkanApplication.hpp"
 #include <iostream>
+#include "GLM_defines.hpp"
 
 void VulkanApplication::run()
 {
@@ -28,14 +29,21 @@ void VulkanApplication::initVulkan()
     swapChainManager.createDepthResources(context, commandBufferManager);
     swapChainManager.createFramebuffers(context, graphicsPipeline.renderPass);
 
-    // Model
-    model.texture.init(context, commandBufferManager);
-    model.load(MODEL_PATH, context, commandBufferManager);
+    // Models
+    VulkanModel model1;
+    VulkanModel model2;
+
+    models.push_back(model1);
+    models.push_back(model2);
 
     // Pipeline ressources
-    graphicsPipeline.createUniformBuffers(context);
-    graphicsPipeline.createDescriptorPool(context);
-    graphicsPipeline.createDescriptorSets(context, graphicsPipeline.uniformBuffers, model.texture);
+    graphicsPipeline.createDescriptorPool(context, models.size());
+
+    models[0].load(MODEL_PATH, context, commandBufferManager);
+    models[1].load(MODEL_PATH, context, commandBufferManager);
+
+    models[0].init(context, commandBufferManager, graphicsPipeline);
+    models[1].init(context, commandBufferManager, graphicsPipeline);
 
     // Renderer
     renderer.createSyncObjects(context);
@@ -43,12 +51,29 @@ void VulkanApplication::initVulkan()
     std::cout << "VK initialization finished !" << std::endl;
 }
 
+void VulkanApplication::updateScene()
+{
+    static auto startTime = std::chrono::high_resolution_clock::now();
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+    models[0].modelMatrix = glm::mat4(1.0f);
+    models[0].modelMatrix = glm::translate(models[0].modelMatrix, glm::vec3(-2, 0, 0));
+    models[0].modelMatrix = glm::rotate(models[0].modelMatrix, time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    
+    models[1].modelMatrix = glm::mat4(1.0f);
+    models[1].modelMatrix = glm::translate(models[1].modelMatrix, glm::vec3(2, 0, 0));
+    models[1].modelMatrix = glm::rotate(models[1].modelMatrix, -time * 2* glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+}
+
 void VulkanApplication::mainLoop()
 {
     while (!glfwWindowShouldClose(windowManager.getWindow()))
     {
         glfwPollEvents();
-        renderer.drawFrame(windowManager.getWindow(), context, swapChainManager, graphicsPipeline, commandBufferManager, model);
+
+        updateScene();
+        renderer.drawFrame(windowManager.getWindow(), context, swapChainManager, graphicsPipeline, commandBufferManager, models);
         updateFPS();
     }
 
@@ -83,7 +108,10 @@ void VulkanApplication::handleResize()
 void VulkanApplication::cleanup()
 {
     swapChainManager.cleanup(context.device);
-    model.cleanup(context.device);
+    for (VulkanModel model : models)
+    {
+        model.cleanup(context.device);
+    }
     graphicsPipeline.cleanup(context.device);
     renderer.cleanup(context.device);
     commandBufferManager.cleanup(context.device);
