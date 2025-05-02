@@ -24,6 +24,10 @@ public:
     std::vector<VkImageView> swapChainImageViews;
     std::vector<VkFramebuffer> swapChainFramebuffers;
 
+    std::vector<VkImage> normalImages;
+    std::vector<VkDeviceMemory> normalImageMemory;
+    std::vector<VkImageView> normalImageViews;
+
     VkImage depthImage;
     VkDeviceMemory depthImageMemory;
     VkImageView depthImageView;
