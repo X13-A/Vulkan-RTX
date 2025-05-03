@@ -47,19 +47,25 @@ void VulkanFullScreenQuad::writeDescriptorSets(const VulkanContext& context, con
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(VulkanFullScreenQuadUBO);
 
-        // 2. Depth image sampler (from G-buffer)
+        // Depth image sampler
         VkDescriptorImageInfo depthImageInfo{};
         depthImageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
         depthImageInfo.imageView = graphicsPipeline.gBufferManager.depthImageView;
         depthImageInfo.sampler = gBufferSampler;
 
-        // 3. Normal image sampler (from G-buffer)
+        // Normal image sampler
         VkDescriptorImageInfo normalImageInfo{};
         normalImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         normalImageInfo.imageView = graphicsPipeline.gBufferManager.normalImageView;
         normalImageInfo.sampler = gBufferSampler;
 
-        std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
+        // Albedo image sampler
+        VkDescriptorImageInfo albedoImageInfo{};
+        albedoImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        albedoImageInfo.imageView = graphicsPipeline.gBufferManager.albedoImageView;
+        albedoImageInfo.sampler = gBufferSampler;
+
+        std::array<VkWriteDescriptorSet, 4> descriptorWrites{};
 
         descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrites[0].dstSet = descriptorSets[i];
@@ -84,6 +90,14 @@ void VulkanFullScreenQuad::writeDescriptorSets(const VulkanContext& context, con
         descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         descriptorWrites[2].descriptorCount = 1;
         descriptorWrites[2].pImageInfo = &normalImageInfo;
+
+        descriptorWrites[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[3].dstSet = descriptorSets[i];
+        descriptorWrites[3].dstBinding = 3;
+        descriptorWrites[3].dstArrayElement = 0;
+        descriptorWrites[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptorWrites[3].descriptorCount = 1;
+        descriptorWrites[3].pImageInfo = &albedoImageInfo;
 
         vkUpdateDescriptorSets(context.device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
     }

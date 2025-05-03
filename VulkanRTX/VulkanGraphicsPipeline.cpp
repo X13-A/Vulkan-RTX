@@ -54,8 +54,7 @@ void VulkanGraphicsPipeline::createDescriptorSetLayouts(const VulkanContext& con
         throw std::runtime_error("failed to create geometry pass descriptor set layout!");
     }
 
-    // Lighting Pass: Add additional bindings for lighting calculations
-    // Uniform buffer for lighting fragment stage
+    // Lighting Pass
     VkDescriptorSetLayoutBinding lightingUboLayoutBinding{};
     lightingUboLayoutBinding.binding = 0;
     lightingUboLayoutBinding.descriptorCount = 1;
@@ -63,7 +62,6 @@ void VulkanGraphicsPipeline::createDescriptorSetLayouts(const VulkanContext& con
     lightingUboLayoutBinding.pImmutableSamplers = nullptr;
     lightingUboLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    // Samplers for depth and normal textures
     VkDescriptorSetLayoutBinding depthSamplerLayoutBinding{};
     depthSamplerLayoutBinding.binding = 1;
     depthSamplerLayoutBinding.descriptorCount = 1;
@@ -78,15 +76,21 @@ void VulkanGraphicsPipeline::createDescriptorSetLayouts(const VulkanContext& con
     normalSamplerLayoutBinding.pImmutableSamplers = nullptr;
     normalSamplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-    // Lighting pass descriptor set layout will need the uniform buffer for lighting and two samplers (depth and normal)
-    std::array<VkDescriptorSetLayoutBinding, 3> lightingBindings = 
+    VkDescriptorSetLayoutBinding albedoSamplerLayoutBinding{};
+    albedoSamplerLayoutBinding.binding = 3;
+    albedoSamplerLayoutBinding.descriptorCount = 1;
+    albedoSamplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    albedoSamplerLayoutBinding.pImmutableSamplers = nullptr;
+    albedoSamplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+    std::array<VkDescriptorSetLayoutBinding, 4> lightingBindings = 
     {
         lightingUboLayoutBinding,
         depthSamplerLayoutBinding,
         normalSamplerLayoutBinding,
+        albedoSamplerLayoutBinding
     };
 
-    // Create descriptor layout for the lighting pass
     VkDescriptorSetLayoutCreateInfo lightingLayoutInfo{};
     lightingLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     lightingLayoutInfo.bindingCount = static_cast<uint32_t>(lightingBindings.size());
@@ -105,7 +109,7 @@ void VulkanGraphicsPipeline::createDescriptorPool(const VulkanContext& context, 
     poolSizes[0].descriptorCount = static_cast<uint32_t>(modelCount * MAX_FRAMES_IN_FLIGHT + fullScreenQuadCount * MAX_FRAMES_IN_FLIGHT);
 
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = static_cast<uint32_t>(modelCount * MAX_FRAMES_IN_FLIGHT + fullScreenQuadCount * 2 * MAX_FRAMES_IN_FLIGHT);
+    poolSizes[1].descriptorCount = static_cast<uint32_t>(modelCount * MAX_FRAMES_IN_FLIGHT + fullScreenQuadCount * 3 * MAX_FRAMES_IN_FLIGHT); // * 3 because 3 textures in G-Buffer
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -142,6 +146,16 @@ void VulkanGraphicsPipeline::createRenderPasses(const VulkanContext& context, Vk
     normalAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     normalAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
+    VkAttachmentDescription albedoAttachment = {};
+    albedoAttachment.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    albedoAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    albedoAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    albedoAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    albedoAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    albedoAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    albedoAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    albedoAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
     VkAttachmentReference normalAttachmentRef = {};
     normalAttachmentRef.attachment = 0;
     normalAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -150,13 +164,19 @@ void VulkanGraphicsPipeline::createRenderPasses(const VulkanContext& context, Vk
     depthAttachmentRef.attachment = 1;
     depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
+    VkAttachmentReference albedoAttachmentRef = {};
+    albedoAttachmentRef.attachment = 2;
+    albedoAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    VkAttachmentReference colorAttachmentRefs[] { normalAttachmentRef, albedoAttachmentRef };
+
     VkSubpassDescription subpass = {};
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &normalAttachmentRef;
+    subpass.colorAttachmentCount = 2;
+    subpass.pColorAttachments = colorAttachmentRefs;
     subpass.pDepthStencilAttachment = &depthAttachmentRef;
     
-    std::array<VkAttachmentDescription, 2> attachments = { normalAttachment, depthAttachment };
+    std::array<VkAttachmentDescription, 3> attachments = { normalAttachment, depthAttachment, albedoAttachment };
     VkRenderPassCreateInfo renderPassInfo{};
     renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
@@ -206,16 +226,16 @@ void VulkanGraphicsPipeline::createRenderPasses(const VulkanContext& context, Vk
 
 void VulkanGraphicsPipeline::createFramebuffers(const VulkanContext& context, uint32_t width, uint32_t height)
 {
-    // 1. Geometry pass framebuffers (G-buffer)
-    // The geometry pass framebuffer will store depth and normal data in the G-buffer.
-    std::array<VkImageView, 2> geometryAttachments = {
-        gBufferManager.normalImageView,  // Normal buffer from G-buffer
-        gBufferManager.depthImageView    // Depth buffer from G-buffer
+    // Geometry pass framebuffers
+    std::array<VkImageView, 3> geometryAttachments = {
+        gBufferManager.normalImageView,
+        gBufferManager.depthImageView,
+        gBufferManager.albedoImageView
     };
 
     VkFramebufferCreateInfo geometryFramebufferInfo{};
     geometryFramebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    geometryFramebufferInfo.renderPass = geometryRenderPass;  // Render pass for the geometry pass
+    geometryFramebufferInfo.renderPass = geometryRenderPass;
     geometryFramebufferInfo.attachmentCount = static_cast<uint32_t>(geometryAttachments.size());
     geometryFramebufferInfo.pAttachments = geometryAttachments.data();
     geometryFramebufferInfo.width = width;
@@ -344,16 +364,22 @@ void VulkanGraphicsPipeline::createPipelines(const VulkanContext& context, const
     depthStencil.depthBoundsTestEnable = VK_FALSE;
     depthStencil.stencilTestEnable = VK_FALSE;
 
-    // Color blend state for geometry pass (no blending for G-buffer)
-    VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-    colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    colorBlendAttachment.blendEnable = VK_FALSE;
+    // Color blend state for geometry pass
+    VkPipelineColorBlendAttachmentState normalBlendAttachment{};
+    normalBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    normalBlendAttachment.blendEnable = VK_FALSE;
 
-    VkPipelineColorBlendStateCreateInfo colorBlending{};
-    colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    colorBlending.logicOpEnable = VK_FALSE;
-    colorBlending.attachmentCount = 1;
-    colorBlending.pAttachments = &colorBlendAttachment;
+    VkPipelineColorBlendAttachmentState albedoBlendAttachment{};
+    albedoBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    albedoBlendAttachment.blendEnable = VK_FALSE;
+
+    VkPipelineColorBlendAttachmentState geometryBlendAttachments[] { normalBlendAttachment, albedoBlendAttachment };
+
+    VkPipelineColorBlendStateCreateInfo geometryPassColorBlending{};
+    geometryPassColorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    geometryPassColorBlending.logicOpEnable = VK_FALSE;
+    geometryPassColorBlending.attachmentCount = 2;
+    geometryPassColorBlending.pAttachments = geometryBlendAttachments;
 
     // Dynamic state (viewport and scissor)
     std::vector<VkDynamicState> dynamicStates = {
@@ -376,7 +402,7 @@ void VulkanGraphicsPipeline::createPipelines(const VulkanContext& context, const
     pipelineInfo.pViewportState = &viewportState;
     pipelineInfo.pRasterizationState = &rasterizer;
     pipelineInfo.pMultisampleState = &multisampling;
-    pipelineInfo.pColorBlendState = &colorBlending;
+    pipelineInfo.pColorBlendState = &geometryPassColorBlending;
     pipelineInfo.pDynamicState = &dynamicState;
     pipelineInfo.layout = geometryPipelineLayout;
     pipelineInfo.renderPass = geometryRenderPass;
@@ -410,7 +436,7 @@ void VulkanGraphicsPipeline::createPipelines(const VulkanContext& context, const
 
     VkPipelineShaderStageCreateInfo lightingShaderStages[] = { lightingVertShaderStageInfo, lightingFragShaderStageInfo };
 
-    // Depth and Stencil state for geometry pass (writes depth and normal)
+    // Depth and Stencil state for geometry pass
     VkPipelineDepthStencilStateCreateInfo depthStencilLighting{};
     depthStencilLighting.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     depthStencilLighting.depthTestEnable = VK_FALSE;
@@ -419,7 +445,19 @@ void VulkanGraphicsPipeline::createPipelines(const VulkanContext& context, const
     depthStencilLighting.depthBoundsTestEnable = VK_FALSE;
     depthStencilLighting.stencilTestEnable = VK_FALSE;
 
-    // Set up the lighting pass pipeline (assuming it's a fullscreen quad for post-processing)
+    VkPipelineColorBlendAttachmentState lightingBlendAttachment{};
+    lightingBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    lightingBlendAttachment.blendEnable = VK_FALSE;
+
+    VkPipelineColorBlendAttachmentState lightingBlendAttachments[]{ lightingBlendAttachment };
+    
+    VkPipelineColorBlendStateCreateInfo lightingPassColorBlending{};
+    lightingPassColorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    lightingPassColorBlending.logicOpEnable = VK_FALSE;
+    lightingPassColorBlending.attachmentCount = 1;
+    lightingPassColorBlending.pAttachments = lightingBlendAttachments;
+
+    // Set up the lighting pass pipeline
     VkGraphicsPipelineCreateInfo lightingPipelineInfo{};
     lightingPipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     lightingPipelineInfo.stageCount = 2;
@@ -429,7 +467,7 @@ void VulkanGraphicsPipeline::createPipelines(const VulkanContext& context, const
     lightingPipelineInfo.pViewportState = &viewportState;
     lightingPipelineInfo.pRasterizationState = &rasterizer;
     lightingPipelineInfo.pMultisampleState = &multisampling;
-    lightingPipelineInfo.pColorBlendState = &colorBlending;
+    lightingPipelineInfo.pColorBlendState = &lightingPassColorBlending;
     lightingPipelineInfo.pDynamicState = &dynamicState;
     lightingPipelineInfo.layout = lightingPipelineLayout;
     lightingPipelineInfo.renderPass = lightingRenderPass;

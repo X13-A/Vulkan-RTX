@@ -5,10 +5,10 @@ struct FragmentInput
     float3 fragNormal : TEXCOORD1;
 };
 
-[[vk::binding(0)]] Sampler2D albedoSampler;  // Albedo texture for sampling
+[[vk::binding(1)]] Sampler2D albedoSampler;
 
-void main(FragmentInput input, out float4 outNormal : SV_Target0)
+void main(FragmentInput input, out float4 outNormal : SV_Target0, out float4 outAlbedo : SV_Target2)
 {
-    float4 textureColor = albedoSampler.Sample(input.fragTexCoord);
-    outNormal = float4(abs(input.fragNormal), 1); // Normal output for deferred rendering (in [0, 1] range)
+    outAlbedo = albedoSampler.Sample(input.fragTexCoord);
+    outNormal = float4(abs(input.fragNormal), 1); // Encoded normal
 }

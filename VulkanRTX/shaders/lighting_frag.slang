@@ -4,8 +4,9 @@ struct FragmentInput
 };
 
 // Samplers for G-buffer
-[[vk::binding(2)]] Sampler2D normalSampler;
 [[vk::binding(1)]] Sampler2D depthSampler;
+[[vk::binding(2)]] Sampler2D normalSampler;
+[[vk::binding(3)]] Sampler2D albedoSampler;
 
 void main(FragmentInput input, out float4 outColor : SV_Target0) 
 {
@@ -13,6 +14,7 @@ void main(FragmentInput input, out float4 outColor : SV_Target0)
     uv.y = 1 - uv.y;
     float3 encodedNormal = normalSampler.Sample(uv).rgb;
     float3 normal = (encodedNormal - 0.5) * 2.0;
+    float4 albedo = albedoSampler.Sample(uv);
 
     float depth = depthSampler.Sample(uv).r;
 
@@ -24,10 +26,7 @@ void main(FragmentInput input, out float4 outColor : SV_Target0)
     {
         outColor = float4(normal, 1.0);
     }
-    else
-    {
-        float3 lightDir = normalize(float3(0.0, 1.0, 0.0));
-        float light = dot(normal, lightDir);
-        outColor = float4(light, light, light, 1);
-    }
+    float3 lightDir = normalize(float3(0.0, 1.0, 0.0));
+    float light = dot(normal, lightDir);
+    outColor = float4(albedo.rgb * light, 1);
 }

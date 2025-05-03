@@ -48,9 +48,10 @@ void VulkanRenderer::recordCommandBuffer(const VulkanContext& context, VulkanCom
     geometryRenderPassInfo.renderArea.offset = { 0, 0 };
     geometryRenderPassInfo.renderArea.extent = swapChainManager.swapChainExtent;
 
-    std::array<VkClearValue, 2> geometryClearValues{};
+    std::array<VkClearValue, 3> geometryClearValues{};
     geometryClearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
     geometryClearValues[1].depthStencil = { 1.0f, 0 };
+    geometryClearValues[2].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
 
     geometryRenderPassInfo.clearValueCount = static_cast<uint32_t>(geometryClearValues.size());
     geometryRenderPassInfo.pClearValues = geometryClearValues.data();

@@ -5,6 +5,7 @@ void VulkanGBufferManager::init(const VulkanContext& context, VulkanCommandBuffe
 {
     createDepthResources(context, commandBufferManager, width, height);
     createNormalResources(context, commandBufferManager, width, height);
+    createAlbedoResources(context, commandBufferManager, width, height);
 }
 
 void VulkanGBufferManager::createDepthResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, size_t width, size_t height)
@@ -81,6 +82,40 @@ void VulkanGBufferManager::createNormalResources(const VulkanContext& context, V
     );
 }
 
+
+void VulkanGBufferManager::createAlbedoResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, size_t width, size_t height)
+{
+    VkFormat albedoFormat = VK_FORMAT_R32G32B32A32_SFLOAT;
+
+    VulkanUtils::Image::createImage(
+        context,
+        width,
+        height,
+        albedoFormat,
+        VK_IMAGE_TILING_OPTIMAL,
+        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+        albedoImage,
+        albedoImageMemory
+    );
+
+    albedoImageView = VulkanUtils::Image::createImageView(
+        context,
+        albedoImage,
+        albedoFormat,
+        VK_IMAGE_ASPECT_COLOR_BIT
+    );
+
+    VulkanUtils::Image::transitionImageLayout(
+        context,
+        commandBufferManager,
+        albedoImage,
+        albedoFormat,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+    );
+}
+
 void VulkanGBufferManager::cleanup(VkDevice device)
 {
     vkDestroyImageView(device, depthImageView, nullptr);
@@ -90,4 +125,8 @@ void VulkanGBufferManager::cleanup(VkDevice device)
     vkDestroyImageView(device, normalImageView, nullptr);
     vkFreeMemory(device, normalImageMemory, nullptr);
     vkDestroyImage(device, normalImage, nullptr);
+
+    vkDestroyImageView(device, albedoImageView, nullptr);
+    vkFreeMemory(device, albedoImageMemory, nullptr);
+    vkDestroyImage(device, albedoImage, nullptr);
 }
