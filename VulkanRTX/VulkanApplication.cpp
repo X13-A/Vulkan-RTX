@@ -17,26 +17,26 @@ void VulkanApplication::initVulkan()
     windowManager.createSurface(context);
     context.initDevice();
 
-    // Swapchain, pipeline
-    swapChainManager.init(windowManager.getWindow(), context);
-    graphicsPipeline.init(context, swapChainManager);
-
     // CommandBuffers
     commandBufferManager.createCommandPool(context);
     commandBufferManager.createCommandBuffers(context);
 
+    // Swapchain, pipeline
+    swapChainManager.init(windowManager.getWindow(), context);
+    graphicsPipeline.init(context, commandBufferManager, swapChainManager);
+
     // Swapchain ressources
-    swapChainManager.createDepthResources(context, commandBufferManager);
-    swapChainManager.createFramebuffers(context, graphicsPipeline.renderPass);
+    swapChainManager.createFramebuffers(context, graphicsPipeline.lightingRenderPass);
 
     // Models
-    
     VulkanModel portalGun;
     models.push_back(portalGun);
 
-    graphicsPipeline.createDescriptorPool(context, models.size());
+    graphicsPipeline.createDescriptorPool(context, models.size(), 1); // 1 for the fullscreen quad
+
     models[0].init("models/portal_gun/portal_gun.obj", "models/portal_gun/PortalGun_Albedo.png", context, commandBufferManager, graphicsPipeline);
     //models[1].init("models/viking_room/viking_room.obj", "models/viking_room/viking_room.png", context, commandBufferManager, graphicsPipeline);
+    fullScreenQuad.init(context, commandBufferManager, graphicsPipeline);
 
     // Renderer
     renderer.createSyncObjects(context);
@@ -51,8 +51,7 @@ void VulkanApplication::updateScene()
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
     models[0].modelMatrix = glm::mat4(1.0f);
-    //models[0].modelMatrix = glm::translate(models[0].modelMatrix, glm::vec3(-2, 0, 0));
-    float scale = 5.0f;
+    float scale = 10.0f;
     models[0].modelMatrix = glm::scale(models[0].modelMatrix, glm::vec3(scale, scale, scale));
     models[0].modelMatrix = glm::rotate(models[0].modelMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     models[0].modelMatrix = glm::rotate(models[0].modelMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -70,7 +69,7 @@ void VulkanApplication::mainLoop()
         glfwPollEvents();
 
         updateScene();
-        renderer.drawFrame(windowManager.getWindow(), context, swapChainManager, graphicsPipeline, commandBufferManager, models);
+        renderer.drawFrame(windowManager.getWindow(), context, swapChainManager, graphicsPipeline, commandBufferManager, models, fullScreenQuad);
         updateFPS();
     }
 
@@ -104,11 +103,13 @@ void VulkanApplication::handleResize()
 
 void VulkanApplication::cleanup()
 {
+    // TODO: Fix cleaning up
     swapChainManager.cleanup(context.device);
     for (VulkanModel model : models)
     {
         model.cleanup(context.device);
     }
+    fullScreenQuad.cleanup(context.device);
     graphicsPipeline.cleanup(context.device);
     renderer.cleanup(context.device);
     commandBufferManager.cleanup(context.device);

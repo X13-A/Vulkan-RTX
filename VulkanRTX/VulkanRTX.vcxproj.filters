@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{9cc398ed-a307-444f-8885-f92544cc7870}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -55,6 +58,12 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="VulkanApplication.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="GBufferManager.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanFullScreenQuad.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -104,5 +113,25 @@
     <ClInclude Include="VulkanApplication.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="VulkanGBufferManager.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanFullScreenQuad.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\geometry_frag.slang">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\geometry_vert.slang">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\lighting_frag.slang">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\lighting_vert.slang">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

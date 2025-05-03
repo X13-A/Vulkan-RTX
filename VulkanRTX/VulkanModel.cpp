@@ -69,7 +69,7 @@ void VulkanModel::init(std::string objPath, std::string texturePath, const Vulka
 
 void VulkanModel::createDescriptorSets(const VulkanContext& context, const VulkanGraphicsPipeline& graphicsPipeline)
 {
-    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, graphicsPipeline.descriptorSetLayout);
+    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, graphicsPipeline.geometryDescriptorSetLayout);
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = graphicsPipeline.descriptorPool;
@@ -87,7 +87,7 @@ void VulkanModel::createDescriptorSets(const VulkanContext& context, const Vulka
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = uniformBuffers[i];
         bufferInfo.offset = 0;
-        bufferInfo.range = sizeof(UniformBufferObject);
+        bufferInfo.range = sizeof(VulkanModelUBO);
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -119,7 +119,7 @@ void VulkanModel::createDescriptorSets(const VulkanContext& context, const Vulka
 
 void VulkanModel::createUniformBuffers(const VulkanContext& context)
 {
-    VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+    VkDeviceSize bufferSize = sizeof(VulkanModelUBO);
 
     uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
     uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);

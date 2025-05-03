@@ -153,20 +153,8 @@ void VulkanSwapChainManager::createImageViews(const VulkanContext& context)
     }
 }
 
-void VulkanSwapChainManager::createDepthResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager)
-{
-    VkFormat depthFormat = VulkanUtils::DepthStencil::findDepthFormat(context.physicalDevice);
-    VulkanUtils::Image::createImage(context, swapChainExtent.width, swapChainExtent.height, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
-    depthImageView = VulkanUtils::Image::createImageView(context, depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
-    VulkanUtils::Image::transitionImageLayout(context, commandBufferManager, depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-}
-
 void VulkanSwapChainManager::cleanup(VkDevice device)
 {
-    vkDestroyImageView(device, depthImageView, nullptr);
-    vkDestroyImage(device, depthImage, nullptr);
-    vkFreeMemory(device, depthImageMemory, nullptr);
-
     for (auto framebuffer : swapChainFramebuffers)
     {
         vkDestroyFramebuffer(device, framebuffer, nullptr);
@@ -186,10 +174,9 @@ void VulkanSwapChainManager::createFramebuffers(const VulkanContext& context, Vk
 
     for (size_t i = 0; i < swapChainImageViews.size(); i++)
     {
-        std::array<VkImageView, 2> attachments =
+        std::array<VkImageView, 1> attachments =
         {
-            swapChainImageViews[i],
-            depthImageView
+            swapChainImageViews[i]
         };
 
         VkFramebufferCreateInfo framebufferInfo{};
@@ -201,14 +188,15 @@ void VulkanSwapChainManager::createFramebuffers(const VulkanContext& context, Vk
         framebufferInfo.height = swapChainExtent.height;
         framebufferInfo.layers = 1;
 
+        // Create geometry pass framebuffer
         if (vkCreateFramebuffer(context.device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS)
         {
-            throw std::runtime_error("failed to create framebuffer!");
+            throw std::runtime_error("failed to create geometry pass framebuffer!");
         }
     }
 }
 
-void VulkanSwapChainManager::recreateSwapChain(GLFWwindow* window, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkRenderPass renderPass)
+void VulkanSwapChainManager::handleResize(GLFWwindow* window, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkRenderPass renderPass)
 {
     int width = 0, height = 0;
     glfwGetFramebufferSize(window, &width, &height);
@@ -224,6 +212,5 @@ void VulkanSwapChainManager::recreateSwapChain(GLFWwindow* window, const VulkanC
     cleanup(context.device);
     createSwapChain(window, context);
     createImageViews(context);
-    createDepthResources(context, commandBufferManager);
     createFramebuffers(context, renderPass);
 }

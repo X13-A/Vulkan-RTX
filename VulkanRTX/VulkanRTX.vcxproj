@@ -152,11 +152,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Constants.cpp" />
+    <ClCompile Include="GBufferManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="VulkanApplication.cpp" />
     <ClCompile Include="VulkanCommandBufferManager.cpp" />
     <ClCompile Include="VulkanContext.cpp" />
+    <ClCompile Include="VulkanFullScreenQuad.cpp" />
     <ClCompile Include="VulkanGeometry.cpp" />
     <ClCompile Include="VulkanGraphicsPipeline.cpp" />
     <ClCompile Include="VulkanModel.cpp" />
@@ -171,6 +173,8 @@
     <ClInclude Include="GLM_defines.hpp" />
     <ClInclude Include="Utils.hpp" />
     <ClInclude Include="VulkanApplication.hpp" />
+    <ClInclude Include="VulkanFullScreenQuad.hpp" />
+    <ClInclude Include="VulkanGBufferManager.hpp" />
     <ClInclude Include="VulkanGeometry.hpp" />
     <ClInclude Include="VulkanGraphicsPipeline.hpp" />
     <ClInclude Include="VulkanModel.hpp" />
@@ -182,6 +186,12 @@
     <ClInclude Include="VulkanUtils.hpp" />
     <ClInclude Include="Vulkan_GLFW.hpp" />
     <ClInclude Include="WindowManager.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\geometry_frag.slang" />
+    <None Include="shaders\geometry_vert.slang" />
+    <None Include="shaders\lighting_frag.slang" />
+    <None Include="shaders\lighting_vert.slang" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -6,10 +6,16 @@
 #include "Constants.hpp"
 #include "VulkanContext.hpp"
 #include "VulkanSwapChainManager.hpp"
+#include "VulkanGBufferManager.hpp"
 
 #include <vector>
 
-struct UniformBufferObject
+struct VulkanFullScreenQuadUBO
+{
+    float time; // TODO: alignas() ?
+};
+
+struct VulkanModelUBO
 {
     alignas(16) glm::mat4 model;
     alignas(16) glm::mat4 view;
@@ -19,19 +25,35 @@ struct UniformBufferObject
 class VulkanGraphicsPipeline
 {
 public:
-    VkDescriptorSetLayout descriptorSetLayout;
+    VkDescriptorSetLayout geometryDescriptorSetLayout;
+    VkDescriptorSetLayout lightingDescriptorSetLayout;
+
     VkDescriptorPool descriptorPool;
 
-    VkRenderPass renderPass;
-    VkPipelineLayout pipelineLayout;
-    VkPipeline graphicsPipeline;
+    VkRenderPass geometryRenderPass;
+    VkRenderPass lightingRenderPass;
+
+    VkFramebuffer geometryFramebuffer;
+    // No lighting framebuffer, it renders directly to the swapchain
+
+    VkPipelineLayout geometryPipelineLayout;
+    VkPipelineLayout lightingPipelineLayout;
+
+    VkPipeline geometryPipeline;
+    VkPipeline lightingPipeline;
+
+
+    VulkanGBufferManager gBufferManager;
 
 public:
-    void init(const VulkanContext& context, const VulkanSwapChainManager& swapChainManager);
-    void createDescriptorSetLayout(const VulkanContext& context);
-    void createDescriptorPool(const VulkanContext& context, size_t modelCount);
-    void createRenderPass(const VulkanContext& context, const VulkanSwapChainManager& swapChainManager);
-    void createGraphicsPipeline(const VulkanContext& context, const VulkanSwapChainManager& swapChain);
+    void init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager);
+    void createDescriptorSetLayouts(const VulkanContext& context);
+    void createDescriptorPool(const VulkanContext& context, size_t modelCount, size_t fullScreenQuadCount);
+    void createRenderPasses(const VulkanContext& context, VkFormat swapChainImageFormat);
+    void createFramebuffers(const VulkanContext& context, uint32_t width, uint32_t height);
+    void createPipelineLayouts(const VulkanContext& context);
+    void createPipelines(const VulkanContext& context, const VulkanSwapChainManager& swapChain);
     VkShaderModule createShaderModule(const VulkanContext& context, const std::vector<char>& code);
+    void handleResize(GLFWwindow* window, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager);
     void cleanup(VkDevice device);
 };

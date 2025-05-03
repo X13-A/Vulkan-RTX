@@ -15,7 +15,6 @@ public:
 
 public:
     void init(std::string path, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager);
-    void createTextureSampler(const VulkanContext& context);
     void createTextureImageView(const VulkanContext& context);
     void createTextureImage(std::string path, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager);
     void cleanup(VkDevice device);

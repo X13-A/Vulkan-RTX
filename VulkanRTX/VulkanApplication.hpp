@@ -17,6 +17,8 @@ private:
     VulkanCommandBufferManager commandBufferManager;
     VulkanGraphicsPipeline graphicsPipeline;
     std::vector<VulkanModel> models;
+    VulkanFullScreenQuad fullScreenQuad;
+
     VulkanRenderer renderer;
 
     std::chrono::time_point<std::chrono::high_resolution_clock> lastTime;

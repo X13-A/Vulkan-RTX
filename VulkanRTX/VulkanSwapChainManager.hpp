@@ -24,14 +24,6 @@ public:
     std::vector<VkImageView> swapChainImageViews;
     std::vector<VkFramebuffer> swapChainFramebuffers;
 
-    std::vector<VkImage> normalImages;
-    std::vector<VkDeviceMemory> normalImageMemory;
-    std::vector<VkImageView> normalImageViews;
-
-    VkImage depthImage;
-    VkDeviceMemory depthImageMemory;
-    VkImageView depthImageView;
-
     bool framebufferResized = false;
 
 public:
@@ -43,8 +35,7 @@ public:
     void init(GLFWwindow* window, const VulkanContext& context);
     void createSwapChain(GLFWwindow* window, const VulkanContext& context);
     void createImageViews(const VulkanContext& context);
-    void createDepthResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager);
     void cleanup(VkDevice device);
     void createFramebuffers(const VulkanContext& context, VkRenderPass renderPass);
-    void recreateSwapChain(GLFWwindow* window, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkRenderPass renderPass);
+    void handleResize(GLFWwindow* window, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkRenderPass renderPass);
 };

@@ -2,16 +2,46 @@
 #include <set>
 #include <iostream>
 #include "Constants.hpp"
-#include "VulkanSwapChainManager.hpp"
+#include "VulkanSwapChainManager.hpp"#include <regex>
+#include <regex>
 
 bool QueueFamilyIndices::isComplete()
 {
     return graphicsFamily.has_value() && presentFamily.has_value();
 }
 
+
+void printColoredValidationMessage(const std::string& message, std::string titleColor, std::string bodyColor)
+{
+    std::regex pattern(R"(^([^\:]+:))", std::regex::icase);
+    std::smatch match;
+    std::string formattedMessage = std::regex_replace(message, std::regex(": "), ":\n", std::regex_constants::format_first_only);
+
+    if (std::regex_search(formattedMessage, match, pattern)) {
+        std::string highlighted = titleColor + match.str(1) + bodyColor;
+        std::string formatted = std::regex_replace(formattedMessage, pattern, highlighted, std::regex_constants::format_first_only);
+        std::cerr << std::endl << formatted << std::endl;
+    }
+    else 
+    {
+        std::cerr << std::endl << formattedMessage << std::endl;
+    }
+}
+
 VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
-    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+    // Color output based on severity
+    const char* color;
+    switch (messageSeverity) 
+    {
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT: color = "\033[90m"; break; // gray
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:    color = "\033[36m"; break; // cyan
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT: color = "\033[33m"; break; // yellow
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:   color = "\033[31m"; break; // red
+        default: color = "\033[0m"; break; // White
+    }
+    printColoredValidationMessage("[Vulkan] " + std::string(pCallbackData->pMessage), color, "\033[0m");
+
     return VK_FALSE;
 }
 
