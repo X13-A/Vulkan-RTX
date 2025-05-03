@@ -20,57 +20,6 @@ void VulkanGraphicsPipeline::init(const VulkanContext& context, VulkanCommandBuf
     createFramebuffers(context, swapChainManager.swapChainExtent.width, swapChainManager.swapChainExtent.height);
 }
 
-
-void VulkanGraphicsPipeline::handleResize(GLFWwindow* window, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager)
-{
-    int width = 0, height = 0;
-    glfwGetFramebufferSize(window, &width, &height);
-
-    while (width == 0 || height == 0)
-    {
-        glfwGetFramebufferSize(window, &width, &height);
-        glfwWaitEvents();
-    }
-
-    vkDeviceWaitIdle(context.device);
-
-    // GBuffer
-    gBufferManager.cleanup(context.device);
-    gBufferManager.init(context, commandBufferManager, width, height);
-
-    // Pipelines
-    vkDestroyPipeline(context.device, geometryPipeline, nullptr);
-    vkDestroyPipeline(context.device, lightingPipeline, nullptr);
-    createPipelines(context, swapChainManager);
-
-    // Framebuffers
-    vkDestroyFramebuffer(context.device, geometryFramebuffer, nullptr);
-    createFramebuffers(context, width, height);
-}
-
-void VulkanGraphicsPipeline::cleanup(VkDevice device)
-{
-    // Cleanup pipelines
-    vkDestroyPipeline(device, geometryPipeline, nullptr);
-    vkDestroyPipeline(device, lightingPipeline, nullptr);
-
-    // Cleanup pipeline layouts
-    vkDestroyPipelineLayout(device, geometryPipelineLayout, nullptr);
-    vkDestroyPipelineLayout(device, lightingPipelineLayout, nullptr);
-
-    // Cleanup render passes
-    vkDestroyRenderPass(device, geometryRenderPass, nullptr);
-    vkDestroyRenderPass(device, lightingRenderPass, nullptr);
-
-    // Cleanup descriptor set layouts
-    vkDestroyDescriptorSetLayout(device, geometryDescriptorSetLayout, nullptr);
-    vkDestroyDescriptorSetLayout(device, lightingDescriptorSetLayout, nullptr);
-
-    // Cleanup descriptor pool
-    vkDestroyDescriptorPool(device, descriptorPool, nullptr);
-}
-
-
 void VulkanGraphicsPipeline::createDescriptorSetLayouts(const VulkanContext& context)
 {
     // Geometry Pass: Uniform buffer and texture sampler
@@ -106,7 +55,7 @@ void VulkanGraphicsPipeline::createDescriptorSetLayouts(const VulkanContext& con
     }
 
     // Lighting Pass: Add additional bindings for lighting calculations
-    // Uniform buffer for lighting fragment stage (e.g., lighting parameters, such as light position, intensity, etc.)
+    // Uniform buffer for lighting fragment stage
     VkDescriptorSetLayoutBinding lightingUboLayoutBinding{};
     lightingUboLayoutBinding.binding = 0;
     lightingUboLayoutBinding.descriptorCount = 1;
@@ -514,3 +463,57 @@ VkShaderModule VulkanGraphicsPipeline::createShaderModule(const VulkanContext& c
     return shaderModule;
 }
 
+
+void VulkanGraphicsPipeline::handleResize(GLFWwindow* window, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager)
+{
+    int width = 0, height = 0;
+    glfwGetFramebufferSize(window, &width, &height);
+
+    while (width == 0 || height == 0)
+    {
+        glfwGetFramebufferSize(window, &width, &height);
+        glfwWaitEvents();
+    }
+
+    vkDeviceWaitIdle(context.device);
+
+    // GBuffer
+    gBufferManager.cleanup(context.device);
+    gBufferManager.init(context, commandBufferManager, width, height);
+
+    // Pipelines
+    vkDestroyPipeline(context.device, geometryPipeline, nullptr);
+    vkDestroyPipeline(context.device, lightingPipeline, nullptr);
+    createPipelines(context, swapChainManager);
+
+    // Framebuffers
+    vkDestroyFramebuffer(context.device, geometryFramebuffer, nullptr);
+    createFramebuffers(context, width, height);
+}
+
+void VulkanGraphicsPipeline::cleanup(VkDevice device)
+{
+    // Cleanup pipelines
+    vkDestroyPipeline(device, geometryPipeline, nullptr);
+    vkDestroyPipeline(device, lightingPipeline, nullptr);
+
+    // Cleanup pipeline layouts
+    vkDestroyPipelineLayout(device, geometryPipelineLayout, nullptr);
+    vkDestroyPipelineLayout(device, lightingPipelineLayout, nullptr);
+
+    // Cleanup render passes
+    vkDestroyRenderPass(device, geometryRenderPass, nullptr);
+    vkDestroyRenderPass(device, lightingRenderPass, nullptr);
+
+    // Cleanup descriptor set layouts
+    vkDestroyDescriptorSetLayout(device, geometryDescriptorSetLayout, nullptr);
+    vkDestroyDescriptorSetLayout(device, lightingDescriptorSetLayout, nullptr);
+
+    // Cleanup descriptor pool
+    vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+
+    // Cleanup framebuffer
+    vkDestroyFramebuffer(device, geometryFramebuffer, nullptr);
+
+    gBufferManager.cleanup(device);
+}
