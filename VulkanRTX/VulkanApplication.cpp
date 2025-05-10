@@ -19,7 +19,6 @@ void VulkanApplication::run()
     windowManager.init();
 
     camera.setPerspective(60, GLFW_WINDOW_WIDTH / (float) GLFW_WINDOW_HEIGHT, 0.1, 100.0f);
-    //camera.transform.setTransformMatrix(glm::lookAt(glm::vec3(0.0f, 6.0f, 2.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
     controls = new CreativeControls(camera, 10.0, 100);
     camera.transform.setRotation(glm::vec3(0, 0, 0));
     camera.transform.setPosition(glm::vec3(0, 0, 5));
@@ -79,15 +78,9 @@ void VulkanApplication::updateScene()
 
     for (int i = 0; i < models.size(); i++)
     {
-        // Todo: test with transform API
-        glm::mat4 transformMatrix = glm::mat4(1.0f);
-        transformMatrix = glm::scale(transformMatrix, glm::vec3(scale, scale, scale));
-        /*
-        transformMatrix = glm::rotate(transformMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        transformMatrix = glm::rotate(transformMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        transformMatrix = glm::rotate(transformMatrix, time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        */
-        models[i].transform.setTransformMatrix(transformMatrix);
+        models[i].transform.setTransformMatrix(glm::mat4(1.0f));
+        models[i].transform.scale(glm::vec3(scale, scale, scale));
+        models[i].transform.setRotation(glm::vec3(0, Time::time() * 45.0, 0));
     }
 }
 
