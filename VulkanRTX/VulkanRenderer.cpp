@@ -201,7 +201,7 @@ void VulkanRenderer::updateUniformBuffers(const std::vector<VulkanModel>& models
     for (int i = 0; i < models.size(); i++)
     {
         VulkanModelUBO ubo{};
-        ubo.modelMat = models[i].modelMatrix;
+        ubo.modelMat = models[i].transform.getTransformMatrix();
         ubo.normalMat = glm::transpose(glm::inverse(ubo.modelMat));
         
         // TODO: create a real camera object

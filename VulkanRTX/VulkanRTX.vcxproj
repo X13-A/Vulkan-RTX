@@ -156,6 +156,7 @@
     <ClCompile Include="GBufferManager.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="VulkanApplication.cpp" />
     <ClCompile Include="VulkanCommandBufferManager.cpp" />
@@ -176,6 +177,7 @@
     <ClInclude Include="EventManager.hpp" />
     <ClInclude Include="GLM_defines.hpp" />
     <ClInclude Include="InputManager.hpp" />
+    <ClInclude Include="Transform.hpp" />
     <ClInclude Include="Utils.hpp" />
     <ClInclude Include="VulkanApplication.hpp" />
     <ClInclude Include="VulkanFullScreenQuad.hpp" />

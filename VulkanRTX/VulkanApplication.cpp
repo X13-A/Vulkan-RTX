@@ -60,16 +60,14 @@ void VulkanApplication::updateScene()
 
     for (int i = 0; i < models.size(); i++)
     {
-        models[i].modelMatrix = glm::mat4(1.0f);
-        models[i].modelMatrix = glm::scale(models[i].modelMatrix, glm::vec3(scale, scale, scale));
-        models[i].modelMatrix = glm::rotate(models[i].modelMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        models[i].modelMatrix = glm::rotate(models[i].modelMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        models[i].modelMatrix = glm::rotate(models[i].modelMatrix, time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        // Todo: test with transform API
+        glm::mat4 transformMatrix = glm::mat4(1.0f);
+        transformMatrix = glm::scale(transformMatrix, glm::vec3(scale, scale, scale));
+        transformMatrix = glm::rotate(transformMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        transformMatrix = glm::rotate(transformMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        transformMatrix = glm::rotate(transformMatrix, time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        models[i].transform.setTransformMatrix(transformMatrix);
     }
-
-    //models[1].modelMatrix = glm::mat4(1.0f);
-    //models[1].modelMatrix = glm::translate(models[1].modelMatrix, glm::vec3(2, 0, 0));
-    //models[1].modelMatrix = glm::rotate(models[1].modelMatrix, -time * 0.5f * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 }
 
 void VulkanApplication::mainLoop()

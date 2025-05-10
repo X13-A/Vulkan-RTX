@@ -8,6 +8,7 @@
 #include "VulkanGraphicsPipeline.hpp"
 
 #include <vector>
+#include "Transform.hpp"
 
 class VulkanModel
 {
@@ -26,7 +27,7 @@ public:
     std::vector<VkDeviceMemory> uniformBuffersMemory;
     std::vector<void*> uniformBuffersMapped;
 
-    glm::mat4x4 modelMatrix;
+    Transform transform;
 
 public:
     void loadObj(std::string objPath);
