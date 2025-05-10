@@ -2,6 +2,7 @@
 #include <iostream>
 #include "GLM_defines.hpp"
 #include "EventManager.hpp"
+#include "Time.hpp"
 
 void VulkanApplication::handleWindowResize(const WindowResizeEvent& e)
 {
@@ -18,8 +19,10 @@ void VulkanApplication::run()
     windowManager.init();
 
     camera.setPerspective(60, GLFW_WINDOW_WIDTH / (float) GLFW_WINDOW_HEIGHT, 0.1, 100.0f);
-    camera.transform.setTransformMatrix(glm::lookAt(glm::vec3(0.0f, 6.0f, 2.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
-    
+    //camera.transform.setTransformMatrix(glm::lookAt(glm::vec3(0.0f, 6.0f, 2.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+    controls = new CreativeControls(camera, 10.0, 100);
+    camera.transform.setRotation(glm::vec3(0, 0, 0));
+    camera.transform.setPosition(glm::vec3(0, 0, 5));
     EventManager::get().sink<WindowResizeEvent>().connect <&VulkanApplication::handleWindowResize>(this);
 
     initVulkan();
@@ -79,9 +82,11 @@ void VulkanApplication::updateScene()
         // Todo: test with transform API
         glm::mat4 transformMatrix = glm::mat4(1.0f);
         transformMatrix = glm::scale(transformMatrix, glm::vec3(scale, scale, scale));
+        /*
         transformMatrix = glm::rotate(transformMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         transformMatrix = glm::rotate(transformMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         transformMatrix = glm::rotate(transformMatrix, time * glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        */
         models[i].transform.setTransformMatrix(transformMatrix);
     }
 }
@@ -90,8 +95,10 @@ void VulkanApplication::mainLoop()
 {
     while (!shouldTerminate())
     {
+        Time::update();
         glfwPollEvents();
         inputManager.retrieveInputs(windowManager.getWindow());
+        controls->update(inputManager);
         updateScene();
         renderer.drawFrame(windowManager.getWindow(), context, swapChainManager, graphicsPipeline, commandBufferManager, camera, models, fullScreenQuad);
         updateFPS();
@@ -140,6 +147,8 @@ bool VulkanApplication::shouldTerminate() const
 
 void VulkanApplication::cleanup()
 {
+    controls->cleanup();
+    delete controls;
     EventManager::get().sink<WindowResizeEvent>().disconnect<&VulkanApplication::handleWindowResize>(this);
     inputManager.cleanup();
     swapChainManager.cleanup(context.device);

@@ -213,7 +213,7 @@ void VulkanRenderer::updateUniformBuffers(const Camera& camera, const std::vecto
         ubo.normalMat = glm::transpose(glm::inverse(ubo.modelMat));
         
         // TODO: create a real camera object
-        ubo.viewMat = camera.transform.getTransformMatrix();
+        ubo.viewMat = camera.getViewMatrix();
         ubo.projMat = camera.getProjectionMatrix();
 
         memcpy(models[i].uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));

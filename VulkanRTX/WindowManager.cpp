@@ -13,6 +13,7 @@ void WindowManager::init()
     glfwSetWindowUserPointer(window, this);
 
     // Set callbacks
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetFramebufferSizeCallback(window, WindowManager::framebufferResizeCallback);
     glfwSetCursorPosCallback(window, WindowManager::mouseCallback);
     glfwSetScrollCallback(window, WindowManager::scrollCallbaack);

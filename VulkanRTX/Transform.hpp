@@ -23,6 +23,10 @@ public:
     glm::mat4 getTransformMatrix() const;
     void setTransformMatrix(const glm::mat4& matrix);
 
+    void printPosition() const;
+    void printRotation() const;
+    void printScale() const;
+
 private:
     glm::vec3 m_position;
     glm::quat m_rotation;

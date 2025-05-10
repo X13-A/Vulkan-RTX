@@ -3,12 +3,17 @@
 
 struct MouseMoveEvent 
 {
-    double x, y;
+    double xPos, yPos;
+};
+
+struct MouseOffsetEvent
+{
+    double xOffset, yOffset;
 };
 
 struct MouseScrollEvent
 {
-    double x, y;
+    double xOffset, yOffset;
 };
 
 struct WindowResizeEvent

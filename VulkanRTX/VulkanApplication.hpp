@@ -9,6 +9,7 @@
 #include "entt.hpp"
 #include "Camera.hpp"
 #include "AllEvents.hpp"
+#include "CreativeControls.hpp"
 
 class VulkanApplication
 {
@@ -17,6 +18,7 @@ private:
     WindowManager windowManager;
     InputManager inputManager;
     Camera camera;
+    CreativeControls* controls;
 
     VulkanContext context;
     VulkanSwapChainManager swapChainManager;

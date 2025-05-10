@@ -1,4 +1,5 @@
 #include "Transform.hpp"
+#include <iostream>
 
 Transform::Transform() : m_position(0.0f), m_rotation(glm::quat_identity<float, glm::defaultp>()), m_scale(1.0f) 
 {
@@ -69,10 +70,31 @@ void Transform::setTransformMatrix(const glm::mat4& matrix)
 {
     glm::vec3 skew;
     glm::vec4 perspective;
-
-    // Decompose the matrix
     glm::decompose(matrix, m_scale, m_rotation, m_position, skew, perspective);
-
-    // Ensure rotation quaternion is normalized
     m_rotation = glm::normalize(m_rotation);
+}
+
+void Transform::printPosition() const 
+{
+    std::cout << "Position: ("
+        << m_position.x << ", "
+        << m_position.y << ", "
+        << m_position.z << ")\n";
+}
+
+void Transform::printRotation() const 
+{
+    glm::vec3 euler = glm::degrees(glm::eulerAngles(m_rotation));
+    std::cout << "Rotation (Euler): ("
+        << euler.x << ", "
+        << euler.y << ", "
+        << euler.z << ")\n";
+}
+
+void Transform::printScale() const 
+{
+    std::cout << "Scale: ("
+        << m_scale.x << ", "
+        << m_scale.y << ", "
+        << m_scale.z << ")\n";
 }

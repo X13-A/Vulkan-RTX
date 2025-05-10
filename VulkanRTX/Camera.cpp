@@ -19,7 +19,18 @@ glm::mat4 Camera::getProjectionMatrix() const
     return proj;
 }
 
+glm::mat4 Camera::getViewMatrix() const
+{
+    return glm::inverse(transform.getTransformMatrix());
+}
+
+
 float Camera::getFOV() const { return m_fov; }
 float Camera::getAspectRatio() const { return m_aspectRatio; }
 float Camera::getNearPlane() const { return m_nearPlane; }
 float Camera::getFarPlane() const { return m_farPlane; }
+
+void Camera::setFOV(float value) { m_fov = value; }
+void Camera::setFarPlane(float value) { m_farPlane = value; }
+void Camera::setNearPlane(float value) { m_nearPlane = value; }
+void Camera::setAspectRatio(float value) { m_aspectRatio = value; }

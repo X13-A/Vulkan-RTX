@@ -30,28 +30,28 @@ void InputManager::onMouseMove(const MouseMoveEvent& e)
 	if (firstMouseInput)
 	{
 		firstMouseInput = false;
-		lastMousePos.x = e.x;
-		lastMousePos.y = e.y;
+		lastMousePos.x = e.xPos;
+		lastMousePos.y = e.yPos;
 	}
 
-	if ((glm::vec3(e.x, e.y, 0) - glm::vec3(lastMousePos.x, lastMousePos.y, 0)).length() > 100)
+	if ((glm::vec3(e.xPos, e.yPos, 0) - glm::vec3(lastMousePos.x, lastMousePos.y, 0)).length() > 100)
 	{
-		lastMousePos.x = e.x;
-		lastMousePos.y = e.y;
+		lastMousePos.x = e.xPos;
+		lastMousePos.y = e.yPos;
 		return;
 	}
-	float offsetX = lastMousePos.x - e.x;
-	float offsetY = lastMousePos.y - e.y;
+	float offsetX = lastMousePos.x - e.xPos;
+	float offsetY = lastMousePos.y - e.yPos;
 
-	lastMousePos.x = e.x;
-	lastMousePos.y = e.y;
-
-	std::cout << "Mouse movement: (" << e.x << ", " << e.y << ")\n";
+	EventManager::get().trigger(MouseOffsetEvent{ offsetX, offsetY });
+	
+	lastMousePos.x = e.xPos;
+	lastMousePos.y = e.yPos;
 }
 
 void InputManager::onMouseScroll(const MouseScrollEvent& e)
 {
-	std::cout << "Mouse scroll: " << e.x << ", " << e.y << std::endl;
+	std::cout << "Mouse scroll: " << e.xOffset << ", " << e.yOffset << std::endl;
 }
 
 bool InputManager::isKeyPressed(KeyboardKey key) const
