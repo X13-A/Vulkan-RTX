@@ -61,7 +61,7 @@ public:
 	void init();
 	void retrieveInputs(GLFWwindow* window);
 	void update(GLFWwindow* window);
-	bool isKeyPressed(KeyboardKey key);
+	bool isKeyPressed(KeyboardKey key) const;
 
 	void onMouseMove(const MouseMoveEvent& e);
 	void onMouseScroll(const MouseScrollEvent& e);

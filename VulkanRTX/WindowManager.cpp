@@ -18,7 +18,7 @@ void WindowManager::init()
     glfwSetScrollCallback(window, WindowManager::scrollCallbaack);
 }
 
-GLFWwindow* WindowManager::getWindow()
+GLFWwindow* WindowManager::getWindow() const
 {
     return window;
 }

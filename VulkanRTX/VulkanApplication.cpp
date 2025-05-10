@@ -74,7 +74,7 @@ void VulkanApplication::updateScene()
 
 void VulkanApplication::mainLoop()
 {
-    while (!glfwWindowShouldClose(windowManager.getWindow()))
+    while (!shouldTerminate())
     {
         glfwPollEvents();
         inputManager.retrieveInputs(windowManager.getWindow());
@@ -109,6 +109,19 @@ void VulkanApplication::updateFPS()
 void VulkanApplication::handleResize()
 {
     swapChainManager.framebufferResized = true;
+}
+
+bool VulkanApplication::shouldTerminate() const
+{
+    if (inputManager.isKeyPressed(KeyboardKey::Escape))
+    {
+        return true;
+    }
+    if (glfwWindowShouldClose(windowManager.getWindow()))
+    {
+        return true;
+    }
+    return false;
 }
 
 void VulkanApplication::cleanup()

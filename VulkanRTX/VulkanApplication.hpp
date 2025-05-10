@@ -24,7 +24,6 @@ private:
 
     VulkanRenderer renderer;
 
-
     std::chrono::time_point<std::chrono::high_resolution_clock> lastTime;
     int frameCount = 0;
 
@@ -33,6 +32,7 @@ public:
 
     void handleResize();
 
+    bool shouldTerminate() const;
 private:
     void initVulkan();
 

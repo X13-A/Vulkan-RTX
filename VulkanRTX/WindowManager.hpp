@@ -10,7 +10,7 @@ private:
     std::function<void()> resizeCallback;
 
 public:
-    GLFWwindow* getWindow();
+    GLFWwindow* getWindow() const;
 
     void init();
     void setResizeCallback(std::function<void()> callback);
