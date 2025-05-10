@@ -1,3 +1,4 @@
+#pragma once
 #include "entt.hpp"
 
 struct MouseMoveEvent 
@@ -8,4 +9,9 @@ struct MouseMoveEvent
 struct MouseScrollEvent
 {
     double x, y;
+};
+
+struct WindowResizeEvent
+{
+    int width, height;
 };

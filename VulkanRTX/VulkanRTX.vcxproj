@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="EventManager.cpp" />
     <ClCompile Include="GBufferManager.cpp" />
@@ -173,6 +174,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AllEvents.hpp" />
+    <ClInclude Include="Camera.hpp" />
     <ClInclude Include="Constants.hpp" />
     <ClInclude Include="EventManager.hpp" />
     <ClInclude Include="GLM_defines.hpp" />

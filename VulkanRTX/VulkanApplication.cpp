@@ -1,11 +1,27 @@
 #include "VulkanApplication.hpp"
 #include <iostream>
 #include "GLM_defines.hpp"
+#include "EventManager.hpp"
+
+void VulkanApplication::handleWindowResize(const WindowResizeEvent& e)
+{
+    if (e.width <= 0 || e.height <= 0)
+    {
+        return;
+    }
+    camera.setPerspective(camera.getFOV(), e.width / (float) e.height, camera.getNearPlane(), camera.getFarPlane());
+}
 
 void VulkanApplication::run()
 {
     inputManager.init();
     windowManager.init();
+
+    camera.setPerspective(60, GLFW_WINDOW_WIDTH / (float) GLFW_WINDOW_HEIGHT, 0.1, 100.0f);
+    camera.transform.setTransformMatrix(glm::lookAt(glm::vec3(0.0f, 6.0f, 2.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+    
+    EventManager::get().sink<WindowResizeEvent>().connect <&VulkanApplication::handleWindowResize>(this);
+
     initVulkan();
     mainLoop();
     cleanup();
@@ -77,7 +93,7 @@ void VulkanApplication::mainLoop()
         glfwPollEvents();
         inputManager.retrieveInputs(windowManager.getWindow());
         updateScene();
-        renderer.drawFrame(windowManager.getWindow(), context, swapChainManager, graphicsPipeline, commandBufferManager, models, fullScreenQuad);
+        renderer.drawFrame(windowManager.getWindow(), context, swapChainManager, graphicsPipeline, commandBufferManager, camera, models, fullScreenQuad);
         updateFPS();
     }
 
@@ -124,6 +140,7 @@ bool VulkanApplication::shouldTerminate() const
 
 void VulkanApplication::cleanup()
 {
+    EventManager::get().sink<WindowResizeEvent>().disconnect<&VulkanApplication::handleWindowResize>(this);
     inputManager.cleanup();
     swapChainManager.cleanup(context.device);
     for (VulkanModel model : models)

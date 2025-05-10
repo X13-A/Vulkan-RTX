@@ -7,6 +7,8 @@
 #include "InputManager.hpp"
 #include <chrono>
 #include "entt.hpp"
+#include "Camera.hpp"
+#include "AllEvents.hpp"
 
 class VulkanApplication
 {
@@ -14,6 +16,7 @@ private:
     entt::dispatcher dispatcher;
     WindowManager windowManager;
     InputManager inputManager;
+    Camera camera;
 
     VulkanContext context;
     VulkanSwapChainManager swapChainManager;
@@ -35,6 +38,8 @@ public:
     bool shouldTerminate() const;
 private:
     void initVulkan();
+
+    void handleWindowResize(const WindowResizeEvent& e);
 
     void updateScene();
 

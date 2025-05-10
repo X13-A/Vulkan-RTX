@@ -3,6 +3,8 @@
 #include <chrono>
 #include <array>
 #include "GLM_defines.hpp"
+#include "EventManager.hpp"
+#include "AllEvents.hpp"
 
 void VulkanRenderer::createSyncObjects(const VulkanContext& context)
 {
@@ -124,12 +126,18 @@ void VulkanRenderer::recordCommandBuffer(const VulkanContext& context, VulkanCom
 void VulkanRenderer::handleResize(GLFWwindow* window, const VulkanContext& context, VulkanSwapChainManager& swapChainManager, VulkanGraphicsPipeline& graphicsPipeline, VulkanCommandBufferManager& commandBufferManager, VulkanFullScreenQuad& fullScreenQuad)
 {
     std::cout << "Resizing resources..." << std::endl;
+
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    EventManager::get().trigger(WindowResizeEvent{ width, height });
+    
+    // TODO: use EventManager here
     swapChainManager.handleResize(window, context, commandBufferManager, graphicsPipeline.lightingRenderPass);
     graphicsPipeline.handleResize(window, context, commandBufferManager, swapChainManager);
     fullScreenQuad.writeDescriptorSets(context, graphicsPipeline);
 }
 
-void VulkanRenderer::drawFrame(GLFWwindow* window, const VulkanContext& context, VulkanSwapChainManager& swapChainManager, VulkanGraphicsPipeline& graphicsPipeline, VulkanCommandBufferManager& commandBufferManager, const std::vector<VulkanModel>& models, VulkanFullScreenQuad& fullScreenQuad)
+void VulkanRenderer::drawFrame(GLFWwindow* window, const VulkanContext& context, VulkanSwapChainManager& swapChainManager, VulkanGraphicsPipeline& graphicsPipeline, VulkanCommandBufferManager& commandBufferManager, const Camera& camera, const std::vector<VulkanModel>& models, VulkanFullScreenQuad& fullScreenQuad)
 {
     vkWaitForFences(context.device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -150,7 +158,7 @@ void VulkanRenderer::drawFrame(GLFWwindow* window, const VulkanContext& context,
     vkResetCommandBuffer(commandBufferManager.commandBuffers[currentFrame], 0);
     recordCommandBuffer(context, commandBufferManager, swapChainManager, graphicsPipeline, imageIndex, currentFrame, models, fullScreenQuad);
 
-    updateUniformBuffers(models, fullScreenQuad, swapChainManager, currentFrame);
+    updateUniformBuffers(camera, models, fullScreenQuad, swapChainManager, currentFrame);
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -196,7 +204,7 @@ void VulkanRenderer::drawFrame(GLFWwindow* window, const VulkanContext& context,
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void VulkanRenderer::updateUniformBuffers(const std::vector<VulkanModel>& models, const VulkanFullScreenQuad& fullScreenQuad, const VulkanSwapChainManager& swapChain, uint32_t currentImage)
+void VulkanRenderer::updateUniformBuffers(const Camera& camera, const std::vector<VulkanModel>& models, const VulkanFullScreenQuad& fullScreenQuad, const VulkanSwapChainManager& swapChain, uint32_t currentImage)
 {
     for (int i = 0; i < models.size(); i++)
     {
@@ -205,9 +213,8 @@ void VulkanRenderer::updateUniformBuffers(const std::vector<VulkanModel>& models
         ubo.normalMat = glm::transpose(glm::inverse(ubo.modelMat));
         
         // TODO: create a real camera object
-        ubo.viewMat = glm::lookAt(glm::vec3(0.0f, 6.0f, 2.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.projMat = glm::perspective(glm::radians(45.0f), swapChain.swapChainExtent.width / (float)swapChain.swapChainExtent.height, 0.1f, 10.0f);
-        ubo.projMat[1][1] *= -1;
+        ubo.viewMat = camera.transform.getTransformMatrix();
+        ubo.projMat = camera.getProjectionMatrix();
 
         memcpy(models[i].uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
     }
