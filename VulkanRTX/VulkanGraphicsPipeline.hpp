@@ -17,9 +17,10 @@ struct VulkanFullScreenQuadUBO
 
 struct VulkanModelUBO
 {
-    alignas(16) glm::mat4 model;
-    alignas(16) glm::mat4 view;
-    alignas(16) glm::mat4 proj;
+    alignas(16) glm::mat4 modelMat;
+    alignas(16) glm::mat4 viewMat;
+    alignas(16) glm::mat4 projMat;
+    alignas(16) glm::mat4 normalMat;
 };
 
 class VulkanGraphicsPipeline

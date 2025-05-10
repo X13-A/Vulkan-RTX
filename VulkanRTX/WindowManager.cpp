@@ -1,6 +1,8 @@
 #include "WindowManager.hpp"
 #include "Constants.hpp"
 #include <stdexcept>
+#include "EventManager.hpp"
+#include "AllEvents.hpp"
 
 void WindowManager::init()
 {
@@ -9,12 +11,26 @@ void WindowManager::init()
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
     window = glfwCreateWindow(GLFW_WINDOW_WIDTH, GLFW_WINDOW_HEIGHT, GLFW_WINDOW_NAME, nullptr, nullptr);
     glfwSetWindowUserPointer(window, this);
+
+    // Set callbacks
     glfwSetFramebufferSizeCallback(window, WindowManager::framebufferResizeCallback);
+    glfwSetCursorPosCallback(window, WindowManager::mouseCallback);
+    glfwSetScrollCallback(window, WindowManager::scrollCallbaack);
 }
 
 GLFWwindow* WindowManager::getWindow()
 {
     return window;
+}
+
+void WindowManager::mouseCallback(GLFWwindow* window, double xpos, double ypos)
+{
+    EventManager::get().trigger(MouseMoveEvent{ xpos, ypos });
+}
+
+void WindowManager::scrollCallbaack(GLFWwindow* window, double xoffset, double yoffset)
+{
+    EventManager::get().trigger(MouseScrollEvent{ xoffset, yoffset });
 }
 
 void WindowManager::setResizeCallback(std::function<void()> callback)

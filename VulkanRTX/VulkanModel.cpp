@@ -62,7 +62,7 @@ void VulkanModel::init(std::string objPath, std::string texturePath, const Vulka
     VulkanUtils::Buffers::createVertexBuffer(context, commandBufferManager, vertices, vertexBuffer, vertexBufferMemory);
     VulkanUtils::Buffers::createIndexBuffer(context, commandBufferManager, indices, indexBuffer, indexBufferMemory);
 
-    texture.init(texturePath, context, commandBufferManager);
+    albedoTexture.init(texturePath, context, commandBufferManager);
     createUniformBuffers(context);
     createDescriptorSets(context, graphicsPipeline);
 }
@@ -91,8 +91,8 @@ void VulkanModel::createDescriptorSets(const VulkanContext& context, const Vulka
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = texture.textureImageView;
-        imageInfo.sampler = texture.textureSampler;
+        imageInfo.imageView = albedoTexture.textureImageView;
+        imageInfo.sampler = albedoTexture.textureSampler;
 
         std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
@@ -134,7 +134,7 @@ void VulkanModel::createUniformBuffers(const VulkanContext& context)
 
 void VulkanModel::cleanup(VkDevice device)
 {
-    texture.cleanup(device);
+    albedoTexture.cleanup(device);
     vkDestroyBuffer(device, indexBuffer, nullptr);
     vkFreeMemory(device, indexBufferMemory, nullptr);
     vkDestroyBuffer(device, vertexBuffer, nullptr);

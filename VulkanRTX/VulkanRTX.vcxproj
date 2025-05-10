@@ -71,7 +71,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>%VULKAN_SDK%\Include;C:\Dev\glfw-3.4.bin.WIN64\include;$(IncludePath);$(VULKAN_SDK)\Include;C:\Dev\Libraries\tiny_obj_loader;C:\Dev\Libraries\stb_image</IncludePath>
+    <IncludePath>%VULKAN_SDK%\Include;C:\Dev\glfw-3.4.bin.WIN64\include;$(IncludePath);$(VULKAN_SDK)\Include;C:\Dev\Libraries\tiny_obj_loader;C:\Dev\Libraries\stb_image;C:\Dev\Libraries\entt</IncludePath>
     <LibraryPath>C:\Dev\glfw-3.4.bin.WIN64\lib-vc2022;%VULKAN_SDK%\Lib;$(LibraryPath);$(VULKAN_SDK)\Lib</LibraryPath>
     <PublicIncludeDirectories>
     </PublicIncludeDirectories>
@@ -152,7 +152,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Constants.cpp" />
+    <ClCompile Include="EventManager.cpp" />
     <ClCompile Include="GBufferManager.cpp" />
+    <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="VulkanApplication.cpp" />
@@ -169,8 +171,11 @@
     <ClCompile Include="WindowManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AllEvents.hpp" />
     <ClInclude Include="Constants.hpp" />
+    <ClInclude Include="EventManager.hpp" />
     <ClInclude Include="GLM_defines.hpp" />
+    <ClInclude Include="InputManager.hpp" />
     <ClInclude Include="Utils.hpp" />
     <ClInclude Include="VulkanApplication.hpp" />
     <ClInclude Include="VulkanFullScreenQuad.hpp" />

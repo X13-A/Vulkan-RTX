@@ -82,7 +82,6 @@ void VulkanGBufferManager::createNormalResources(const VulkanContext& context, V
     );
 }
 
-
 void VulkanGBufferManager::createAlbedoResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, size_t width, size_t height)
 {
     VkFormat albedoFormat = VK_FORMAT_R32G32B32A32_SFLOAT;

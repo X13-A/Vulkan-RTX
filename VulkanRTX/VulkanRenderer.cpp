@@ -201,12 +201,13 @@ void VulkanRenderer::updateUniformBuffers(const std::vector<VulkanModel>& models
     for (int i = 0; i < models.size(); i++)
     {
         VulkanModelUBO ubo{};
-        ubo.model = models[i].modelMatrix;
-
+        ubo.modelMat = models[i].modelMatrix;
+        ubo.normalMat = glm::transpose(glm::inverse(ubo.modelMat));
+        
         // TODO: create a real camera object
-        ubo.view = glm::lookAt(glm::vec3(0.0f, 6.0f, 2.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.proj = glm::perspective(glm::radians(45.0f), swapChain.swapChainExtent.width / (float)swapChain.swapChainExtent.height, 0.1f, 10.0f);
-        ubo.proj[1][1] *= -1;
+        ubo.viewMat = glm::lookAt(glm::vec3(0.0f, 6.0f, 2.0f), glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.projMat = glm::perspective(glm::radians(45.0f), swapChain.swapChainExtent.width / (float)swapChain.swapChainExtent.height, 0.1f, 10.0f);
+        ubo.projMat[1][1] *= -1;
 
         memcpy(models[i].uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
     }

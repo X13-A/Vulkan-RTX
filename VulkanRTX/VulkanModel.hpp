@@ -18,7 +18,7 @@ public:
     VkDeviceMemory vertexBufferMemory;
     VkBuffer indexBuffer;
     VkDeviceMemory indexBufferMemory;
-    VulkanTexture texture;
+    VulkanTexture albedoTexture;
 
     std::vector<VkDescriptorSet> descriptorSets;
     

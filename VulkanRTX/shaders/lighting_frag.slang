@@ -27,6 +27,6 @@ void main(FragmentInput input, out float4 outColor : SV_Target0)
         outColor = float4(normal, 1.0);
     }
     float3 lightDir = normalize(float3(1.0, 1.0, 1.0));
-    float light = max(dot(normal, lightDir),0) + 0.1;
+    float light = max(dot(normal, lightDir),0) + 0.02;
     outColor = float4(albedo.rgb * light, 1);
 }

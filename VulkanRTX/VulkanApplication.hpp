@@ -4,13 +4,16 @@
 #include "VulkanModel.hpp"
 #include "VulkanRenderer.hpp"
 #include "WindowManager.hpp"
-
+#include "InputManager.hpp"
 #include <chrono>
+#include "entt.hpp"
 
 class VulkanApplication
 {
 private:
+    entt::dispatcher dispatcher;
     WindowManager windowManager;
+    InputManager inputManager;
 
     VulkanContext context;
     VulkanSwapChainManager swapChainManager;
@@ -20,6 +23,7 @@ private:
     VulkanFullScreenQuad fullScreenQuad;
 
     VulkanRenderer renderer;
+
 
     std::chrono::time_point<std::chrono::high_resolution_clock> lastTime;
     int frameCount = 0;

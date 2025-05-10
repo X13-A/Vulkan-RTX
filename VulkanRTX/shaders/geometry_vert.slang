@@ -1,8 +1,9 @@
 struct UniformBufferObject 
 {
-    float4x4 model;
-    float4x4 view;
-    float4x4 proj;
+    float4x4 modelMat;
+    float4x4 viewMat;
+    float4x4 projMat;
+    float4x4 normalMat;
 };
 
 ConstantBuffer<UniformBufferObject> ubo;
@@ -26,9 +27,11 @@ struct VertexOutput
 VertexOutput main(VertexInput input) 
 {
     VertexOutput output;
-    output.svPosition = mul(ubo.proj, mul(ubo.view, mul(ubo.model, float4(input.position, 1.0))));
+    output.svPosition = mul(ubo.projMat, mul(ubo.viewMat, mul(ubo.modelMat, float4(input.position, 1.0))));
     output.fragColor = input.color;
     output.fragTexCoord = input.texCoord;
-    output.fragNormal = (input.normal * 0.5) + 0.5;
+    output.fragNormal = mul(ubo.normalMat, float4(input.normal, 0)).xyz;
+
+    output.fragNormal = (output.fragNormal * 0.5) + 0.5;
     return output;
 }
