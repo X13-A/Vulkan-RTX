@@ -50,15 +50,17 @@ void VulkanApplication::initVulkan()
     // Models
     VulkanModel portalGun;
     VulkanModel portalGunGlass;
+    VulkanModel vikingRoom;
 
     models.push_back(portalGun);
     models.push_back(portalGunGlass);
+    models.push_back(vikingRoom);
 
     graphicsPipeline.createDescriptorPool(context, models.size(), 1); // 1 for the fullscreen quad
 
     models[0].init("models/portal_gun/portal_gun.obj", "models/portal_gun/PortalGun_Albedo.png", context, commandBufferManager, graphicsPipeline);
     models[1].init("models/portal_gun/portal_gun_glass.obj", "textures/white.jpg", context, commandBufferManager, graphicsPipeline);
-    //models[0].init("models/sphere/sphere.obj", "models/portal_gun/PortalGun_Albedo.png", context, commandBufferManager, graphicsPipeline);
+    models[2].init("models/viking_room/viking_room.obj", "models/viking_room/viking_room.png", context, commandBufferManager, graphicsPipeline);
 
     fullScreenQuad.init(context, commandBufferManager, graphicsPipeline);
 
@@ -74,14 +76,22 @@ void VulkanApplication::updateScene()
     auto currentTime = std::chrono::high_resolution_clock::now();
     float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
-    float scale = 10.0f;
 
-    for (int i = 0; i < models.size(); i++)
+    // Portal gun
+    float scale = 5.0f;
+    for (int i = 0; i < 2; i++)
     {
         models[i].transform.setTransformMatrix(glm::mat4(1.0f));
         models[i].transform.scale(glm::vec3(scale, scale, scale));
         models[i].transform.setRotation(glm::vec3(0, Time::time() * 45.0, 0));
     }
+
+    // Viking room
+    scale = 5.0f;
+    models[2].transform.setTransformMatrix(glm::mat4(1.0f));
+    models[2].transform.scale(glm::vec3(scale, scale, scale));
+    models[2].transform.translate(glm::vec3(0, -2, 0));
+    models[2].transform.rotate(glm::vec3(-90, -90, 0));
 }
 
 void VulkanApplication::mainLoop()

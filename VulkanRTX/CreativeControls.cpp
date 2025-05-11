@@ -19,8 +19,6 @@ void CreativeControls::handleMouseOffset(const MouseOffsetEvent& e)
     if (pitch < -89.0f) pitch = -89.0f;
 
     camera.transform.setRotation(glm::vec3(pitch, yaw, 0.0));
-
-    std::cout << pitch << ", " << yaw << std::endl;
 }
 
 void CreativeControls::handleMouseScroll(const MouseScrollEvent& e)

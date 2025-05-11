@@ -51,7 +51,7 @@ void InputManager::onMouseMove(const MouseMoveEvent& e)
 
 void InputManager::onMouseScroll(const MouseScrollEvent& e)
 {
-	std::cout << "Mouse scroll: " << e.xOffset << ", " << e.yOffset << std::endl;
+	//std::cout << "Mouse scroll: " << e.xOffset << ", " << e.yOffset << std::endl;
 }
 
 bool InputManager::isKeyPressed(KeyboardKey key) const
