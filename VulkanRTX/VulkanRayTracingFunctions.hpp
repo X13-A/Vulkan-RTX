@@ -1,0 +1,10 @@
+#pragma once
+#include "Vulkan_GLFW.hpp"
+
+extern PFN_vkCreateAccelerationStructureKHR rt_vkCreateAccelerationStructureKHR;
+extern PFN_vkDestroyAccelerationStructureKHR rt_vkDestroyAccelerationStructureKHR;
+extern PFN_vkGetAccelerationStructureBuildSizesKHR rt_vkGetAccelerationStructureBuildSizesKHR;
+extern PFN_vkCmdBuildAccelerationStructuresKHR rt_vkCmdBuildAccelerationStructuresKHR;
+extern PFN_vkGetAccelerationStructureDeviceAddressKHR rt_vkGetAccelerationStructureDeviceAddressKHR;
+
+void loadRayTracingFunctions(VkDevice device);

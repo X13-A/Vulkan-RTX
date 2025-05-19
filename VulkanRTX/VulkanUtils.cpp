@@ -309,7 +309,7 @@ void VulkanUtils::Textures::createSampler(const VulkanContext& context, VkSample
     }
 }
 
-void VulkanUtils::Buffers::createBuffer(const VulkanContext& context, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+void VulkanUtils::Buffers::createBuffer(const VulkanContext& context, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory, bool deviceAdressing)
 {
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -329,6 +329,14 @@ void VulkanUtils::Buffers::createBuffer(const VulkanContext& context, VkDeviceSi
     allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = VulkanUtils::Memory::findMemoryType(context.physicalDevice, memRequirements.memoryTypeBits, properties);
+
+    if (deviceAdressing)
+    {
+        VkMemoryAllocateFlagsInfo memoryAllocateFlagsInfo{};
+        memoryAllocateFlagsInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO;
+        memoryAllocateFlagsInfo.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR;
+        allocInfo.pNext = &memoryAllocateFlagsInfo;
+    }
 
     if (vkAllocateMemory(context.device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
     {
@@ -362,7 +370,8 @@ void VulkanUtils::Buffers::createVertexBuffer(const VulkanContext& context, Vulk
     memcpy(data, vertices.data(), (size_t)bufferSize);
     vkUnmapMemory(context.device, stagingBufferMemory);
 
-    VulkanUtils::Buffers::createBuffer(context, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
+    VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT ;
+    VulkanUtils::Buffers::createBuffer(context, bufferSize, usageFlags, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory, true);
     VulkanUtils::Buffers::copyBuffer(context, commandBuffers, stagingBuffer, vertexBuffer, bufferSize);
 
     vkDestroyBuffer(context.device, stagingBuffer, nullptr);
@@ -382,9 +391,35 @@ void VulkanUtils::Buffers::createIndexBuffer(const VulkanContext& context, Vulka
     memcpy(data, indices.data(), (size_t)bufferSize);
     vkUnmapMemory(context.device, stagingBufferMemory);
 
-    VulkanUtils::Buffers::createBuffer(context, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+    VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+    VulkanUtils::Buffers::createBuffer(context, bufferSize, usageFlags, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory, true);
     VulkanUtils::Buffers::copyBuffer(context, commandBuffers, stagingBuffer, indexBuffer, bufferSize);
 
     vkDestroyBuffer(context.device, stagingBuffer, nullptr);
     vkFreeMemory(context.device, stagingBufferMemory, nullptr);
+}
+
+void VulkanUtils::Buffers::createScratchBuffer(const VulkanContext& context, VkDeviceSize size, VkBuffer& scratchBuffer, VkDeviceMemory& scratchBufferMemory)
+{
+    VkBufferUsageFlags scratchBufferUsage =
+        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+        VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+
+    VulkanUtils::Buffers::createBuffer(
+        context,
+        size,
+        scratchBufferUsage,
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+        scratchBuffer,
+        scratchBufferMemory,
+        true);
+}
+
+VkDeviceAddress VulkanUtils::Buffers::getBufferDeviceAdress(const VulkanContext& context, VkBuffer buffer)
+{
+    VkBufferDeviceAddressInfo addressInfo{};
+    addressInfo.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+    addressInfo.buffer = buffer;
+
+    return vkGetBufferDeviceAddress(context.device, &addressInfo);
 }

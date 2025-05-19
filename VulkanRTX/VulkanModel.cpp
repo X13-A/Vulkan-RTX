@@ -61,10 +61,10 @@ void VulkanModel::init(std::string objPath, std::string texturePath, const Vulka
 
     VulkanUtils::Buffers::createVertexBuffer(context, commandBufferManager, vertices, vertexBuffer, vertexBufferMemory);
     VulkanUtils::Buffers::createIndexBuffer(context, commandBufferManager, indices, indexBuffer, indexBufferMemory);
-
     albedoTexture.init(texturePath, context, commandBufferManager);
     createUniformBuffers(context);
     createDescriptorSets(context, graphicsPipeline);
+    createBottomLevelAccelerationStructure(context, commandBufferManager);
 }
 
 void VulkanModel::createDescriptorSets(const VulkanContext& context, const VulkanGraphicsPipeline& graphicsPipeline)
@@ -135,14 +135,124 @@ void VulkanModel::createUniformBuffers(const VulkanContext& context)
 void VulkanModel::cleanup(VkDevice device)
 {
     albedoTexture.cleanup(device);
+
+    rt_vkDestroyAccelerationStructureKHR(device, blasHandle, nullptr);
+    blasHandle = VK_NULL_HANDLE;
+
     vkDestroyBuffer(device, indexBuffer, nullptr);
     vkFreeMemory(device, indexBufferMemory, nullptr);
     vkDestroyBuffer(device, vertexBuffer, nullptr);
     vkFreeMemory(device, vertexBufferMemory, nullptr);
+    vkDestroyBuffer(device, scratchBuffer, nullptr);
+    vkFreeMemory(device, scratchBufferMemory, nullptr);
+    vkDestroyBuffer(device, blasBuffer, nullptr);
+    vkFreeMemory(device, blasBufferMemory, nullptr);
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         vkDestroyBuffer(device, uniformBuffers[i], nullptr);
         vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
     }
+}
+
+void VulkanModel::createBottomLevelAccelerationStructure(
+    const VulkanContext& context,
+    VulkanCommandBufferManager& commandBufferManager)
+{
+    VkDeviceAddress vertexBufferAddress = VulkanUtils::Buffers::getBufferDeviceAdress(context, vertexBuffer);
+    VkDeviceAddress indexBufferAddress = VulkanUtils::Buffers::getBufferDeviceAdress(context, indexBuffer);
+
+    // Define geometry
+    VkAccelerationStructureGeometryKHR accelGeometry{};
+    accelGeometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
+    accelGeometry.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_KHR;
+    accelGeometry.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
+
+    // Define triangles data
+    accelGeometry.geometry.triangles.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR;
+    accelGeometry.geometry.triangles.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
+    accelGeometry.geometry.triangles.vertexData.deviceAddress = vertexBufferAddress;
+    accelGeometry.geometry.triangles.vertexStride = sizeof(VulkanVertex);
+    accelGeometry.geometry.triangles.maxVertex = static_cast<uint32_t>(vertices.size());
+    accelGeometry.geometry.triangles.indexType = VK_INDEX_TYPE_UINT32;
+    accelGeometry.geometry.triangles.indexData.deviceAddress = indexBufferAddress;
+    accelGeometry.geometry.triangles.transformData = {};
+
+    // Configure construction parameters
+    VkAccelerationStructureBuildGeometryInfoKHR buildInfo{};
+    buildInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
+    buildInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
+    buildInfo.flags = VK_BUILD_ACCELERATION_STRUCTURE_PREFER_FAST_TRACE_BIT_KHR;
+    buildInfo.geometryCount = 1;
+    buildInfo.pGeometries = &accelGeometry;
+    buildInfo.mode = VK_BUILD_ACCELERATION_STRUCTURE_MODE_BUILD_KHR;
+
+    // Get required sizes
+    uint32_t primitiveCount = static_cast<uint32_t>(indices.size() / 3);
+
+    VkAccelerationStructureBuildSizesInfoKHR sizeInfo{};
+    sizeInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_SIZES_INFO_KHR;
+    rt_vkGetAccelerationStructureBuildSizesKHR(
+        context.device,
+        VK_ACCELERATION_STRUCTURE_BUILD_TYPE_DEVICE_KHR,
+        &buildInfo,
+        &primitiveCount,
+        &sizeInfo);
+
+    // Create scratch buffer
+    VulkanUtils::Buffers::createScratchBuffer(
+        context,
+        sizeInfo.buildScratchSize,
+        scratchBuffer,
+        scratchBufferMemory);
+
+    VkDeviceAddress scratchBufferAddress = VulkanUtils::Buffers::getBufferDeviceAdress(context, scratchBuffer);
+
+    // Create BLAS buffer
+    VkBufferUsageFlags blasBufferUsage =
+        VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR |
+        VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+
+    VulkanUtils::Buffers::createBuffer(
+        context,
+        sizeInfo.accelerationStructureSize,
+        blasBufferUsage,
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+        blasBuffer,
+        blasBufferMemory,
+        true);
+
+    // Create BLAS
+    VkAccelerationStructureCreateInfoKHR createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR;
+    createInfo.buffer = blasBuffer;
+    createInfo.offset = 0;
+    createInfo.size = sizeInfo.accelerationStructureSize;
+    createInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
+
+    if (rt_vkCreateAccelerationStructureKHR(context.device, &createInfo, nullptr, &blasHandle) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Failed to create BLAS!");
+    }
+
+    buildInfo.dstAccelerationStructure = blasHandle;
+    buildInfo.scratchData.deviceAddress = scratchBufferAddress;
+
+    VkAccelerationStructureBuildRangeInfoKHR buildRangeInfo{};
+    buildRangeInfo.primitiveCount = primitiveCount;
+    buildRangeInfo.primitiveOffset = 0;
+    buildRangeInfo.firstVertex = 0;
+    buildRangeInfo.transformOffset = 0;
+
+    const VkAccelerationStructureBuildRangeInfoKHR* pBuildRangeInfo = &buildRangeInfo;
+    VkCommandBuffer commandBuffer = commandBufferManager.beginSingleTimeCommands(context.device);
+    rt_vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &buildInfo, &pBuildRangeInfo);
+    commandBufferManager.endSingleTimeCommands(context.device, context.graphicsQueue, commandBuffer);
+
+    // Get BLAS device adress
+    VkAccelerationStructureDeviceAddressInfoKHR addressInfo{};
+    addressInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR;
+    addressInfo.accelerationStructure = blasHandle;
+
+    blasBufferAddress = rt_vkGetAccelerationStructureDeviceAddressKHR(context.device, &addressInfo);
 }

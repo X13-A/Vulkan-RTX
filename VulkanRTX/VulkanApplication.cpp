@@ -23,7 +23,6 @@ void VulkanApplication::run()
     camera.transform.setRotation(glm::vec3(0, 0, 0));
     camera.transform.setPosition(glm::vec3(0, 0, 5));
     EventManager::get().sink<WindowResizeEvent>().connect <&VulkanApplication::handleWindowResize>(this);
-
     initVulkan();
     mainLoop();
     cleanup();
@@ -35,6 +34,7 @@ void VulkanApplication::initVulkan()
     context.init();
     windowManager.createSurface(context);
     context.initDevice();
+    context.loadFunctionPointers();
 
     // CommandBuffers
     commandBufferManager.createCommandPool(context);

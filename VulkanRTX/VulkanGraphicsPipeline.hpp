@@ -26,23 +26,22 @@ struct VulkanModelUBO
 class VulkanGraphicsPipeline
 {
 public:
-    VkDescriptorSetLayout geometryDescriptorSetLayout;
-    VkDescriptorSetLayout lightingDescriptorSetLayout;
-
     VkDescriptorPool descriptorPool;
 
+    VkDescriptorSetLayout geometryDescriptorSetLayout;
     VkRenderPass geometryRenderPass;
-    VkRenderPass lightingRenderPass;
-
     VkFramebuffer geometryFramebuffer;
-    // No lighting framebuffer, it renders directly to the swapchain
-
     VkPipelineLayout geometryPipelineLayout;
-    VkPipelineLayout lightingPipelineLayout;
-
     VkPipeline geometryPipeline;
+
+    VkDescriptorSetLayout lightingDescriptorSetLayout;
+    VkRenderPass lightingRenderPass;
+    VkPipelineLayout lightingPipelineLayout;
     VkPipeline lightingPipeline;
 
+    //VkPipeline rayTracingPipeline;
+    //VkPipelineLayout rayTracingPipelineLayout;
+    //VkDescriptorSetLayout rayTracingDescriptorSetLayout;
 
     VulkanGBufferManager gBufferManager;
 
@@ -57,4 +56,9 @@ public:
     VkShaderModule createShaderModule(const VulkanContext& context, const std::vector<char>& code);
     void handleResize(GLFWwindow* window, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager);
     void cleanup(VkDevice device);
+
+    //void createRayTracingDescriptorSetLayout(const VulkanContext& context);
+    //void createRayTracingPipelineLayout(const VulkanContext& context);
+    //void createRayTracingPipeline(const VulkanContext& context);
+    //void createShaderBindingTable(const VulkanContext& context);
 };

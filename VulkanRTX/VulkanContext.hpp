@@ -55,5 +55,7 @@ public:
 
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice physicalDevice) const;
 
+    void loadFunctionPointers();
+
     void cleanup();
 };

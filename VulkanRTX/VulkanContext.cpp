@@ -2,14 +2,14 @@
 #include <set>
 #include <iostream>
 #include "Constants.hpp"
-#include "VulkanSwapChainManager.hpp"#include <regex>
+#include "VulkanSwapChainManager.hpp"
 #include <regex>
+#include "VulkanRayTracingFunctions.hpp"
 
 bool QueueFamilyIndices::isComplete()
 {
     return graphicsFamily.has_value() && presentFamily.has_value();
 }
-
 
 void printColoredValidationMessage(const std::string& message, std::string titleColor, std::string bodyColor)
 {
@@ -162,7 +162,7 @@ void VulkanContext::createInstance()
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.pEngineName = "No Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_0;
+    appInfo.apiVersion = VK_API_VERSION_1_4;
 
     VkInstanceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -207,12 +207,38 @@ void VulkanContext::createLogicalDevice()
         queueCreateInfos.push_back(queueCreateInfo);
     }
 
+
     VkPhysicalDeviceFeatures deviceFeatures{};
     deviceFeatures.samplerAnisotropy = VK_TRUE;
 
+    VkPhysicalDeviceFeatures2 deviceFeatures2{};
+    deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    deviceFeatures2.features = deviceFeatures;
+
+    // Buffer device address features
+    VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures{};
+    bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
+    bufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
+
+    // Ray tracing pipeline features
+    VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipelineFeatures{};
+    rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+    rayTracingPipelineFeatures.rayTracingPipeline = VK_TRUE;
+    rayTracingPipelineFeatures.pNext = &bufferDeviceAddressFeatures;
+
+    // Acceleration structure features
+    VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures{};
+    accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+    accelerationStructureFeatures.accelerationStructure = VK_TRUE;
+    accelerationStructureFeatures.pNext = &rayTracingPipelineFeatures;
+
+    // Link the chain to deviceFeatures2
+    deviceFeatures2.pNext = &accelerationStructureFeatures;
+
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pEnabledFeatures = &deviceFeatures;
+    createInfo.pNext = &deviceFeatures2;  // Use the feature chain instead of pEnabledFeatures
+    createInfo.pEnabledFeatures = nullptr;
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
     createInfo.enabledExtensionCount = static_cast<uint32_t>(REQUIRED_DEVICE_EXTENSIONS.size());
@@ -240,15 +266,36 @@ void VulkanContext::pickPhysicalDevice()
 {
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
-    if (deviceCount == 0)
+
+    if (deviceCount == 0) 
     {
         throw std::runtime_error("failed to find GPUs with Vulkan support!");
     }
+
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
-    for (const auto& device : devices)
+    std::cout << "Available Physical Devices:\n";
+    for (const auto& device : devices) 
     {
+        VkPhysicalDeviceProperties deviceProperties;
+        vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+        std::cout << "Device: " << deviceProperties.deviceName << "\n";
+        std::cout << "  Type: ";
+        switch (deviceProperties.deviceType) 
+        {
+            case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU: std::cout << "Integrated GPU\n"; break;
+            case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU: std::cout << "Discrete GPU\n"; break;
+            case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU: std::cout << "Virtual GPU\n"; break;
+            case VK_PHYSICAL_DEVICE_TYPE_CPU: std::cout << "CPU\n"; break;
+            default: std::cout << "Other\n";
+        }
+        std::cout << "  API Version: "
+            << VK_VERSION_MAJOR(deviceProperties.apiVersion) << "."
+            << VK_VERSION_MINOR(deviceProperties.apiVersion) << "."
+            << VK_VERSION_PATCH(deviceProperties.apiVersion) << "\n";
+
         if (isDeviceSuitable(device))
         {
             physicalDevice = device;
@@ -301,6 +348,14 @@ bool VulkanContext::checkDeviceExtensionSupport(VkPhysicalDevice physicalDevice)
         requiredExtensions.erase(extension.extensionName);
     }
 
+    if (!requiredExtensions.empty()) 
+    {
+        for (const auto& ext : requiredExtensions) 
+        {
+            std::cerr << "[Missing Extension] " << ext << "\n";
+        }
+    }
+
     return requiredExtensions.empty();
 }
 
@@ -335,6 +390,11 @@ QueueFamilyIndices VulkanContext::findQueueFamilies(VkPhysicalDevice physicalDev
         i++;
     }
     return indices;
+}
+
+void VulkanContext::loadFunctionPointers()
+{
+    loadRayTracingFunctions(device);
 }
 
 void VulkanContext::cleanup()

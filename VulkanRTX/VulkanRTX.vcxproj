@@ -71,7 +71,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>%VULKAN_SDK%\Include;C:\Dev\glfw-3.4.bin.WIN64\include;$(IncludePath);$(VULKAN_SDK)\Include;C:\Dev\Libraries\tiny_obj_loader;C:\Dev\Libraries\stb_image;C:\Dev\Libraries\entt</IncludePath>
+    <IncludePath>%VULKAN_SDK%\Include;C:\Dev\glfw-3.4.bin.WIN64\include;$(IncludePath);$(VULKAN_SDK)\Include;C:\Dev\Libraries\tiny_obj_loader;C:\Dev\Libraries\stb_image;C:\Dev\Libraries\entt;C:\Dev\Libraries\volk</IncludePath>
     <LibraryPath>C:\Dev\glfw-3.4.bin.WIN64\lib-vc2022;%VULKAN_SDK%\Lib;$(LibraryPath);$(VULKAN_SDK)\Lib</LibraryPath>
     <PublicIncludeDirectories>
     </PublicIncludeDirectories>
@@ -168,6 +168,7 @@
     <ClCompile Include="VulkanGeometry.cpp" />
     <ClCompile Include="VulkanGraphicsPipeline.cpp" />
     <ClCompile Include="VulkanModel.cpp" />
+    <ClCompile Include="VulkanRayTracingFunctions.cpp" />
     <ClCompile Include="VulkanRenderer.cpp" />
     <ClCompile Include="VulkanSwapChainManager.cpp" />
     <ClCompile Include="VulkanTexture.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="VulkanGeometry.hpp" />
     <ClInclude Include="VulkanGraphicsPipeline.hpp" />
     <ClInclude Include="VulkanModel.hpp" />
+    <ClInclude Include="VulkanRayTracingFunctions.hpp" />
     <ClInclude Include="VulkanRenderer.hpp" />
     <ClInclude Include="VulkanSwapChainManager.hpp" />
     <ClInclude Include="VulkanCommandBufferManager.hpp" />

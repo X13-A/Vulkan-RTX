@@ -6,6 +6,7 @@
 #include "VulkanContext.hpp"
 #include "VulkanCommandBufferManager.hpp"
 #include "VulkanGraphicsPipeline.hpp"
+#include "VulkanRayTracingFunctions.hpp"
 
 #include <vector>
 #include "Transform.hpp"
@@ -29,10 +30,33 @@ public:
 
     Transform transform;
 
+    // Ray tracing
+    VkAccelerationStructureKHR blasHandle;
+    VkBuffer blasBuffer;
+    VkDeviceMemory blasBufferMemory;
+    VkDeviceAddress blasBufferAddress;
+
+    VkBuffer scratchBuffer;
+    VkDeviceMemory scratchBufferMemory;
+    VkDeviceAddress scratchBufferAdress;
+
 public:
     void loadObj(std::string objPath);
-    void init(std::string objPath, std::string texturePath, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanGraphicsPipeline& graphicsPipeline);
+    
+    void init(
+        std::string objPath,
+        std::string texturePath,
+        const VulkanContext& context,
+        VulkanCommandBufferManager& commandBufferManager,
+        const VulkanGraphicsPipeline& graphicsPipeline);
+
     void createDescriptorSets(const VulkanContext& context, const VulkanGraphicsPipeline& graphicsPipeline);
     void createUniformBuffers(const VulkanContext& context);
+    
     void cleanup(VkDevice device);
+
+    // New methods for ray tracing
+    void createBottomLevelAccelerationStructure(
+        const VulkanContext& context,
+        VulkanCommandBufferManager& commandBufferManager);
 };
