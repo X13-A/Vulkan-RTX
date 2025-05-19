@@ -12,8 +12,8 @@ CreativeControls::CreativeControls(Camera& camera, float moveSpeed, float rotate
 
 void CreativeControls::handleMouseOffset(const MouseOffsetEvent& e)
 {
-    yaw += e.xOffset * rotateSpeed * Time::deltaTime();
-    pitch += e.yOffset * rotateSpeed * Time::deltaTime();
+    yaw += (float) e.xOffset * rotateSpeed * (float) Time::deltaTime();
+    pitch += (float) e.yOffset * rotateSpeed * (float) Time::deltaTime();
 
     if (pitch > 89.0f) pitch = 89.0f;
     if (pitch < -89.0f) pitch = -89.0f;
@@ -23,7 +23,7 @@ void CreativeControls::handleMouseOffset(const MouseOffsetEvent& e)
 
 void CreativeControls::handleMouseScroll(const MouseScrollEvent& e)
 {
-    float fov = camera.getFOV() - e.yOffset;
+    float fov = camera.getFOV() - (float) e.yOffset;
     if (fov < 1.0f) fov = 1.0f;
     if (fov > 90.0f) fov = 90.0f;
     camera.setFOV(fov);

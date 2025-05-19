@@ -21,9 +21,9 @@ public:
     VkImageView albedoImageView;
 
 public:
-    void init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, size_t width, size_t height);
-    void createDepthResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, size_t width, size_t height);
-    void createNormalResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, size_t width, size_t height);
-    void createAlbedoResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, size_t width, size_t height);
+    void init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, uint32_t width, uint32_t height);
+    void createDepthResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, uint32_t width, uint32_t height);
+    void createNormalResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, uint32_t width, uint32_t height);
+    void createAlbedoResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, uint32_t width, uint32_t height);
     void cleanup(VkDevice device);
 };

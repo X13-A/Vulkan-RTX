@@ -1,14 +1,14 @@
 #include "VulkanGBufferManager.hpp"
 #include "VulkanUtils.hpp"
 
-void VulkanGBufferManager::init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, size_t width, size_t height)
+void VulkanGBufferManager::init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, uint32_t width, uint32_t height)
 {
     createDepthResources(context, commandBufferManager, width, height);
     createNormalResources(context, commandBufferManager, width, height);
     createAlbedoResources(context, commandBufferManager, width, height);
 }
 
-void VulkanGBufferManager::createDepthResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, size_t width, size_t height)
+void VulkanGBufferManager::createDepthResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, uint32_t width, uint32_t height)
 {
     // Depth format for the G-buffer (use a format that supports depth-stencil)
     VkFormat depthFormat = VulkanUtils::DepthStencil::findDepthFormat(context.physicalDevice);
@@ -45,7 +45,7 @@ void VulkanGBufferManager::createDepthResources(const VulkanContext& context, Vu
     );
 }
 
-void VulkanGBufferManager::createNormalResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, size_t width, size_t height)
+void VulkanGBufferManager::createNormalResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, uint32_t width, uint32_t height)
 {
     // Format for the normal image (use a format that supports RGBA color channels)
     VkFormat normalFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
@@ -82,7 +82,7 @@ void VulkanGBufferManager::createNormalResources(const VulkanContext& context, V
     );
 }
 
-void VulkanGBufferManager::createAlbedoResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, size_t width, size_t height)
+void VulkanGBufferManager::createAlbedoResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, uint32_t width, uint32_t height)
 {
     VkFormat albedoFormat = VK_FORMAT_R32G32B32A32_SFLOAT;
 
