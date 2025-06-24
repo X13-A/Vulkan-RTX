@@ -65,7 +65,7 @@ void VulkanApplication::initVulkan()
     fullScreenQuad.init(context, commandBufferManager, graphicsPipeline);
 
     // Renderer
-    renderer.createSyncObjects(context);
+    renderer.createSyncObjects(context, swapChainManager);
 
     std::cout << "VK initialization finished !" << std::endl;
 }
