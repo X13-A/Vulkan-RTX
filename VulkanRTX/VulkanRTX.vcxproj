@@ -172,6 +172,7 @@
     <ClCompile Include="VulkanRenderer.cpp" />
     <ClCompile Include="VulkanSwapChainManager.cpp" />
     <ClCompile Include="VulkanTexture.cpp" />
+    <ClCompile Include="VulkanTLAS.cpp" />
     <ClCompile Include="VulkanUtils.cpp" />
     <ClCompile Include="WindowManager.cpp" />
   </ItemGroup>
@@ -199,6 +200,7 @@
     <ClInclude Include="VulkanCommandBufferManager.hpp" />
     <ClInclude Include="VulkanContext.hpp" />
     <ClInclude Include="VulkanTexture.hpp" />
+    <ClInclude Include="VulkanTLAS.hpp" />
     <ClInclude Include="VulkanUtils.hpp" />
     <ClInclude Include="Vulkan_GLFW.hpp" />
     <ClInclude Include="WindowManager.hpp" />

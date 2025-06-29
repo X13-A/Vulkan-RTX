@@ -3,6 +3,7 @@
 #include "GLM_defines.hpp"
 #include "EventManager.hpp"
 #include "Time.hpp"
+#include "VulkanTLAS.hpp"
 
 void VulkanApplication::handleWindowResize(const WindowResizeEvent& e)
 {
@@ -62,6 +63,29 @@ void VulkanApplication::initVulkan()
     models[1].init("models/portal_gun/portal_gun_glass.obj", "textures/white.jpg", context, commandBufferManager, graphicsPipeline);
     models[2].init("models/viking_room/viking_room.obj", "models/viking_room/viking_room.png", context, commandBufferManager, graphicsPipeline);
 
+    // Fetch BLAS instances
+    std::vector<BLASInstance> instances;
+    int instanceIndex = 0;
+    for (const VulkanModel& model : models)
+    {
+        BLASInstance instance;
+        instance.blas = model.blasHandle;
+        instance.transform = model.transform.getTransformMatrix();
+        instance.instanceId = instanceIndex++;
+        instance.hitGroupIndex = 0;
+        instances.push_back(instance);
+    }
+
+    // Create TLAS
+    VkCommandBuffer commandBuffer = commandBufferManager.beginSingleTimeCommands(context.device);
+    TLASBuilder builder(context);
+    sceneTLAS = builder.createTLAS(instances, commandBuffer);
+    commandBufferManager.endSingleTimeCommands(context.device, context.graphicsQueue, commandBuffer);
+
+    builder.cleanup();
+
+
+    // Init fullscreen quad
     fullScreenQuad.init(context, commandBufferManager, graphicsPipeline);
 
     // Renderer
@@ -150,6 +174,11 @@ bool VulkanApplication::shouldTerminate() const
 
 void VulkanApplication::cleanup()
 {
+    if (sceneTLAS != nullptr)
+    {
+        TLASBuilder::destroyTLAS(context, sceneTLAS);
+    }
+
     controls->cleanup();
     delete controls;
     EventManager::get().sink<WindowResizeEvent>().disconnect<&VulkanApplication::handleWindowResize>(this);
