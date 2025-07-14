@@ -55,24 +55,30 @@ void VulkanModel::loadObj(std::string objPath)
     }
 }
 
-void VulkanModel::init(std::string objPath, std::string texturePath, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanGraphicsPipeline& graphicsPipeline)
+void VulkanModel::init(std::string objPath, std::string texturePath, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkDescriptorSetLayout geometryDescriptorSetLayout, VkDescriptorPool descriptorPool)
 {
     loadObj(objPath);
+    
+    VkBufferUsageFlags vertexUsageFlags = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+    VkMemoryPropertyFlags vertexMemoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    VulkanUtils::Buffers::createVertexBuffer(context, commandBufferManager, vertices, vertexBuffer, vertexBufferMemory, vertexUsageFlags, vertexMemoryFlags, true);
 
-    VulkanUtils::Buffers::createVertexBuffer(context, commandBufferManager, vertices, vertexBuffer, vertexBufferMemory);
-    VulkanUtils::Buffers::createIndexBuffer(context, commandBufferManager, indices, indexBuffer, indexBufferMemory);
+    VkBufferUsageFlags indexUsageFlags = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+    VkMemoryPropertyFlags indexMemoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    VulkanUtils::Buffers::createIndexBuffer(context, commandBufferManager, indices, indexBuffer, indexBufferMemory, indexUsageFlags, indexMemoryFlags, true);
+
     albedoTexture.init(texturePath, context, commandBufferManager);
     createUniformBuffers(context);
-    createDescriptorSets(context, graphicsPipeline);
-    createBottomLevelAccelerationStructure(context, commandBufferManager);
+    createDescriptorSets(context, geometryDescriptorSetLayout, descriptorPool);
+    createBLAS(context, commandBufferManager);
 }
 
-void VulkanModel::createDescriptorSets(const VulkanContext& context, const VulkanGraphicsPipeline& graphicsPipeline)
+void VulkanModel::createDescriptorSets(const VulkanContext& context, VkDescriptorSetLayout geometryDescriptorSetLayout, VkDescriptorPool descriptorPool)
 {
-    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, graphicsPipeline.geometryDescriptorSetLayout);
+    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, geometryDescriptorSetLayout);
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = graphicsPipeline.descriptorPool;
+    allocInfo.descriptorPool = descriptorPool;
     allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     allocInfo.pSetLayouts = layouts.data();
 
@@ -143,8 +149,6 @@ void VulkanModel::cleanup(VkDevice device)
     vkFreeMemory(device, indexBufferMemory, nullptr);
     vkDestroyBuffer(device, vertexBuffer, nullptr);
     vkFreeMemory(device, vertexBufferMemory, nullptr);
-    vkDestroyBuffer(device, scratchBuffer, nullptr);
-    vkFreeMemory(device, scratchBufferMemory, nullptr);
     vkDestroyBuffer(device, blasBuffer, nullptr);
     vkFreeMemory(device, blasBufferMemory, nullptr);
 
@@ -155,7 +159,7 @@ void VulkanModel::cleanup(VkDevice device)
     }
 }
 
-void VulkanModel::createBottomLevelAccelerationStructure(
+void VulkanModel::createBLAS(
     const VulkanContext& context,
     VulkanCommandBufferManager& commandBufferManager)
 {
@@ -173,9 +177,11 @@ void VulkanModel::createBottomLevelAccelerationStructure(
     accelGeometry.geometry.triangles.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
     accelGeometry.geometry.triangles.vertexData.deviceAddress = vertexBufferAddress;
     accelGeometry.geometry.triangles.vertexStride = sizeof(VulkanVertex);
-    accelGeometry.geometry.triangles.maxVertex = static_cast<uint32_t>(vertices.size());
+    accelGeometry.geometry.triangles.maxVertex = static_cast<uint32_t>(vertices.size()) - 1;
     accelGeometry.geometry.triangles.indexType = VK_INDEX_TYPE_UINT32;
     accelGeometry.geometry.triangles.indexData.deviceAddress = indexBufferAddress;
+    accelGeometry.geometry.triangles.transformData.deviceAddress = 0;
+    accelGeometry.geometry.triangles.transformData.hostAddress = nullptr;
     accelGeometry.geometry.triangles.transformData = {};
 
     // Configure construction parameters
@@ -200,6 +206,9 @@ void VulkanModel::createBottomLevelAccelerationStructure(
         &sizeInfo);
 
     // Create scratch buffer
+    VkBuffer scratchBuffer;
+    VkDeviceMemory scratchBufferMemory;
+
     VulkanUtils::Buffers::createScratchBuffer(
         context,
         sizeInfo.buildScratchSize,
@@ -249,10 +258,18 @@ void VulkanModel::createBottomLevelAccelerationStructure(
     rt_vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &buildInfo, &pBuildRangeInfo);
     commandBufferManager.endSingleTimeCommands(context.device, context.graphicsQueue, commandBuffer);
 
-    // Get BLAS device adress
-    VkAccelerationStructureDeviceAddressInfoKHR addressInfo{};
-    addressInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_DEVICE_ADDRESS_INFO_KHR;
-    addressInfo.accelerationStructure = blasHandle;
+    // Cleanup scratch buffer
+    vkDestroyBuffer(context.device, scratchBuffer, nullptr);
+    vkFreeMemory(context.device, scratchBufferMemory, nullptr);
 
-    blasBufferAddress = rt_vkGetAccelerationStructureDeviceAddressKHR(context.device, &addressInfo);
+    if (debug_vkSetDebugUtilsObjectNameEXT)
+    {
+        // Name the BLAS for debug
+        VkDebugUtilsObjectNameInfoEXT nameInfo{};
+        nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+        nameInfo.objectType = VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR;
+        nameInfo.objectHandle = (uint64_t)blasHandle;
+        nameInfo.pObjectName = name.c_str();
+        debug_vkSetDebugUtilsObjectNameEXT(context.device, &nameInfo);
+    }
 }

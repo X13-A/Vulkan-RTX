@@ -1,6 +1,5 @@
 struct FragmentInput 
 {
-    float3 fragColor : COLOR0;
     float2 fragTexCoord : TEXCOORD0;
     float3 fragNormal : TEXCOORD1;
 };

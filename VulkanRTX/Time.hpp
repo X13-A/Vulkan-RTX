@@ -1,10 +1,12 @@
 #pragma once
+#include <stdint.h>
 
 class Time
 {
 private:
     static double lastTime;
     static double _deltaTime;
+    static uint32_t frameCount;
 
 public:
     /// <summary>
@@ -23,4 +25,6 @@ public:
     static double time();
 
     static double FPS();
+
+    static unsigned int getFrameCount();
 };

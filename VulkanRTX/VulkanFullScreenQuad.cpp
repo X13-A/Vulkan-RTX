@@ -2,29 +2,33 @@
 #include <stdexcept>
 
 
-void VulkanFullScreenQuad::init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanGraphicsPipeline& graphicsPipeline)
+void VulkanFullScreenQuad::init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanGraphicsPipelineManager& graphicsPipeline)
 {
     vertices = {
-        // Position                      // Color                     // Texture Coordinates // Normal
-        { glm::vec3(-1.0f,  1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f) },
-        { glm::vec3(1.0f,  1.0f, 0.0f),  glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f) },
-        { glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f) },
+        // Position                      // Texture Coordinates // Normal
+        { glm::vec3(-1.0f,  1.0f, 0.0f), glm::vec2(0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f) },
+        { glm::vec3(1.0f,  1.0f, 0.0f),  glm::vec2(1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f) },
+        { glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec2(0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f) },
 
-        { glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f) },
-        { glm::vec3(1.0f,  1.0f, 0.0f),  glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f) },
-        { glm::vec3(1.0f, -1.0f, 0.0f),  glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f) }
+        { glm::vec3(-1.0f, -1.0f, 0.0f), glm::vec2(0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f) },
+        { glm::vec3(1.0f,  1.0f, 0.0f),  glm::vec2(1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f) },
+        { glm::vec3(1.0f, -1.0f, 0.0f),  glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f) }
     };
 
     VulkanUtils::Textures::createSampler(context, &gBufferSampler);
-    VulkanUtils::Buffers::createVertexBuffer(context, commandBufferManager, vertices, vertexBuffer, vertexBufferMemory);
+
+    VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT ;
+    VkMemoryPropertyFlags memoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    VulkanUtils::Buffers::createVertexBuffer(context, commandBufferManager, vertices, vertexBuffer, vertexBufferMemory, usageFlags, memoryFlags);
+
     createUniformBuffers(context);
     createDescriptorSets(context, graphicsPipeline);
     writeDescriptorSets(context, graphicsPipeline);
 }
 
-void VulkanFullScreenQuad::createDescriptorSets(const VulkanContext& context, const VulkanGraphicsPipeline& graphicsPipeline)
+void VulkanFullScreenQuad::createDescriptorSets(const VulkanContext& context, const VulkanGraphicsPipelineManager& graphicsPipeline)
 {
-    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, graphicsPipeline.lightingDescriptorSetLayout);
+    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, graphicsPipeline.lightingPipeline.getDescriptorSetLayout());
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = graphicsPipeline.descriptorPool;
@@ -38,7 +42,7 @@ void VulkanFullScreenQuad::createDescriptorSets(const VulkanContext& context, co
     }
 }
 
-void VulkanFullScreenQuad::writeDescriptorSets(const VulkanContext& context, const VulkanGraphicsPipeline& graphicsPipeline)
+void VulkanFullScreenQuad::writeDescriptorSets(const VulkanContext& context, const VulkanGraphicsPipelineManager& graphicsPipeline)
 {
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {

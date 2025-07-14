@@ -158,6 +158,7 @@
     <ClCompile Include="GBufferManager.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Scene..cpp" />
     <ClCompile Include="Time.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Utils.cpp" />
@@ -166,9 +167,12 @@
     <ClCompile Include="VulkanContext.cpp" />
     <ClCompile Include="VulkanFullScreenQuad.cpp" />
     <ClCompile Include="VulkanGeometry.cpp" />
-    <ClCompile Include="VulkanGraphicsPipeline.cpp" />
+    <ClCompile Include="VulkanGeometryPipeline.cpp" />
+    <ClCompile Include="VulkanGraphicsPipelineManager.cpp" />
+    <ClCompile Include="VulkanLightingPipeline.cpp" />
     <ClCompile Include="VulkanModel.cpp" />
-    <ClCompile Include="VulkanRayTracingFunctions.cpp" />
+    <ClCompile Include="VulkanExtensionFunctions.cpp" />
+    <ClCompile Include="VulkanRayTracingPipeline.cpp" />
     <ClCompile Include="VulkanRenderer.cpp" />
     <ClCompile Include="VulkanSwapChainManager.cpp" />
     <ClCompile Include="VulkanTexture.cpp" />
@@ -185,6 +189,7 @@
     <ClInclude Include="EventManager.hpp" />
     <ClInclude Include="GLM_defines.hpp" />
     <ClInclude Include="InputManager.hpp" />
+    <ClInclude Include="Scene.hpp" />
     <ClInclude Include="Time.hpp" />
     <ClInclude Include="Transform.hpp" />
     <ClInclude Include="Utils.hpp" />
@@ -192,9 +197,12 @@
     <ClInclude Include="VulkanFullScreenQuad.hpp" />
     <ClInclude Include="VulkanGBufferManager.hpp" />
     <ClInclude Include="VulkanGeometry.hpp" />
-    <ClInclude Include="VulkanGraphicsPipeline.hpp" />
+    <ClInclude Include="VulkanGeometryPipeline.hpp" />
+    <ClInclude Include="VulkanGraphicsPipelineManager.hpp" />
+    <ClInclude Include="VulkanLightingPipeline.hpp" />
     <ClInclude Include="VulkanModel.hpp" />
-    <ClInclude Include="VulkanRayTracingFunctions.hpp" />
+    <ClInclude Include="VulkanExtensionFunctions.hpp" />
+    <ClInclude Include="VulkanRayTracingPipeline.hpp" />
     <ClInclude Include="VulkanRenderer.hpp" />
     <ClInclude Include="VulkanSwapChainManager.hpp" />
     <ClInclude Include="VulkanCommandBufferManager.hpp" />
@@ -210,6 +218,10 @@
     <None Include="shaders\geometry_vert.slang" />
     <None Include="shaders\lighting_frag.slang" />
     <None Include="shaders\lighting_vert.slang" />
+    <None Include="shaders\ray_closesthit.slang" />
+    <None Include="shaders\ray_common.slang" />
+    <None Include="shaders\ray_gen.slang" />
+    <None Include="shaders\ray_miss.slang" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

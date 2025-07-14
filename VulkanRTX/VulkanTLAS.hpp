@@ -1,8 +1,12 @@
+#pragma once;
+
 #include <vulkan/vulkan.h>
 #include <vector>
 #include "GLM_defines.hpp"
-#include "VulkanRayTracingFunctions.hpp"
+#include "VulkanExtensionFunctions.hpp"
 #include "VulkanContext.hpp"
+#include "VulkanCommandBufferManager.hpp"
+#include "VulkanModel.hpp"
 
 struct BLASInstance 
 {
@@ -13,12 +17,9 @@ struct BLASInstance
     uint32_t hitGroupIndex;
 };
 
-class TLASBuilder 
+class VulkanTLAS 
 {
 private:
-    const VulkanContext& context;
-
-    // TLAS resources
     VkAccelerationStructureKHR tlas;
     VkBuffer tlasBuffer;
     VkDeviceMemory tlasMemory;
@@ -28,21 +29,18 @@ private:
     VkDeviceMemory scratchMemory;
 
 public:
-    TLASBuilder(const VulkanContext& context) : context(context) {}
+    void createTLAS(const VulkanContext& context, const std::vector<VulkanModel>& models, VulkanCommandBufferManager& commandBufferManager);
 
-    VkAccelerationStructureKHR createTLAS(const std::vector<BLASInstance>& instances, VkCommandBuffer commandBuffer);
+    void cleanup(const VulkanContext& context);
 
-    void cleanup();
-
-    static void destroyTLAS(const VulkanContext& context, VkAccelerationStructureKHR& tlas);
-
+    VkAccelerationStructureKHR getTLAS() const;
 private:
-    void createInstanceBuffer(const std::vector<BLASInstance>& instances);
-    VkAccelerationStructureBuildSizesInfoKHR getBuildSizes(uint32_t instanceCount);
+    void createInstanceBuffer(const VulkanContext& context, const std::vector<BLASInstance>& instances);
+    VkAccelerationStructureBuildSizesInfoKHR getBuildSizes(const VulkanContext& context, uint32_t instanceCount);
 
-    void createAccelerationStructure(VkDeviceSize size);
+    void createAccelerationStructure(const VulkanContext& context, VkDeviceSize size);
 
-    void buildTLAS(uint32_t instanceCount, VkCommandBuffer commandBuffer);
+    void buildTLAS(const VulkanContext& context, uint32_t instanceCount, VkCommandBuffer commandBuffer);
 
-    uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+    uint32_t findMemoryType(const VulkanContext& context, uint32_t typeFilter, VkMemoryPropertyFlags properties);
 };

@@ -1,0 +1,30 @@
+#pragma once
+#include "Vulkan_GLFW.hpp"
+#include "VulkanContext.hpp"
+#include "VulkanCommandBufferManager.hpp"
+#include "VulkanSwapChainManager.hpp"
+
+class VulkanLightingPipeline
+{
+private:
+    VkDescriptorSetLayout descriptorSetLayout;
+    VkRenderPass renderPass;
+    VkPipelineLayout pipelineLayout;
+    VkPipeline pipeline;
+
+public:
+    void init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager);
+    void cleanup(VkDevice device);
+    void handleResize(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager);
+    VkDescriptorSetLayout getDescriptorSetLayout() const;
+    VkRenderPass getRenderPass() const;
+    VkPipeline getPipeline() const;
+    VkPipelineLayout getPipelineLayout() const;
+
+private:
+    void createDescriptorSetLayouts(const VulkanContext& context);
+    void createDescriptorPool(const VulkanContext& context, size_t modelCount, size_t fullScreenQuadCount);
+    void createRenderPasses(const VulkanContext& context, VkFormat swapChainImageFormat);
+    void createPipelineLayouts(const VulkanContext& context);
+    void createPipeline(const VulkanContext& context, const VulkanSwapChainManager& swapChain);
+};

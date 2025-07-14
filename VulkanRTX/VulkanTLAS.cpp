@@ -1,28 +1,51 @@
 #include "VulkanTLAS.hpp"
 #include <stdexcept>
 #include "VulkanUtils.hpp"
+#include <iostream>
 
-VkAccelerationStructureKHR TLASBuilder::createTLAS(const std::vector<BLASInstance>& instances, VkCommandBuffer commandBuffer)
+void VulkanTLAS::createTLAS(const VulkanContext& context, const std::vector<VulkanModel>& models, VulkanCommandBufferManager& commandBufferManager)
 {
-    createInstanceBuffer(instances);
+    // Fetch BLAS instances
+    std::vector<BLASInstance> BLASintances;
+    int instanceIndex = 0;
+    for (const VulkanModel& model : models)
+    {
+        BLASInstance instance;
+        instance.blas = model.blasHandle;
+        instance.transform = model.transform.getTransformMatrix();
+        instance.instanceId = instanceIndex++;
+        instance.hitGroupIndex = RT_CLOSEST_HIT_GENERAL_SHADER_INDEX;
+        BLASintances.push_back(instance);
+    }
 
-    VkAccelerationStructureBuildSizesInfoKHR buildSizes = getBuildSizes(instances.size());
+    createInstanceBuffer(context, BLASintances);
+
+    VkAccelerationStructureBuildSizesInfoKHR buildSizes = getBuildSizes(context, BLASintances.size());
 
     VkBufferUsageFlags usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
     VulkanUtils::Buffers::createBuffer(context, buildSizes.accelerationStructureSize, usage, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, tlasBuffer, tlasMemory, true);
 
     VulkanUtils::Buffers::createScratchBuffer(context, buildSizes.buildScratchSize, scratchBuffer, scratchMemory);
 
-    createAccelerationStructure(buildSizes.accelerationStructureSize);
+    createAccelerationStructure(context, buildSizes.accelerationStructureSize);
 
-    buildTLAS(instances.size(), commandBuffer);
+    VkCommandBuffer commandBuffer = commandBufferManager.beginSingleTimeCommands(context.device);
+    buildTLAS(context, BLASintances.size(), commandBuffer);
+    commandBufferManager.endSingleTimeCommands(context.device, context.graphicsQueue, commandBuffer);
 
-    VkAccelerationStructureKHR result = tlas;
-    tlas = VK_NULL_HANDLE;
-    return result;
+    if (debug_vkSetDebugUtilsObjectNameEXT)
+    {
+        // Name the TLAS for debug
+        VkDebugUtilsObjectNameInfoEXT nameInfo{};
+        nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+        nameInfo.objectType = VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR;
+        nameInfo.objectHandle = (uint64_t)tlas;
+        nameInfo.pObjectName = "Scene TLAS";
+        debug_vkSetDebugUtilsObjectNameEXT(context.device, &nameInfo);
+    }
 }
 
-void TLASBuilder::createInstanceBuffer(const std::vector<BLASInstance>& instances)
+void VulkanTLAS::createInstanceBuffer(const VulkanContext& context, const std::vector<BLASInstance>& instances)
 {
     VkDeviceSize bufferSize = sizeof(VkAccelerationStructureInstanceKHR) * instances.size();
     VkBufferUsageFlags usage = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
@@ -42,14 +65,18 @@ void TLASBuilder::createInstanceBuffer(const std::vector<BLASInstance>& instance
         addressInfo.accelerationStructure = instance.blas;
         VkDeviceAddress blasAddress = rt_vkGetAccelerationStructureDeviceAddressKHR(context.device, &addressInfo);
 
-        // Convert glm::mat4 to VkTransformMatrixKHR
-        // TODO: double check this
-        glm::mat4 transposed = glm::transpose(instance.transform);
-        memcpy(&instanceData[i].transform, &transposed, sizeof(VkTransformMatrixKHR));
+        // TODO: use transforms
+        VkTransformMatrixKHR identityMatrix = 
+        {
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f
+        };
+        memcpy(&instanceData[i].transform, &identityMatrix, sizeof(VkTransformMatrixKHR));
 
         instanceData[i].instanceCustomIndex = instance.instanceId;
         instanceData[i].mask = 0xFF; // Visible to all rays
-        instanceData[i].instanceShaderBindingTableRecordOffset = instance.hitGroupIndex;
+        instanceData[i].instanceShaderBindingTableRecordOffset = 0;
         instanceData[i].flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
         instanceData[i].accelerationStructureReference = blasAddress;
     }
@@ -57,7 +84,7 @@ void TLASBuilder::createInstanceBuffer(const std::vector<BLASInstance>& instance
     vkUnmapMemory(context.device, instanceMemory);
 }
 
-VkAccelerationStructureBuildSizesInfoKHR TLASBuilder::getBuildSizes(uint32_t instanceCount)
+VkAccelerationStructureBuildSizesInfoKHR VulkanTLAS::getBuildSizes(const VulkanContext& context, uint32_t instanceCount)
 {
     VkAccelerationStructureGeometryKHR geometry{};
     geometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
@@ -90,7 +117,7 @@ VkAccelerationStructureBuildSizesInfoKHR TLASBuilder::getBuildSizes(uint32_t ins
     return buildSizes;
 }
 
-void TLASBuilder::createAccelerationStructure(VkDeviceSize size)
+void VulkanTLAS::createAccelerationStructure(const VulkanContext& context, VkDeviceSize size)
 {
     VkAccelerationStructureCreateInfoKHR createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR;
@@ -102,7 +129,7 @@ void TLASBuilder::createAccelerationStructure(VkDeviceSize size)
     rt_vkCreateAccelerationStructureKHR(context.device, &createInfo, nullptr, &tlas);
 }
 
-void TLASBuilder::buildTLAS(uint32_t instanceCount, VkCommandBuffer commandBuffer)
+void VulkanTLAS::buildTLAS(const VulkanContext& context, uint32_t instanceCount, VkCommandBuffer commandBuffer)
 {
     VkAccelerationStructureGeometryKHR geometry{};
     geometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
@@ -139,20 +166,9 @@ void TLASBuilder::buildTLAS(uint32_t instanceCount, VkCommandBuffer commandBuffe
     const VkAccelerationStructureBuildRangeInfoKHR* pBuildRange = &buildRange;
 
     rt_vkCmdBuildAccelerationStructuresKHR(commandBuffer, 1, &buildInfo, &pBuildRange);
-
-    // Memory barrier
-    VkMemoryBarrier barrier{};
-    barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-    barrier.srcAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR;
-    barrier.dstAccessMask = VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
-
-    vkCmdPipelineBarrier(commandBuffer,
-        VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR,
-        VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR,
-        0, 1, &barrier, 0, nullptr, 0, nullptr);
 }
 
-uint32_t TLASBuilder::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+uint32_t VulkanTLAS::findMemoryType(const VulkanContext& context, uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {
     VkPhysicalDeviceMemoryProperties memProperties;
     vkGetPhysicalDeviceMemoryProperties(context.physicalDevice, &memProperties);
@@ -168,16 +184,12 @@ uint32_t TLASBuilder::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags 
     throw std::runtime_error("Failed to find suitable memory type!");
 }
 
-void TLASBuilder::destroyTLAS(const VulkanContext& context, VkAccelerationStructureKHR& tlas)
+VkAccelerationStructureKHR VulkanTLAS::getTLAS() const
 {
-    if (tlas != VK_NULL_HANDLE) 
-    {
-        rt_vkDestroyAccelerationStructureKHR(context.device, tlas, nullptr);
-        tlas = VK_NULL_HANDLE;
-    }
+    return tlas;
 }
 
-void TLASBuilder::cleanup()
+void VulkanTLAS::cleanup(const VulkanContext& context)
 {
     // Acceleration structure
     if (tlas != VK_NULL_HANDLE) 

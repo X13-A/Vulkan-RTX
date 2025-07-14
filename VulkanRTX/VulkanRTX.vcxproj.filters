@@ -39,7 +39,7 @@
     <ClCompile Include="VulkanGeometry.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="VulkanGraphicsPipeline.cpp">
+    <ClCompile Include="VulkanGraphicsPipelineManager.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Utils.cpp">
@@ -84,10 +84,22 @@
     <ClCompile Include="Time.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="VulkanRayTracingFunctions.cpp">
+    <ClCompile Include="VulkanExtensionFunctions.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="VulkanTLAS.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanRayTracingPipeline.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene..cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanGeometryPipeline.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanLightingPipeline.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
@@ -116,7 +128,7 @@
     <ClInclude Include="VulkanGeometry.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanGraphicsPipeline.hpp">
+    <ClInclude Include="VulkanGraphicsPipelineManager.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Utils.hpp">
@@ -167,10 +179,22 @@
     <ClInclude Include="Time.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanRayTracingFunctions.hpp">
+    <ClInclude Include="VulkanExtensionFunctions.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="VulkanTLAS.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanRayTracingPipeline.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanGeometryPipeline.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanLightingPipeline.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
@@ -185,6 +209,18 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="shaders\lighting_vert.slang">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\ray_common.slang">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\ray_gen.slang">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\ray_miss.slang">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="shaders\ray_closesthit.slang">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

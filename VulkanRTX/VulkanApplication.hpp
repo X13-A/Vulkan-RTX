@@ -1,6 +1,6 @@
 #include "VulkanContext.hpp"
 #include "VulkanSwapChainManager.hpp"
-#include "VulkanGraphicsPipeline.hpp"
+#include "VulkanGraphicsPipelineManager.hpp"
 #include "VulkanModel.hpp"
 #include "VulkanRenderer.hpp"
 #include "WindowManager.hpp"
@@ -10,6 +10,7 @@
 #include "Camera.hpp"
 #include "AllEvents.hpp"
 #include "CreativeControls.hpp"
+#include "VulkanTLAS.hpp"
 
 class VulkanApplication
 {
@@ -23,13 +24,13 @@ private:
     VulkanContext context;
     VulkanSwapChainManager swapChainManager;
     VulkanCommandBufferManager commandBufferManager;
-    VulkanGraphicsPipeline graphicsPipeline;
-    std::vector<VulkanModel> models;
+    VulkanGraphicsPipelineManager graphicsPipelineManager;
+    
     VulkanFullScreenQuad fullScreenQuad;
+    VulkanTLAS sceneTLAS;
+    std::vector<BLASInstance> BLASintances;
 
     VulkanRenderer renderer;
-
-    VkAccelerationStructureKHR sceneTLAS;
 
     std::chrono::time_point<std::chrono::high_resolution_clock> lastTime;
     int frameCount = 0;
@@ -44,8 +45,6 @@ private:
     void initVulkan();
 
     void handleWindowResize(const WindowResizeEvent& e);
-
-    void updateScene();
 
     void mainLoop();
 

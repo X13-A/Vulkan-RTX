@@ -3,6 +3,7 @@
 
 double Time::lastTime = 0;
 double Time::_deltaTime = 0;
+uint32_t Time::frameCount = 0;
 
 double Time::deltaTime()
 {
@@ -19,9 +20,15 @@ void Time::update()
     double currentTime = Time::time();
     _deltaTime = currentTime - lastTime;
     lastTime = currentTime;
+    frameCount++;
 }
 
 double Time::FPS()
 {
     return 1.0f / Time::deltaTime();
+}
+
+uint32_t Time::getFrameCount()
+{
+    return frameCount;
 }

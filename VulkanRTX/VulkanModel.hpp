@@ -5,15 +5,23 @@
 #include "VulkanTexture.hpp"
 #include "VulkanContext.hpp"
 #include "VulkanCommandBufferManager.hpp"
-#include "VulkanGraphicsPipeline.hpp"
-#include "VulkanRayTracingFunctions.hpp"
-
+#include "VulkanExtensionFunctions.hpp"
+#include "Vulkan_GLFW.hpp"
 #include <vector>
 #include "Transform.hpp"
+
+struct VulkanModelUBO
+{
+    alignas(16) glm::mat4 modelMat;
+    alignas(16) glm::mat4 viewMat;
+    alignas(16) glm::mat4 projMat;
+    alignas(16) glm::mat4 normalMat;
+};
 
 class VulkanModel
 {
 public:
+    std::string name;
     std::vector<VulkanVertex> vertices;
     std::vector<uint32_t> indices;
     VkBuffer vertexBuffer;
@@ -36,27 +44,17 @@ public:
     VkDeviceMemory blasBufferMemory;
     VkDeviceAddress blasBufferAddress;
 
-    VkBuffer scratchBuffer;
-    VkDeviceMemory scratchBufferMemory;
-    VkDeviceAddress scratchBufferAdress;
-
 public:
     void loadObj(std::string objPath);
     
-    void init(
-        std::string objPath,
-        std::string texturePath,
-        const VulkanContext& context,
-        VulkanCommandBufferManager& commandBufferManager,
-        const VulkanGraphicsPipeline& graphicsPipeline);
-
-    void createDescriptorSets(const VulkanContext& context, const VulkanGraphicsPipeline& graphicsPipeline);
+    void init(std::string objPath, std::string texturePath, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkDescriptorSetLayout geometryDescriptorSetLayout, VkDescriptorPool descriptorPool);
+    void createDescriptorSets(const VulkanContext& context, VkDescriptorSetLayout geometryDescriptorSetLayout, VkDescriptorPool descriptorPool);
     void createUniformBuffers(const VulkanContext& context);
     
     void cleanup(VkDevice device);
 
     // New methods for ray tracing
-    void createBottomLevelAccelerationStructure(
+    void createBLAS(
         const VulkanContext& context,
         VulkanCommandBufferManager& commandBufferManager);
 };

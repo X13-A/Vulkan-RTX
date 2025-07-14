@@ -1,5 +1,6 @@
 #include "VulkanCommandBufferManager.hpp"
 #include <stdexcept>
+#include <iostream>
 
 VkCommandBuffer VulkanCommandBufferManager::beginSingleTimeCommands(VkDevice device) const
 {
@@ -17,7 +18,6 @@ VkCommandBuffer VulkanCommandBufferManager::beginSingleTimeCommands(VkDevice dev
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
     vkBeginCommandBuffer(commandBuffer, &beginInfo);
-
     return commandBuffer;
 }
 
@@ -32,7 +32,6 @@ void VulkanCommandBufferManager::endSingleTimeCommands(VkDevice device, VkQueue 
 
     vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
     vkQueueWaitIdle(graphicsQueue);
-
     vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
 }
 

@@ -1,8 +1,13 @@
 #pragma once
 #include "VulkanGeometry.hpp"
 #include "VulkanContext.hpp"
-#include "VulkanGraphicsPipeline.hpp"
+#include "VulkanGraphicsPipelineManager.hpp"
 #include "VulkanCommandBufferManager.hpp"
+
+struct VulkanFullScreenQuadUBO
+{
+	float time; // TODO: alignas() ?
+};
 
 class VulkanFullScreenQuad
 {
@@ -19,9 +24,9 @@ public:
 	VkSampler gBufferSampler;
 
 public:
-	void init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanGraphicsPipeline& graphicsPipeline);
-	void createDescriptorSets(const VulkanContext& context, const VulkanGraphicsPipeline& graphicsPipeline);
-	void writeDescriptorSets(const VulkanContext& context, const VulkanGraphicsPipeline& graphicsPipeline);
+	void init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanGraphicsPipelineManager& graphicsPipeline);
+	void createDescriptorSets(const VulkanContext& context, const VulkanGraphicsPipelineManager& graphicsPipeline);
+	void writeDescriptorSets(const VulkanContext& context, const VulkanGraphicsPipelineManager& graphicsPipeline);
 	void createUniformBuffers(const VulkanContext& context);
 	void cleanup(VkDevice device);
 };

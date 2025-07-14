@@ -1,10 +1,10 @@
-#include "VulkanContext.hpp"
+﻿#include "VulkanContext.hpp"
 #include <set>
 #include <iostream>
 #include "Constants.hpp"
 #include "VulkanSwapChainManager.hpp"
 #include <regex>
-#include "VulkanRayTracingFunctions.hpp"
+#include "VulkanExtensionFunctions.hpp"
 
 bool QueueFamilyIndices::isComplete()
 {
@@ -164,9 +164,26 @@ void VulkanContext::createInstance()
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_4;
 
+
+
     VkInstanceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.pApplicationInfo = &appInfo;
+
+    VkValidationFeatureEnableEXT enabledValidationFeatures[] =
+    {
+        VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT,
+    };
+
+    VkValidationFeaturesEXT validationFeatures{};
+    validationFeatures.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+    validationFeatures.enabledValidationFeatureCount = sizeof(enabledValidationFeatures) / sizeof(VkValidationFeatureEnableEXT);
+    validationFeatures.pEnabledValidationFeatures = enabledValidationFeatures;
+
+    if (ENABLE_VALIDATION_LAYERS) 
+    {
+        createInfo.pNext = &validationFeatures;
+    }
 
     auto extensions = getRequiredExtensions();
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
@@ -197,6 +214,7 @@ void VulkanContext::createLogicalDevice()
     std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
     float queuePriority = 1.0f;
+
     for (uint32_t queueFamily : uniqueQueueFamilies)
     {
         VkDeviceQueueCreateInfo queueCreateInfo{};
@@ -207,37 +225,88 @@ void VulkanContext::createLogicalDevice()
         queueCreateInfos.push_back(queueCreateInfo);
     }
 
-
     VkPhysicalDeviceFeatures deviceFeatures{};
     deviceFeatures.samplerAnisotropy = VK_TRUE;
+
+    // RT validation environment check
+    char* envVar = nullptr;
+    size_t envVarSize = 0;
+    errno_t err = _dupenv_s(&envVar, &envVarSize, "NV_ALLOW_RAYTRACING_VALIDATION");
+
+    bool rtValidationEnabled = false;
+    if (err == 0 && envVar != nullptr)
+    {
+        rtValidationEnabled = (std::string(envVar) == "1");
+        free(envVar);
+    }
+
+    if (!rtValidationEnabled)
+    {
+        std::cerr << "Ray tracing validation disabled (set NV_ALLOW_RAYTRACING_VALIDATION=1 to enable)" << std::endl;
+    }
+
+    // Build feature chain
+    VkPhysicalDeviceRayTracingValidationFeaturesNV validationFeatures{};
+    validationFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_VALIDATION_FEATURES_NV;
+    validationFeatures.pNext = nullptr;
+
+    VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures{};
+    bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
+    bufferDeviceAddressFeatures.pNext = &validationFeatures;
+
+    VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipelineFeatures{};
+    rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+    rayTracingPipelineFeatures.pNext = &bufferDeviceAddressFeatures;
+
+    VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures{};
+    accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+    accelerationStructureFeatures.pNext = &rayTracingPipelineFeatures;
 
     VkPhysicalDeviceFeatures2 deviceFeatures2{};
     deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
     deviceFeatures2.features = deviceFeatures;
+    deviceFeatures2.pNext = &accelerationStructureFeatures;
 
-    // Buffer device address features
-    VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures{};
-    bufferDeviceAddressFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
+    // Query features with the FULL chain
+    vkGetPhysicalDeviceFeatures2(physicalDevice, &deviceFeatures2);
+
+    // Check feature support BEFORE enabling
+    if (!accelerationStructureFeatures.accelerationStructure)
+    {
+        throw std::runtime_error("Acceleration structure feature not supported!");
+    }
+    if (!rayTracingPipelineFeatures.rayTracingPipeline)
+    {
+        throw std::runtime_error("Ray tracing pipeline feature not supported!");
+    }
+    if (!bufferDeviceAddressFeatures.bufferDeviceAddress)
+    {
+        throw std::runtime_error("Buffer device address feature not supported!");
+    }
+    if (!validationFeatures.rayTracingValidation)
+    {
+        std::cerr << "RT validation features are not available." << std::endl;
+    }
+
+    // Enable required features AFTER validation
+    accelerationStructureFeatures.accelerationStructure = VK_TRUE;
+    rayTracingPipelineFeatures.rayTracingPipeline = VK_TRUE;
     bufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
 
-    // Ray tracing pipeline features
-    VkPhysicalDeviceRayTracingPipelineFeaturesKHR rayTracingPipelineFeatures{};
-    rayTracingPipelineFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
-    rayTracingPipelineFeatures.rayTracingPipeline = VK_TRUE;
-    rayTracingPipelineFeatures.pNext = &bufferDeviceAddressFeatures;
-
-    // Acceleration structure features
-    VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructureFeatures{};
-    accelerationStructureFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
-    accelerationStructureFeatures.accelerationStructure = VK_TRUE;
-    accelerationStructureFeatures.pNext = &rayTracingPipelineFeatures;
-
-    // Link the chain to deviceFeatures2
-    deviceFeatures2.pNext = &accelerationStructureFeatures;
+    // Only enable RT validation if supported AND environment variable is set
+    if (validationFeatures.rayTracingValidation && rtValidationEnabled)
+    {
+        validationFeatures.rayTracingValidation = VK_TRUE;
+        std::cout << "Ray tracing validation enabled!" << std::endl;
+    }
+    else
+    {
+        validationFeatures.rayTracingValidation = VK_FALSE;
+    }
 
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pNext = &deviceFeatures2;  // Use the feature chain instead of pEnabledFeatures
+    createInfo.pNext = &deviceFeatures2;  // Feature chain already built
     createInfo.pEnabledFeatures = nullptr;
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
@@ -253,6 +322,7 @@ void VulkanContext::createLogicalDevice()
     {
         createInfo.enabledLayerCount = 0;
     }
+
     if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create logical device!");
@@ -308,6 +378,20 @@ void VulkanContext::pickPhysicalDevice()
         throw std::runtime_error("failed to find a suitable GPU!");
     }
     std::cout << "Successfully found suitable GPU" << std::endl;
+
+    VkPhysicalDeviceProperties props;
+    vkGetPhysicalDeviceProperties(physicalDevice, &props);
+    std::cout << "SELECTED GPU: " << props.deviceName << " (Type: " << props.deviceType << ")" << std::endl;
+
+    VkPhysicalDeviceMemoryProperties memProps;
+    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProps);
+    for (uint32_t i = 0; i < memProps.memoryHeapCount; i++) 
+    {
+        if (memProps.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) 
+        {
+            std::cout << "GPU VRAM: " << memProps.memoryHeaps[i].size / (1024.0f * 1024.0f * 1024.0f) << "GB" << std::endl;
+        }
+    }
 }
 
 bool VulkanContext::isDeviceSuitable(VkPhysicalDevice physicalDevice) const
@@ -374,6 +458,11 @@ QueueFamilyIndices VulkanContext::findQueueFamilies(VkPhysicalDevice physicalDev
         if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
         {
             indices.graphicsFamily = i;
+
+            if (!(queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)) 
+            {
+                std::cout << " Error: Graphics queue does not support COMPUTE !" << std::endl;
+            }
         }
 
         VkBool32 presentSupport = false;
@@ -382,6 +471,8 @@ QueueFamilyIndices VulkanContext::findQueueFamilies(VkPhysicalDevice physicalDev
         {
             indices.presentFamily = i;
         }
+
+        std::cout << std::endl;
 
         if (indices.isComplete())
         {
@@ -394,7 +485,7 @@ QueueFamilyIndices VulkanContext::findQueueFamilies(VkPhysicalDevice physicalDev
 
 void VulkanContext::loadFunctionPointers()
 {
-    loadRayTracingFunctions(device);
+    loadExtensionFunctions(device);
 }
 
 void VulkanContext::cleanup()

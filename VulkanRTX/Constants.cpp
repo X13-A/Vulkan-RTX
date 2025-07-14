@@ -6,6 +6,15 @@ const uint32_t GLFW_WINDOW_WIDTH = 1200;
 const uint32_t GLFW_WINDOW_HEIGHT = 600;
 const char* GLFW_WINDOW_NAME = "Vulkan";
 
+// Ray tracing
+const int RT_RECURSION_DEPTH = 3;
+const int RT_RAYGEN_SHADER_INDEX = 0;
+const int RT_MISS_SHADER_INDEX = 1;
+const int RT_CLOSEST_HIT_GENERAL_SHADER_INDEX = 2;
+
+const int MAX_ALBEDO_TEXTURES = 256;
+const int FULLSCREEN_QUAD_COUNT = 1;
+
 #ifdef NDEBUG
 const bool ENABLE_VALIDATION_LAYERS = false;
 #else
@@ -14,13 +23,12 @@ const bool ENABLE_VALIDATION_LAYERS = true;
 
 const std::vector<const char*> VALIDATION_LAYERS =
 {
-    "VK_LAYER_KHRONOS_validation"
+    "VK_LAYER_KHRONOS_validation",
 };
 
 const std::vector<const char*> REQUIRED_DEVICE_EXTENSIONS =
 {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-
     // RTX ON
     VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
     VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,

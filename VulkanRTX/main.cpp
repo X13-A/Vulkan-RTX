@@ -10,7 +10,7 @@ void compileShaders()
     WCHAR originalDir[MAX_PATH];
     if (!GetCurrentDirectoryW(MAX_PATH, originalDir))
     {
-        std::cerr << "Erreur : impossible d'obtenir le répertoire courant.\n";
+        std::cerr << "Error : could not get current directory.\n";
         return;
     }
     if (SetCurrentDirectoryW(L"shaders")) 
@@ -20,7 +20,7 @@ void compileShaders()
 
         if (!SetCurrentDirectoryW(originalDir)) 
         {
-            std::cerr << "Erreur : impossible de revenir au répertoire initial.\n";
+            std::cerr << "Error : Could not go back to initial directory.\n";
             return;
         }
     }

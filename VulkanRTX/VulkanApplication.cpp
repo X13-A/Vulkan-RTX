@@ -4,6 +4,7 @@
 #include "EventManager.hpp"
 #include "Time.hpp"
 #include "VulkanTLAS.hpp"
+#include "Scene.hpp"
 
 void VulkanApplication::handleWindowResize(const WindowResizeEvent& e)
 {
@@ -43,50 +44,22 @@ void VulkanApplication::initVulkan()
 
     // Swapchain, pipeline
     swapChainManager.init(windowManager.getWindow(), context);
-    graphicsPipeline.init(context, commandBufferManager, swapChainManager);
+    graphicsPipelineManager.initPipelines(context, commandBufferManager, swapChainManager);
 
     // Swapchain ressources
-    swapChainManager.createFramebuffers(context, graphicsPipeline.lightingRenderPass);
-
-    // Models
-    VulkanModel portalGun;
-    VulkanModel portalGunGlass;
-    VulkanModel vikingRoom;
-
-    models.push_back(portalGun);
-    models.push_back(portalGunGlass);
-    models.push_back(vikingRoom);
-
-    graphicsPipeline.createDescriptorPool(context, models.size(), 1); // 1 for the fullscreen quad
-
-    models[0].init("models/portal_gun/portal_gun.obj", "models/portal_gun/PortalGun_Albedo.png", context, commandBufferManager, graphicsPipeline);
-    models[1].init("models/portal_gun/portal_gun_glass.obj", "textures/white.jpg", context, commandBufferManager, graphicsPipeline);
-    models[2].init("models/viking_room/viking_room.obj", "models/viking_room/viking_room.png", context, commandBufferManager, graphicsPipeline);
-
-    // Fetch BLAS instances
-    std::vector<BLASInstance> instances;
-    int instanceIndex = 0;
-    for (const VulkanModel& model : models)
-    {
-        BLASInstance instance;
-        instance.blas = model.blasHandle;
-        instance.transform = model.transform.getTransformMatrix();
-        instance.instanceId = instanceIndex++;
-        instance.hitGroupIndex = 0;
-        instances.push_back(instance);
-    }
+    swapChainManager.createFramebuffers(context, graphicsPipelineManager.lightingPipeline.getRenderPass());
+    
+    graphicsPipelineManager.createDescriptorPool(context, Scene::getModelCount(), FULLSCREEN_QUAD_COUNT);
+    Scene::loadModels(context, commandBufferManager, graphicsPipelineManager.geometryPipeline.getDescriptorSetLayout(), graphicsPipelineManager.descriptorPool);
 
     // Create TLAS
-    VkCommandBuffer commandBuffer = commandBufferManager.beginSingleTimeCommands(context.device);
-    TLASBuilder builder(context);
-    sceneTLAS = builder.createTLAS(instances, commandBuffer);
-    commandBufferManager.endSingleTimeCommands(context.device, context.graphicsQueue, commandBuffer);
+    sceneTLAS.createTLAS(context, Scene::getModels(), commandBufferManager);
 
-    builder.cleanup();
-
+    // Setup RT pipeline with scene info
+    graphicsPipelineManager.rtPipeline.setupScene(context, commandBufferManager, sceneTLAS.getTLAS(), Scene::getModels());
 
     // Init fullscreen quad
-    fullScreenQuad.init(context, commandBufferManager, graphicsPipeline);
+    fullScreenQuad.init(context, commandBufferManager, graphicsPipelineManager);
 
     // Renderer
     renderer.createSyncObjects(context, swapChainManager);
@@ -94,41 +67,26 @@ void VulkanApplication::initVulkan()
     std::cout << "VK initialization finished !" << std::endl;
 }
 
-void VulkanApplication::updateScene()
-{
-    static auto startTime = std::chrono::high_resolution_clock::now();
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-
-    // Portal gun
-    float scale = 5.0f;
-    for (int i = 0; i < 2; i++)
-    {
-        models[i].transform.setTransformMatrix(glm::mat4(1.0f));
-        models[i].transform.scale(glm::vec3(scale, scale, scale));
-        models[i].transform.setRotation(glm::vec3(0, Time::time() * 45.0, 0));
-    }
-
-    // Viking room
-    scale = 5.0f;
-    models[2].transform.setTransformMatrix(glm::mat4(1.0f));
-    models[2].transform.scale(glm::vec3(scale, scale, scale));
-    models[2].transform.translate(glm::vec3(0, -2, 0));
-    models[2].transform.rotate(glm::vec3(-90, -90, 0));
-}
-
 void VulkanApplication::mainLoop()
 {
     while (!shouldTerminate())
     {
-        Time::update();
-        glfwPollEvents();
-        inputManager.retrieveInputs(windowManager.getWindow());
-        controls->update(inputManager);
-        updateScene();
-        renderer.drawFrame(windowManager.getWindow(), context, swapChainManager, graphicsPipeline, commandBufferManager, camera, models, fullScreenQuad);
-        updateFPS();
+        try
+        {
+            Time::update();
+            glfwPollEvents();
+            inputManager.retrieveInputs(windowManager.getWindow());
+            controls->update(inputManager);
+            Scene::update();
+            renderer.drawFrame(windowManager.getWindow(), context, swapChainManager, graphicsPipelineManager, commandBufferManager, camera, Scene::getModels(), fullScreenQuad);
+        
+            updateFPS();
+        }
+        catch (std::exception e)
+        {
+            std::cerr << e.what() << std::endl;
+            break;
+        }
     }
 
     vkDeviceWaitIdle(context.device);
@@ -174,22 +132,15 @@ bool VulkanApplication::shouldTerminate() const
 
 void VulkanApplication::cleanup()
 {
-    if (sceneTLAS != nullptr)
-    {
-        TLASBuilder::destroyTLAS(context, sceneTLAS);
-    }
-
+    sceneTLAS.cleanup(context);
     controls->cleanup();
     delete controls;
     EventManager::get().sink<WindowResizeEvent>().disconnect<&VulkanApplication::handleWindowResize>(this);
     inputManager.cleanup();
     swapChainManager.cleanup(context.device);
-    for (VulkanModel model : models)
-    {
-        model.cleanup(context.device);
-    }
+    Scene::cleanup(context.device);
     fullScreenQuad.cleanup(context.device);
-    graphicsPipeline.cleanup(context.device);
+    graphicsPipelineManager.cleanup(context.device);
     renderer.cleanup(context.device);
     commandBufferManager.cleanup(context.device);
     context.cleanup();
