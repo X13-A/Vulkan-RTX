@@ -3,6 +3,8 @@
 #include "VulkanContext.hpp"
 #include "VulkanCommandBufferManager.hpp"
 #include "VulkanSwapChainManager.hpp"
+#include "VulkanModel.hpp"
+#include "VulkanFullScreenQuad.hpp"
 
 class VulkanLightingPipeline
 {
@@ -16,6 +18,7 @@ public:
     void init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager);
     void cleanup(VkDevice device);
     void handleResize(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager);
+    void recordDrawCommands(const VulkanSwapChainManager& swapChainManager, const VulkanFullScreenQuad& fullScreenQuad, VkCommandBuffer commandBuffer, uint32_t currentFrame, uint32_t imageIndex);
     VkDescriptorSetLayout getDescriptorSetLayout() const;
     VkRenderPass getRenderPass() const;
     VkPipeline getPipeline() const;

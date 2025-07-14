@@ -309,6 +309,54 @@ void VulkanGeometryPipeline::handleResize(const VulkanContext& context, VulkanCo
     createFramebuffers(context, gBufferManager, width, height);
 }
 
+void VulkanGeometryPipeline::recordDrawCommands(const VulkanSwapChainManager& swapChainManager, const std::vector<VulkanModel>& models, VkCommandBuffer commandBuffer, uint32_t currentFrame)
+{
+    VkRenderPassBeginInfo geometryRenderPassInfo{};
+    geometryRenderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    geometryRenderPassInfo.renderPass = renderPass;
+    geometryRenderPassInfo.framebuffer = framebuffer;
+    geometryRenderPassInfo.renderArea.offset = { 0, 0 };
+    geometryRenderPassInfo.renderArea.extent = swapChainManager.swapChainExtent;
+
+    std::array<VkClearValue, 3> geometryClearValues{};
+    geometryClearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+    geometryClearValues[1].depthStencil = { 1.0f, 0 };
+    geometryClearValues[2].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+
+    geometryRenderPassInfo.clearValueCount = static_cast<uint32_t>(geometryClearValues.size());
+    geometryRenderPassInfo.pClearValues = geometryClearValues.data();
+
+    vkCmdBeginRenderPass(commandBuffer, &geometryRenderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = static_cast<float>(swapChainManager.swapChainExtent.width);
+    viewport.height = static_cast<float>(swapChainManager.swapChainExtent.height);
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.offset = { 0, 0 };
+    scissor.extent = swapChainManager.swapChainExtent;
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+    for (const VulkanModel& model : models)
+    {
+        VkBuffer vertexBuffers[] = { model.vertexBuffer };
+        VkDeviceSize offsets[] = { 0 };
+        vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+        vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &model.descriptorSets[currentFrame], 0, nullptr);
+
+        vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(model.indices.size()), 1, 0, 0, 0);
+    }
+
+    vkCmdEndRenderPass(commandBuffer);
+}
+
 VkDescriptorSetLayout VulkanGeometryPipeline::getDescriptorSetLayout() const
 {
     return descriptorSetLayout;

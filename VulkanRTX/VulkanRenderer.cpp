@@ -6,6 +6,7 @@
 #include "EventManager.hpp"
 #include "AllEvents.hpp"
 #include "Time.hpp"
+#include "RunTimeSettings.hpp"
 
 void VulkanRenderer::createSyncObjects(const VulkanContext& context, const VulkanSwapChainManager& swapChainManager)
 {
@@ -49,80 +50,9 @@ void VulkanRenderer::recordCommandBuffer(const VulkanContext& context, VulkanCom
         throw std::runtime_error("failed to begin recording command buffer!");
     }
 
-    // Geometry Pass
-    VkRenderPassBeginInfo geometryRenderPassInfo{};
-    geometryRenderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    geometryRenderPassInfo.renderPass = graphicsPipeline.geometryPipeline.getRenderPass();
-    geometryRenderPassInfo.framebuffer = graphicsPipeline.geometryPipeline.getFrameBuffer();
-    geometryRenderPassInfo.renderArea.offset = { 0, 0 };
-    geometryRenderPassInfo.renderArea.extent = swapChainManager.swapChainExtent;
-
-    std::array<VkClearValue, 3> geometryClearValues{};
-    geometryClearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
-    geometryClearValues[1].depthStencil = { 1.0f, 0 };
-    geometryClearValues[2].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
-
-    geometryRenderPassInfo.clearValueCount = static_cast<uint32_t>(geometryClearValues.size());
-    geometryRenderPassInfo.pClearValues = geometryClearValues.data();
-
-    vkCmdBeginRenderPass(commandBuffer, &geometryRenderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.geometryPipeline.getPipeline());
-
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = static_cast<float>(swapChainManager.swapChainExtent.width);
-    viewport.height = static_cast<float>(swapChainManager.swapChainExtent.height);
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-    VkRect2D scissor{};
-    scissor.offset = { 0, 0 };
-    scissor.extent = swapChainManager.swapChainExtent;
-    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-    for (const VulkanModel& model : models)
-    {
-        VkBuffer vertexBuffers[] = { model.vertexBuffer };
-        VkDeviceSize offsets[] = { 0 };
-        vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-        vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.geometryPipeline.getPipelineLayout(), 0, 1, &model.descriptorSets[currentFrame], 0, nullptr);
-
-        vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(model.indices.size()), 1, 0, 0, 0);
-    }
-
-    vkCmdEndRenderPass(commandBuffer);
-
-    // Lighting Pass
+    graphicsPipeline.geometryPipeline.recordDrawCommands(swapChainManager, models, commandBuffer, currentFrame);
     VulkanUtils::Image::transition_depthRW_to_depthR_existingCmd(context, commandBuffer, graphicsPipeline.gBufferManager.depthImage, VK_FORMAT_D32_SFLOAT);
-
-    VkRenderPassBeginInfo lightingRenderPassInfo{};
-    lightingRenderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    lightingRenderPassInfo.renderPass = graphicsPipeline.lightingPipeline.getRenderPass();
-    lightingRenderPassInfo.framebuffer = swapChainManager.swapChainFramebuffers[imageIndex];
-    lightingRenderPassInfo.renderArea.offset = { 0, 0 };
-    lightingRenderPassInfo.renderArea.extent = swapChainManager.swapChainExtent;
-
-    std::array<VkClearValue, 1> lightingClearValues{};
-    lightingClearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
-
-    lightingRenderPassInfo.clearValueCount = static_cast<uint32_t>(lightingClearValues.size());
-    lightingRenderPassInfo.pClearValues = lightingClearValues.data();
-
-    vkCmdBeginRenderPass(commandBuffer, &lightingRenderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.lightingPipeline.getPipeline());
-
-    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline.lightingPipeline.getPipelineLayout(), 0, 1, &fullScreenQuad.descriptorSets[currentFrame], 0, nullptr);
-
-    VkBuffer vertexBuffers[] = { fullScreenQuad.vertexBuffer };
-    VkDeviceSize offsets[] = { 0 };
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-
-    vkCmdDraw(commandBuffer, 6, 1, 0, 0);
-
-    vkCmdEndRenderPass(commandBuffer);
+    graphicsPipeline.lightingPipeline.recordDrawCommands(swapChainManager, fullScreenQuad, commandBuffer, currentFrame, imageIndex);
 
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
     {
@@ -141,7 +71,7 @@ void VulkanRenderer::handleResize(GLFWwindow* window, const VulkanContext& conte
     // TODO: use EventManager here
     swapChainManager.handleResize(window, context, commandBufferManager, graphicsPipeline.lightingPipeline.getRenderPass());
     graphicsPipeline.handleResize(window, context, commandBufferManager, swapChainManager);
-    fullScreenQuad.writeDescriptorSets(context, graphicsPipeline);
+    fullScreenQuad.writeDescriptorSets(context, graphicsPipeline.gBufferManager.depthImageView, graphicsPipeline.gBufferManager.normalImageView, graphicsPipeline.gBufferManager.albedoImageView);
 }
 
 void VulkanRenderer::drawFrame(GLFWwindow* window, const VulkanContext& context, VulkanSwapChainManager& swapChainManager, VulkanGraphicsPipelineManager& graphicsPipeline, VulkanCommandBufferManager& commandBufferManager, const Camera& camera, const std::vector<VulkanModel>& models, VulkanFullScreenQuad& fullScreenQuad)
@@ -193,15 +123,38 @@ void VulkanRenderer::drawFrame(GLFWwindow* window, const VulkanContext& context,
         throw std::runtime_error("failed to submit draw command buffer!");
     }
 
-    // Trace rays
-    VkCommandBuffer rtcmd = commandBufferManager.beginSingleTimeCommands(context.device);
-    float startTime = Time::time();
-    graphicsPipeline.rtPipeline.traceRays(rtcmd, Time::getFrameCount());
-    commandBufferManager.endSingleTimeCommands(context.device, context.graphicsQueue, rtcmd);
-    float hangTime = Time::time() - startTime;
-    if (hangTime > 0.5f)
-    { 
-        std::cerr << "Hang time: " << hangTime << std::endl;
+    if (RunTimeSettings::displayRayTracing)
+    {
+        // Trace rays
+        VkCommandBuffer rtcmd = commandBufferManager.beginSingleTimeCommands(context.device);
+        float startTime = Time::time();
+        graphicsPipeline.rtPipeline.traceRays(rtcmd, Time::getFrameCount());
+        commandBufferManager.endSingleTimeCommands(context.device, context.graphicsQueue, rtcmd);
+        float hangTime = Time::time() - startTime;
+        if (hangTime > 0.5f)
+        {
+            std::cerr << "Hang time: " << hangTime << std::endl;
+        }
+
+        // Blit ray traced image to swapchain
+        VkCommandBuffer commandBuffer = commandBufferManager.beginSingleTimeCommands(context.device);
+        VulkanUtils::Image::blitImage(
+            commandBuffer,
+            graphicsPipeline.rtPipeline.getStorageImage(),       // srcImage
+            swapChainManager.swapChainImages[imageIndex],        // dstImage
+            VK_FORMAT_R8G8B8A8_UNORM,                            // srcFormat
+            swapChainManager.swapChainImageFormat,               // dstFormat
+            VK_ACCESS_SHADER_WRITE_BIT,                          // srcOriginalAccessMask
+            0,                                                   // dstOriginalAccessMask
+            VK_IMAGE_LAYOUT_GENERAL,                             // srcOriginalLayout
+            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,                     // dstOriginalLayout
+            graphicsPipeline.rtPipeline.getStorageImageWidth(),  // srcWidth
+            graphicsPipeline.rtPipeline.getStorageImageHeight(), // srcHeight
+            swapChainManager.swapChainExtent.width,              // dstWidth
+            swapChainManager.swapChainExtent.height,             // dstHeight
+            VK_FILTER_LINEAR                                     // filter
+        );
+        commandBufferManager.endSingleTimeCommands(context.device, context.graphicsQueue, commandBuffer);
     }
 
     // Present image to swapchain

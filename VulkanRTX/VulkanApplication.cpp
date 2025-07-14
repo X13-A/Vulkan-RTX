@@ -5,6 +5,7 @@
 #include "Time.hpp"
 #include "VulkanTLAS.hpp"
 #include "Scene.hpp"
+#include "RunTimeSettings.hpp"
 
 void VulkanApplication::handleWindowResize(const WindowResizeEvent& e)
 {
@@ -59,12 +60,26 @@ void VulkanApplication::initVulkan()
     graphicsPipelineManager.rtPipeline.setupScene(context, commandBufferManager, sceneTLAS.getTLAS(), Scene::getModels());
 
     // Init fullscreen quad
-    fullScreenQuad.init(context, commandBufferManager, graphicsPipelineManager);
+    fullScreenQuad.init(context, commandBufferManager, 
+        graphicsPipelineManager.lightingPipeline.getDescriptorSetLayout(), 
+        graphicsPipelineManager.descriptorPool,
+        graphicsPipelineManager.gBufferManager.depthImageView,
+        graphicsPipelineManager.gBufferManager.normalImageView, 
+        graphicsPipelineManager.gBufferManager.albedoImageView);
 
     // Renderer
     renderer.createSyncObjects(context, swapChainManager);
 
     std::cout << "VK initialization finished !" << std::endl;
+}
+
+void VulkanApplication::handleInputs()
+{
+    controls->update(inputManager);
+    if (inputManager.isKeyJustPressed(KeyboardKey::R))
+    {
+        RunTimeSettings::displayRayTracing = !RunTimeSettings::displayRayTracing;
+    }
 }
 
 void VulkanApplication::mainLoop()
@@ -76,7 +91,8 @@ void VulkanApplication::mainLoop()
             Time::update();
             glfwPollEvents();
             inputManager.retrieveInputs(windowManager.getWindow());
-            controls->update(inputManager);
+            handleInputs();
+
             Scene::update();
             renderer.drawFrame(windowManager.getWindow(), context, swapChainManager, graphicsPipelineManager, commandBufferManager, camera, Scene::getModels(), fullScreenQuad);
         

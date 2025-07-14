@@ -12,6 +12,7 @@ class InputManager
 {
 private:
 	std::vector<bool> keysPressed;
+	std::vector<bool> keysJustPressed;
 	const std::map<int, KeyboardKey> keyMap =
 	{
 		{GLFW_KEY_ESCAPE, KeyboardKey::Escape},
@@ -62,6 +63,7 @@ public:
 	void retrieveInputs(GLFWwindow* window);
 	void update(GLFWwindow* window);
 	bool isKeyPressed(KeyboardKey key) const;
+	bool isKeyJustPressed(KeyboardKey key) const;
 
 	void onMouseMove(const MouseMoveEvent& e);
 	void onMouseScroll(const MouseScrollEvent& e);

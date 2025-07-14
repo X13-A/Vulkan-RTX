@@ -4,6 +4,7 @@
 #include "VulkanCommandBufferManager.hpp"
 #include "VulkanSwapChainManager.hpp"
 #include "VulkanGBufferManager.hpp"
+#include "VulkanModel.hpp"
 
 class VulkanGeometryPipeline
 {
@@ -18,6 +19,8 @@ public:
     void init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager, const VulkanGBufferManager& gBufferManager);
     void cleanup(VkDevice device);
     void handleResize(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager, const VulkanGBufferManager& gBufferManager, uint32_t width, uint32_t height);
+    void recordDrawCommands(const VulkanSwapChainManager& swapChainManager, const std::vector<VulkanModel>& models, VkCommandBuffer commandBuffer, uint32_t currentFrame);
+
     VkDescriptorSetLayout getDescriptorSetLayout() const;
     VkRenderPass getRenderPass() const;
     VkFramebuffer getFrameBuffer() const;

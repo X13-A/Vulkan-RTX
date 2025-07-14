@@ -151,6 +151,144 @@ VkImageView VulkanUtils::Image::createImageView(const VulkanContext& context, Vk
     return imageView;
 }
 
+void VulkanUtils::Image::blitImage(
+    VkCommandBuffer commandBuffer,
+    VkImage srcImage, VkImage dstImage,
+    VkFormat srcFormat, VkFormat dstFormat,
+    VkAccessFlags srcOriginalAccessMask, VkAccessFlags dstOriginalAccessMask,
+    VkImageLayout srcOriginalLayout, VkImageLayout dstOriginalLayout,
+    uint32_t srcWidth, uint32_t srcHeight,
+    uint32_t dstWidth, uint32_t dstHeight,
+    VkFilter filter
+) {
+    // Transition to transfer optimized layout
+    std::vector<VkImageMemoryBarrier> preBlitBarriers;
+
+    // Source image barrier
+    if (srcOriginalLayout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+    {
+        VkImageMemoryBarrier preSrcBarrier = {};
+        preSrcBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        preSrcBarrier.oldLayout = srcOriginalLayout;
+        preSrcBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        preSrcBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        preSrcBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        preSrcBarrier.image = srcImage;
+        preSrcBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        preSrcBarrier.subresourceRange.baseMipLevel = 0;
+        preSrcBarrier.subresourceRange.levelCount = 1;
+        preSrcBarrier.subresourceRange.baseArrayLayer = 0;
+        preSrcBarrier.subresourceRange.layerCount = 1;
+
+        preSrcBarrier.srcAccessMask = srcOriginalAccessMask;
+        preSrcBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        preBlitBarriers.push_back(preSrcBarrier);
+    }
+
+    // Dist image barrier
+    if (dstOriginalLayout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) 
+    {
+        VkImageMemoryBarrier preDstBarrier = {};
+        preDstBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        preDstBarrier.oldLayout = dstOriginalLayout;
+        preDstBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        preDstBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        preDstBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        preDstBarrier.image = dstImage;
+        preDstBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        preDstBarrier.subresourceRange.baseMipLevel = 0;
+        preDstBarrier.subresourceRange.levelCount = 1;
+        preDstBarrier.subresourceRange.baseArrayLayer = 0;
+        preDstBarrier.subresourceRange.layerCount = 1;
+
+        preDstBarrier.srcAccessMask = dstOriginalAccessMask;
+        preDstBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        preBlitBarriers.push_back(preDstBarrier);
+    }
+
+    // Run pre-blit barriers
+    vkCmdPipelineBarrier(
+        commandBuffer,
+        VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+        VK_PIPELINE_STAGE_TRANSFER_BIT,
+        0,
+        0, nullptr,
+        0, nullptr,
+        static_cast<uint32_t>(preBlitBarriers.size()),
+        preBlitBarriers.data()
+    );
+
+    // Perform blit
+    VkImageBlit blitRegion = {};
+    blitRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    blitRegion.srcSubresource.mipLevel = 0;
+    blitRegion.srcSubresource.baseArrayLayer = 0;
+    blitRegion.srcSubresource.layerCount = 1;
+    blitRegion.srcOffsets[0] = { 0, 0, 0 };
+    blitRegion.srcOffsets[1] = { static_cast<int32_t>(srcWidth), static_cast<int32_t>(srcHeight), 1 };
+
+    blitRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    blitRegion.dstSubresource.mipLevel = 0;
+    blitRegion.dstSubresource.baseArrayLayer = 0;
+    blitRegion.dstSubresource.layerCount = 1;
+    blitRegion.dstOffsets[0] = { 0, 0, 0 };
+    blitRegion.dstOffsets[1] = { static_cast<int32_t>(dstWidth), static_cast<int32_t>(dstHeight), 1 };
+
+    vkCmdBlitImage(
+        commandBuffer,
+        srcImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        1, &blitRegion,
+        filter
+    );
+
+    // Transition both images back to the original layout
+
+    std::vector<VkImageMemoryBarrier> postBlitBarriers;
+
+    VkImageMemoryBarrier finalDstBarrier = {};
+    finalDstBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    finalDstBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+    finalDstBarrier.newLayout = dstOriginalLayout;
+    finalDstBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    finalDstBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    finalDstBarrier.image = dstImage;
+    finalDstBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    finalDstBarrier.subresourceRange.baseMipLevel = 0;
+    finalDstBarrier.subresourceRange.levelCount = 1;
+    finalDstBarrier.subresourceRange.baseArrayLayer = 0;
+    finalDstBarrier.subresourceRange.layerCount = 1;
+    finalDstBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    finalDstBarrier.dstAccessMask = dstOriginalAccessMask;
+    postBlitBarriers.push_back(finalDstBarrier);
+
+    VkImageMemoryBarrier finalSrcBarrier = {};
+    finalSrcBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    finalSrcBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+    finalSrcBarrier.newLayout = srcOriginalLayout;
+    finalSrcBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    finalSrcBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    finalSrcBarrier.image = srcImage;
+    finalSrcBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    finalSrcBarrier.subresourceRange.baseMipLevel = 0;
+    finalSrcBarrier.subresourceRange.levelCount = 1;
+    finalSrcBarrier.subresourceRange.baseArrayLayer = 0;
+    finalSrcBarrier.subresourceRange.layerCount = 1;
+    finalSrcBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+    finalSrcBarrier.dstAccessMask = srcOriginalAccessMask;
+    postBlitBarriers.push_back(finalSrcBarrier);
+
+    vkCmdPipelineBarrier(
+        commandBuffer,
+        VK_PIPELINE_STAGE_TRANSFER_BIT,
+        VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+        0,
+        0, nullptr,
+        0, nullptr,
+        static_cast<uint32_t>(postBlitBarriers.size()),
+        postBlitBarriers.data()
+    );
+}
 
 void VulkanUtils::Image::transition_depthRW_to_depthR_existingCmd(const VulkanContext& context, VkCommandBuffer commandBuffer, VkImage image, VkFormat format)
 {

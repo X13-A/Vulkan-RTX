@@ -12,6 +12,7 @@
 #include "CreativeControls.hpp"
 #include "VulkanTLAS.hpp"
 
+
 class VulkanApplication
 {
 private:
@@ -41,6 +42,9 @@ public:
     void handleResize();
 
     bool shouldTerminate() const;
+
+    void handleInputs();
+
 private:
     void initVulkan();
 

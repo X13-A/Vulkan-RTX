@@ -11,6 +11,7 @@ InputManager::InputManager()
 void InputManager::init()
 {
 	keysPressed.resize(static_cast<size_t>(KeyboardKey::KeysCount), false);
+	keysJustPressed.resize(static_cast<size_t>(KeyboardKey::KeysCount), false);
 	EventManager::get().sink<MouseMoveEvent>().connect<&InputManager::onMouseMove>(this);
 	EventManager::get().sink<MouseScrollEvent>().connect<&InputManager::onMouseScroll>(this);
 }
@@ -21,6 +22,17 @@ void InputManager::retrieveInputs(GLFWwindow* window)
 	{
 		if (pair.second == KeyboardKey::KeysCount) break;
 		bool keyPressed = glfwGetKey(window, pair.first) == GLFW_PRESS;
+
+		bool wasKeyAlreadyPressed = keysPressed.at(static_cast<size_t>(pair.second));
+		if (!wasKeyAlreadyPressed && keyPressed)
+		{
+			keysJustPressed.at(static_cast<size_t>(pair.second)) = true;
+		}
+		else
+		{
+			keysJustPressed.at(static_cast<size_t>(pair.second)) = false;
+		}
+
 		keysPressed.at(static_cast<size_t>(pair.second)) = keyPressed;
 	}
 }
@@ -57,6 +69,11 @@ void InputManager::onMouseScroll(const MouseScrollEvent& e)
 bool InputManager::isKeyPressed(KeyboardKey key) const
 {
 	return keysPressed.at(static_cast<size_t>(key));
+}
+
+bool InputManager::isKeyJustPressed(KeyboardKey key) const
+{
+	return keysJustPressed.at(static_cast<size_t>(key));
 }
 
 void InputManager::update(GLFWwindow* window)

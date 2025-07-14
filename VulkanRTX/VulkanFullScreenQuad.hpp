@@ -1,7 +1,6 @@
 #pragma once
 #include "VulkanGeometry.hpp"
 #include "VulkanContext.hpp"
-#include "VulkanGraphicsPipelineManager.hpp"
 #include "VulkanCommandBufferManager.hpp"
 
 struct VulkanFullScreenQuadUBO
@@ -24,9 +23,9 @@ public:
 	VkSampler gBufferSampler;
 
 public:
-	void init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanGraphicsPipelineManager& graphicsPipeline);
-	void createDescriptorSets(const VulkanContext& context, const VulkanGraphicsPipelineManager& graphicsPipeline);
-	void writeDescriptorSets(const VulkanContext& context, const VulkanGraphicsPipelineManager& graphicsPipeline);
+	void init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkDescriptorSetLayout layout, VkDescriptorPool pool, VkImageView depthImageView, VkImageView normalImageView, VkImageView albedoImageView);
+	void createDescriptorSets(const VulkanContext& context, VkDescriptorSetLayout geometryDescriptorSetLayout, VkDescriptorPool descriptorPool);
+	void writeDescriptorSets(const VulkanContext& context, VkImageView depthImageView, VkImageView normalImageView, VkImageView albedoImageView);
 	void createUniformBuffers(const VulkanContext& context);
 	void cleanup(VkDevice device);
 };

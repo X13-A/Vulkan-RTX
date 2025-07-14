@@ -289,3 +289,33 @@ void VulkanLightingPipeline::cleanup(VkDevice device)
     // Cleanup descriptor set layouts
     vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 }
+
+void VulkanLightingPipeline::recordDrawCommands(const VulkanSwapChainManager& swapChainManager, const VulkanFullScreenQuad& fullScreenQuad, VkCommandBuffer commandBuffer, uint32_t currentFrame, uint32_t imageIndex)
+{
+    // Lighting Pass
+    VkRenderPassBeginInfo lightingRenderPassInfo{};
+    lightingRenderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    lightingRenderPassInfo.renderPass = renderPass;
+    lightingRenderPassInfo.framebuffer = swapChainManager.swapChainFramebuffers[imageIndex];
+    lightingRenderPassInfo.renderArea.offset = { 0, 0 };
+    lightingRenderPassInfo.renderArea.extent = swapChainManager.swapChainExtent;
+
+    std::array<VkClearValue, 1> lightingClearValues{};
+    lightingClearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
+
+    lightingRenderPassInfo.clearValueCount = static_cast<uint32_t>(lightingClearValues.size());
+    lightingRenderPassInfo.pClearValues = lightingClearValues.data();
+
+    vkCmdBeginRenderPass(commandBuffer, &lightingRenderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &fullScreenQuad.descriptorSets[currentFrame], 0, nullptr);
+
+    VkBuffer vertexBuffers[] = { fullScreenQuad.vertexBuffer };
+    VkDeviceSize offsets[] = { 0 };
+    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+    vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+
+    vkCmdEndRenderPass(commandBuffer);
+}

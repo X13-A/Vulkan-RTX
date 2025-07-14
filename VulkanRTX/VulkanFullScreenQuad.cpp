@@ -1,8 +1,9 @@
 #include "VulkanFullScreenQuad.hpp"
 #include <stdexcept>
+#include "VulkanUtils.hpp"
 
 
-void VulkanFullScreenQuad::init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanGraphicsPipelineManager& graphicsPipeline)
+void VulkanFullScreenQuad::init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkDescriptorSetLayout layout, VkDescriptorPool pool, VkImageView depthImageView, VkImageView normalImageView, VkImageView albedoImageView)
 {
     vertices = {
         // Position                      // Texture Coordinates // Normal
@@ -16,22 +17,21 @@ void VulkanFullScreenQuad::init(const VulkanContext& context, VulkanCommandBuffe
     };
 
     VulkanUtils::Textures::createSampler(context, &gBufferSampler);
-
     VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT ;
     VkMemoryPropertyFlags memoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
     VulkanUtils::Buffers::createVertexBuffer(context, commandBufferManager, vertices, vertexBuffer, vertexBufferMemory, usageFlags, memoryFlags);
 
     createUniformBuffers(context);
-    createDescriptorSets(context, graphicsPipeline);
-    writeDescriptorSets(context, graphicsPipeline);
+    createDescriptorSets(context, layout, pool);
+    writeDescriptorSets(context, depthImageView, normalImageView, albedoImageView);
 }
 
-void VulkanFullScreenQuad::createDescriptorSets(const VulkanContext& context, const VulkanGraphicsPipelineManager& graphicsPipeline)
+void VulkanFullScreenQuad::createDescriptorSets(const VulkanContext& context, VkDescriptorSetLayout layout, VkDescriptorPool pool)
 {
-    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, graphicsPipeline.lightingPipeline.getDescriptorSetLayout());
+    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, layout);
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = graphicsPipeline.descriptorPool;
+    allocInfo.descriptorPool = pool;
     allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     allocInfo.pSetLayouts = layouts.data();
 
@@ -42,7 +42,7 @@ void VulkanFullScreenQuad::createDescriptorSets(const VulkanContext& context, co
     }
 }
 
-void VulkanFullScreenQuad::writeDescriptorSets(const VulkanContext& context, const VulkanGraphicsPipelineManager& graphicsPipeline)
+void VulkanFullScreenQuad::writeDescriptorSets(const VulkanContext& context, VkImageView depthImageView, VkImageView normalImageView, VkImageView albedoImageView)
 {
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
@@ -54,19 +54,19 @@ void VulkanFullScreenQuad::writeDescriptorSets(const VulkanContext& context, con
         // Depth image sampler
         VkDescriptorImageInfo depthImageInfo{};
         depthImageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-        depthImageInfo.imageView = graphicsPipeline.gBufferManager.depthImageView;
+        depthImageInfo.imageView = depthImageView;
         depthImageInfo.sampler = gBufferSampler;
 
         // Normal image sampler
         VkDescriptorImageInfo normalImageInfo{};
         normalImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        normalImageInfo.imageView = graphicsPipeline.gBufferManager.normalImageView;
+        normalImageInfo.imageView = normalImageView;
         normalImageInfo.sampler = gBufferSampler;
 
         // Albedo image sampler
         VkDescriptorImageInfo albedoImageInfo{};
         albedoImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        albedoImageInfo.imageView = graphicsPipeline.gBufferManager.albedoImageView;
+        albedoImageInfo.imageView = albedoImageView;
         albedoImageInfo.sampler = gBufferSampler;
 
         std::array<VkWriteDescriptorSet, 4> descriptorWrites{};

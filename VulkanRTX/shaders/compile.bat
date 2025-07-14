@@ -17,6 +17,4 @@ echo Compiling shaders...
 
 echo Compilation complete.
 
-pause
-
 exit /b 0
