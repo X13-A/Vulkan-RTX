@@ -57,7 +57,7 @@ void VulkanApplication::initVulkan()
     sceneTLAS.createTLAS(context, Scene::getModels(), commandBufferManager);
 
     // Setup RT pipeline with scene info
-    graphicsPipelineManager.rtPipeline.setupScene(context, commandBufferManager, sceneTLAS.getTLAS(), Scene::getModels());
+    graphicsPipelineManager.rtPipeline.writeDescriptors(context, commandBufferManager, Scene::getModels(), sceneTLAS.getTLAS(), graphicsPipelineManager.gBufferManager.depthImageView, graphicsPipelineManager.gBufferManager.normalImageView, graphicsPipelineManager.gBufferManager.albedoImageView);
 
     // Init fullscreen quad
     fullScreenQuad.init(context, commandBufferManager, 
@@ -79,6 +79,22 @@ void VulkanApplication::handleInputs()
     if (inputManager.isKeyJustPressed(KeyboardKey::R))
     {
         RunTimeSettings::displayRayTracing = !RunTimeSettings::displayRayTracing;
+        std::cout << "Ray tracing enabled: " << RunTimeSettings::displayRayTracing << std::endl;
+    }
+    if (inputManager.isKeyJustPressed(KeyboardKey::T))
+    {
+        RunTimeSettings::renderScale = std::max(std::fmod(RunTimeSettings::renderScale, 1.0f) + 0.1, 0.1);
+        std::cout << "New render scale: " << RunTimeSettings::renderScale << std::endl;
+    }
+    if (inputManager.isKeyJustPressed(KeyboardKey::O))
+    {
+        RunTimeSettings::spp = std::max(0, (int) RunTimeSettings::spp - 1);
+        std::cout << "Samples per pixel: " << RunTimeSettings::spp << std::endl;
+    }
+    if (inputManager.isKeyJustPressed(KeyboardKey::P))
+    {
+        RunTimeSettings::spp = std::max(0, (int)RunTimeSettings::spp + 1);
+        std::cout << "Samples per pixel: " << RunTimeSettings::spp << std::endl;
     }
 }
 

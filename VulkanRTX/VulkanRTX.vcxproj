@@ -155,7 +155,7 @@
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="CreativeControls.cpp" />
     <ClCompile Include="EventManager.cpp" />
-    <ClCompile Include="GBufferManager.cpp" />
+    <ClCompile Include="VulkanGBufferManager.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="RunTimeSettings.cpp" />
@@ -190,6 +190,7 @@
     <ClInclude Include="EventManager.hpp" />
     <ClInclude Include="GLM_defines.hpp" />
     <ClInclude Include="InputManager.hpp" />
+    <ClInclude Include="Mesh.hpp" />
     <ClInclude Include="RunTimeSettings.hpp" />
     <ClInclude Include="Scene.hpp" />
     <ClInclude Include="Time.hpp" />

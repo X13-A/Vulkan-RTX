@@ -98,3 +98,9 @@ void Transform::printScale() const
         << m_scale.y << ", "
         << m_scale.z << ")\n";
 }
+
+glm::vec3 Transform::getForward() const
+{
+    glm::vec3 forward = glm::vec3(0.0f, 0.0f, -1.0f);
+    return m_rotation * forward;
+}

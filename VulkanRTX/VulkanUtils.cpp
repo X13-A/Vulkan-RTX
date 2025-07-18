@@ -218,7 +218,7 @@ void VulkanUtils::Image::blitImage(
         preBlitBarriers.data()
     );
 
-    // Perform blit
+    // Blit
     VkImageBlit blitRegion = {};
     blitRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     blitRegion.srcSubresource.mipLevel = 0;
@@ -243,7 +243,6 @@ void VulkanUtils::Image::blitImage(
     );
 
     // Transition both images back to the original layout
-
     std::vector<VkImageMemoryBarrier> postBlitBarriers;
 
     VkImageMemoryBarrier finalDstBarrier = {};
@@ -511,45 +510,7 @@ void VulkanUtils::Buffers::copyBuffer(const VulkanContext& context, VulkanComman
     commandBuffers.endSingleTimeCommands(context.device, context.graphicsQueue, commandBuffer);
 }
 
-void VulkanUtils::Buffers::createVertexBuffer(const VulkanContext& context, VulkanCommandBufferManager& commandBuffers, const std::vector<VulkanVertex>& vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryFlags, bool deviceAdressing)
-{
-    VkDeviceSize bufferSize = sizeof(VulkanVertex) * vertices.size();
-
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    VulkanUtils::Buffers::createBuffer(context, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, deviceAdressing);
-
-    void* data;
-    vkMapMemory(context.device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, vertices.data(), (size_t)bufferSize);
-    vkUnmapMemory(context.device, stagingBufferMemory);
-
-    VulkanUtils::Buffers::createBuffer(context, bufferSize, usageFlags, memoryFlags, vertexBuffer, vertexBufferMemory, true);
-    VulkanUtils::Buffers::copyBuffer(context, commandBuffers, stagingBuffer, vertexBuffer, bufferSize);
-
-    vkDestroyBuffer(context.device, stagingBuffer, nullptr);
-    vkFreeMemory(context.device, stagingBufferMemory, nullptr);
-}
-
-void VulkanUtils::Buffers::createIndexBuffer(const VulkanContext& context, VulkanCommandBufferManager& commandBuffers, const std::vector<uint32_t>& indices, VkBuffer& indexBuffer, VkDeviceMemory& indexBufferMemory, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryFlags, bool deviceAdressing)
-{
-    VkDeviceSize bufferSize = sizeof(uint32_t) * indices.size();
-
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    VulkanUtils::Buffers::createBuffer(context, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, deviceAdressing);
-
-    void* data;
-    vkMapMemory(context.device, stagingBufferMemory, 0, bufferSize, 0, &data);
-    memcpy(data, indices.data(), (size_t)bufferSize);
-    vkUnmapMemory(context.device, stagingBufferMemory);
-
-    VulkanUtils::Buffers::createBuffer(context, bufferSize, usageFlags, memoryFlags, indexBuffer, indexBufferMemory, true);
-    VulkanUtils::Buffers::copyBuffer(context, commandBuffers, stagingBuffer, indexBuffer, bufferSize);
-
-    vkDestroyBuffer(context.device, stagingBuffer, nullptr);
-    vkFreeMemory(context.device, stagingBufferMemory, nullptr);
-}
+// createAndfill buffer is in header since it is templated
 
 void VulkanUtils::Buffers::createScratchBuffer(const VulkanContext& context, VkDeviceSize size, VkBuffer& scratchBuffer, VkDeviceMemory& scratchBufferMemory)
 {

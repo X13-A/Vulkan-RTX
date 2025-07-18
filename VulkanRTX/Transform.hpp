@@ -27,6 +27,8 @@ public:
     void printRotation() const;
     void printScale() const;
 
+    glm::vec3 getForward() const;
+
 private:
     glm::vec3 m_position;
     glm::quat m_rotation;

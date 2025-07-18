@@ -12,7 +12,6 @@ void VulkanLightingPipeline::init(const VulkanContext& context, VulkanCommandBuf
 
 void VulkanLightingPipeline::createDescriptorSetLayouts(const VulkanContext& context)
 {
-    // Lighting Pass
     VkDescriptorSetLayoutBinding lightingUboLayoutBinding{};
     lightingUboLayoutBinding.binding = 0;
     lightingUboLayoutBinding.descriptorCount = 1;
@@ -62,7 +61,6 @@ void VulkanLightingPipeline::createDescriptorSetLayouts(const VulkanContext& con
 
 void VulkanLightingPipeline::createRenderPasses(const VulkanContext& context, VkFormat swapChainImageFormat)
 {
-    // Lighting pass render pass creation
     VkAttachmentDescription colorAttachment = {};
     colorAttachment.format = swapChainImageFormat;
     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -98,7 +96,6 @@ void VulkanLightingPipeline::createRenderPasses(const VulkanContext& context, Vk
 
 void VulkanLightingPipeline::createPipelineLayouts(const VulkanContext& context)
 {
-    // Lighting Pipeline Layout
     std::array<VkDescriptorSetLayout, 1> lightingDescriptorSetLayouts = { descriptorSetLayout };
 
     VkPipelineLayoutCreateInfo lightingPipelineLayoutInfo{};
@@ -115,8 +112,6 @@ void VulkanLightingPipeline::createPipelineLayouts(const VulkanContext& context)
 
 void VulkanLightingPipeline::createPipeline(const VulkanContext& context, const VulkanSwapChainManager& swapChainManager)
 {
-    // Lighting pass pipeline creation
-    // Assuming lighting pass is a full-screen quad, so no vertex attributes other than position
     std::vector<char> lightingVertShaderCode = readFile("shaders/lighting_vert.spv");
     std::vector<char> lightingFragShaderCode = readFile("shaders/lighting_frag.spv");
 
@@ -137,7 +132,6 @@ void VulkanLightingPipeline::createPipeline(const VulkanContext& context, const 
 
     VkPipelineShaderStageCreateInfo lightingShaderStages[] = { lightingVertShaderStageInfo, lightingFragShaderStageInfo };
 
-    // Depth and Stencil state for geometry pass
     VkPipelineDepthStencilStateCreateInfo depthStencilLighting{};
     depthStencilLighting.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     depthStencilLighting.depthTestEnable = VK_FALSE;
@@ -181,7 +175,7 @@ void VulkanLightingPipeline::createPipeline(const VulkanContext& context, const 
     multisampling.sampleShadingEnable = VK_FALSE;
     multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-    // Viewport and Scissor (can be dynamic)
+    // Viewport and Scissor
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
@@ -244,14 +238,12 @@ void VulkanLightingPipeline::createPipeline(const VulkanContext& context, const 
         throw std::runtime_error("failed to create lighting pass graphics pipeline!");
     }
 
-    // Clean up shader modules as they are no longer needed after pipeline creation
     vkDestroyShaderModule(context.device, lightingVertShaderModule, nullptr);
     vkDestroyShaderModule(context.device, lightingFragShaderModule, nullptr);
 }
 
 void VulkanLightingPipeline::handleResize(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager)
 {
-    // Pipelines
     vkDestroyPipeline(context.device, pipeline, nullptr);
     createPipeline(context, swapChainManager);
 }
@@ -277,22 +269,17 @@ VkPipelineLayout VulkanLightingPipeline::getPipelineLayout() const
 
 void VulkanLightingPipeline::cleanup(VkDevice device)
 {
-    // Cleanup pipelines
     vkDestroyPipeline(device, pipeline, nullptr);
 
-    // Cleanup pipeline layouts
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 
-    // Cleanup render passes
     vkDestroyRenderPass(device, renderPass, nullptr);
 
-    // Cleanup descriptor set layouts
     vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 }
 
 void VulkanLightingPipeline::recordDrawCommands(const VulkanSwapChainManager& swapChainManager, const VulkanFullScreenQuad& fullScreenQuad, VkCommandBuffer commandBuffer, uint32_t currentFrame, uint32_t imageIndex)
 {
-    // Lighting Pass
     VkRenderPassBeginInfo lightingRenderPassInfo{};
     lightingRenderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     lightingRenderPassInfo.renderPass = renderPass;

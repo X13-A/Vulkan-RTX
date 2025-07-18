@@ -62,10 +62,71 @@ public:
     {
     public:
         static void createBuffer(const VulkanContext& context, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory, bool deviceAdressing = false);
-        static void createVertexBuffer(const VulkanContext& context, VulkanCommandBufferManager& commandBuffers, const std::vector<VulkanVertex>& vertices, VkBuffer& vertexBuffer, VkDeviceMemory& vertexBufferMemory, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryFlags, bool deviceAdressing = false);
-        static void createIndexBuffer(const VulkanContext& context, VulkanCommandBufferManager& commandBuffers, const std::vector<uint32_t>& indices, VkBuffer& indexBuffer, VkDeviceMemory& indexBufferMemory, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryFlags, bool deviceAdressing = false);
+        
+        template<typename T>
+        static void createAndFillBuffer(
+            const VulkanContext& context,
+            VulkanCommandBufferManager& commandBuffers,
+            const std::vector<T>& data,
+            VkBuffer& buffer,
+            VkDeviceMemory& bufferMemory,
+            VkBufferUsageFlags usageFlags,
+            VkMemoryPropertyFlags memoryFlags,
+            bool deviceAdressing = false);
+
         static void createScratchBuffer(const VulkanContext& context, VkDeviceSize size, VkBuffer& scratchBuffer, VkDeviceMemory& scratchBufferMemory);
         static void copyBuffer(const VulkanContext& context, VulkanCommandBufferManager& commandBuffers, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
         static VkDeviceAddress getBufferDeviceAdress(const VulkanContext& context, VkBuffer buffer);
     };
 };
+
+template<typename T>
+void VulkanUtils::Buffers::createAndFillBuffer(
+    const VulkanContext& context,
+    VulkanCommandBufferManager& commandBuffers,
+    const std::vector<T>& data,
+    VkBuffer& buffer,
+    VkDeviceMemory& bufferMemory,
+    VkBufferUsageFlags usageFlags,
+    VkMemoryPropertyFlags memoryFlags,
+    bool deviceAdressing)
+{
+    VkDeviceSize bufferSize = sizeof(T) * data.size();
+
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+
+    // Create staging buffer
+    VulkanUtils::Buffers::createBuffer(
+        context,
+        bufferSize,
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+        stagingBuffer,
+        stagingBufferMemory,
+        deviceAdressing
+    );
+
+    // Map and copy data
+    void* mappedData;
+    vkMapMemory(context.device, stagingBufferMemory, 0, bufferSize, 0, &mappedData);
+    memcpy(mappedData, data.data(), static_cast<size_t>(bufferSize));
+    vkUnmapMemory(context.device, stagingBufferMemory);
+
+    VulkanUtils::Buffers::createBuffer(
+        context,
+        bufferSize,
+        usageFlags,
+        memoryFlags,
+        buffer,
+        bufferMemory,
+        true
+    );
+
+    // Copy from staging to final buffer
+    VulkanUtils::Buffers::copyBuffer(context, commandBuffers, stagingBuffer, buffer, bufferSize);
+
+    // Cleanup staging buffer
+    vkDestroyBuffer(context.device, stagingBuffer, nullptr);
+    vkFreeMemory(context.device, stagingBufferMemory, nullptr);
+}

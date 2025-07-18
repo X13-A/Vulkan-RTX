@@ -10,10 +10,8 @@ void VulkanGBufferManager::init(const VulkanContext& context, VulkanCommandBuffe
 
 void VulkanGBufferManager::createDepthResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, uint32_t width, uint32_t height)
 {
-    // Depth format for the G-buffer (use a format that supports depth-stencil)
     VkFormat depthFormat = VulkanUtils::DepthStencil::findDepthFormat(context.physicalDevice);
 
-    // Create the depth image
     VulkanUtils::Image::createImage(
         context,
         width,
@@ -26,7 +24,6 @@ void VulkanGBufferManager::createDepthResources(const VulkanContext& context, Vu
         depthImageMemory
     );
 
-    // Create image view for the depth image
     depthImageView = VulkanUtils::Image::createImageView(
         context,
         depthImage,
@@ -34,7 +31,6 @@ void VulkanGBufferManager::createDepthResources(const VulkanContext& context, Vu
         VK_IMAGE_ASPECT_DEPTH_BIT
     );
 
-    // Transition the depth image to the appropriate layout (depth-stencil attachment)
     VulkanUtils::Image::transitionImageLayout(
         context,
         commandBufferManager,
@@ -47,10 +43,8 @@ void VulkanGBufferManager::createDepthResources(const VulkanContext& context, Vu
 
 void VulkanGBufferManager::createNormalResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, uint32_t width, uint32_t height)
 {
-    // Format for the normal image (use a format that supports RGBA color channels)
     VkFormat normalFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
 
-    // Create the normal image
     VulkanUtils::Image::createImage(
         context,
         width,
@@ -63,7 +57,6 @@ void VulkanGBufferManager::createNormalResources(const VulkanContext& context, V
         normalImageMemory
     );
 
-    // Create image view for the normal image
     normalImageView = VulkanUtils::Image::createImageView(
         context,
         normalImage,
@@ -71,7 +64,6 @@ void VulkanGBufferManager::createNormalResources(const VulkanContext& context, V
         VK_IMAGE_ASPECT_COLOR_BIT
     );
 
-    // Transition the normal image to the appropriate layout (color attachment)
     VulkanUtils::Image::transitionImageLayout(
         context,
         commandBufferManager,

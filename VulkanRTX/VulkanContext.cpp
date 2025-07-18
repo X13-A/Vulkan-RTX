@@ -30,7 +30,6 @@ void printColoredValidationMessage(const std::string& message, std::string title
 
 VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
-    // Color output based on severity
     const char* color;
     switch (messageSeverity) 
     {
@@ -267,10 +266,10 @@ void VulkanContext::createLogicalDevice()
     deviceFeatures2.features = deviceFeatures;
     deviceFeatures2.pNext = &accelerationStructureFeatures;
 
-    // Query features with the FULL chain
+    // Query features
     vkGetPhysicalDeviceFeatures2(physicalDevice, &deviceFeatures2);
 
-    // Check feature support BEFORE enabling
+    // Check feature support
     if (!accelerationStructureFeatures.accelerationStructure)
     {
         throw std::runtime_error("Acceleration structure feature not supported!");
@@ -288,12 +287,12 @@ void VulkanContext::createLogicalDevice()
         std::cerr << "RT validation features are not available." << std::endl;
     }
 
-    // Enable required features AFTER validation
+    // Enable required features after validation
     accelerationStructureFeatures.accelerationStructure = VK_TRUE;
     rayTracingPipelineFeatures.rayTracingPipeline = VK_TRUE;
     bufferDeviceAddressFeatures.bufferDeviceAddress = VK_TRUE;
 
-    // Only enable RT validation if supported AND environment variable is set
+    // Only enable RT validation if supported and environment variable is set
     if (validationFeatures.rayTracingValidation && rtValidationEnabled)
     {
         validationFeatures.rayTracingValidation = VK_TRUE;
@@ -306,7 +305,7 @@ void VulkanContext::createLogicalDevice()
 
     VkDeviceCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pNext = &deviceFeatures2;  // Feature chain already built
+    createInfo.pNext = &deviceFeatures2;
     createInfo.pEnabledFeatures = nullptr;
     createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
     createInfo.pQueueCreateInfos = queueCreateInfos.data();

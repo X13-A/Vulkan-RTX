@@ -1,3 +1,5 @@
 #include "RunTimeSettings.hpp"
 
-bool RunTimeSettings::displayRayTracing = false;
+float RunTimeSettings::renderScale = 1.0;
+int RunTimeSettings::spp = 50;
+bool RunTimeSettings::displayRayTracing = true;

@@ -1,201 +1,235 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Fichiers sources">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Fichiers d%27en-tête">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="Fichiers de ressources">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Shaders">
       <UniqueIdentifier>{9cc398ed-a307-444f-8885-f92544cc7870}</UniqueIdentifier>
     </Filter>
+    <Filter Include="App">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{e6d0b594-1573-40ab-8b96-58eedb9a9c07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Inputs">
+      <UniqueIdentifier>{15a98d42-bb61-40fd-b79d-adc5e125c782}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\EventSystem">
+      <UniqueIdentifier>{12990842-fbc4-4a6b-9941-0ccaa3affb9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Vulkan">
+      <UniqueIdentifier>{99800f4e-ac92-44d7-a6f6-c6719ebb72f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Vulkan\Imports">
+      <UniqueIdentifier>{36e49ab2-c6d3-42e5-b268-35d5c9c5f661}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Vulkan\Pipeline">
+      <UniqueIdentifier>{c01e01f6-107f-453b-9271-742eb2891d6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Vulkan\Pipeline\source">
+      <UniqueIdentifier>{c156fdd8-5e63-47e8-b0dc-bfa80e914658}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Vulkan\Pipeline\headers">
+      <UniqueIdentifier>{a63b6557-9609-41f9-9e3f-a52c76446bce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Vulkan\Scene">
+      <UniqueIdentifier>{1c7424f3-b803-4efa-a214-b6c33572bd71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Vulkan\Scene\Source">
+      <UniqueIdentifier>{f501e844-57b8-47aa-8d5b-e9337f724f0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Vulkan\Scene\Headers">
+      <UniqueIdentifier>{1a2db417-2209-483e-88d2-1d002247e4aa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Constants.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanCommandBufferManager.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanContext.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanSwapChainManager.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanUtils.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanGeometry.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanGraphicsPipelineManager.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Utils.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanTexture.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanRenderer.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanModel.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="WindowManager.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanApplication.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="GBufferManager.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanFullScreenQuad.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="InputManager.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="EventManager.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Transform.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="CreativeControls.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Time.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanExtensionFunctions.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="VulkanTLAS.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanRayTracingPipeline.cpp">
-      <Filter>Fichiers sources</Filter>
+      <Filter>Engine\Vulkan\Scene\Source</Filter>
     </ClCompile>
     <ClCompile Include="Scene..cpp">
-      <Filter>Fichiers sources</Filter>
+      <Filter>Engine\Vulkan\Scene\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Engine\Vulkan\Scene\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanGeometry.cpp">
+      <Filter>Engine\Vulkan\Scene\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanModel.cpp">
+      <Filter>Engine\Vulkan\Scene\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanTexture.cpp">
+      <Filter>Engine\Vulkan\Scene\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Engine\Vulkan\Scene\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanGBufferManager.cpp">
+      <Filter>Engine\Vulkan\Pipeline\source</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanFullScreenQuad.cpp">
+      <Filter>Engine\Vulkan\Pipeline\source</Filter>
     </ClCompile>
     <ClCompile Include="VulkanGeometryPipeline.cpp">
-      <Filter>Fichiers sources</Filter>
+      <Filter>Engine\Vulkan\Pipeline\source</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanGraphicsPipelineManager.cpp">
+      <Filter>Engine\Vulkan\Pipeline\source</Filter>
     </ClCompile>
     <ClCompile Include="VulkanLightingPipeline.cpp">
-      <Filter>Fichiers sources</Filter>
+      <Filter>Engine\Vulkan\Pipeline\source</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanRayTracingPipeline.cpp">
+      <Filter>Engine\Vulkan\Pipeline\source</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanRenderer.cpp">
+      <Filter>Engine\Vulkan\Pipeline\source</Filter>
+    </ClCompile>
+    <ClCompile Include="Constants.cpp">
+      <Filter>Engine\Vulkan\Imports</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanExtensionFunctions.cpp">
+      <Filter>Engine\Vulkan\Imports</Filter>
+    </ClCompile>
+    <ClCompile Include="EventManager.cpp">
+      <Filter>Engine\EventSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Time.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="InputManager.cpp">
+      <Filter>Engine\Inputs</Filter>
+    </ClCompile>
+    <ClCompile Include="RunTimeSettings.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanUtils.cpp">
+      <Filter>Engine\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanCommandBufferManager.cpp">
+      <Filter>Engine\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanContext.cpp">
+      <Filter>Engine\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanSwapChainManager.cpp">
+      <Filter>Engine\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="CreativeControls.cpp">
+      <Filter>App</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>App</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanApplication.cpp">
+      <Filter>App</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowManager.cpp">
+      <Filter>App</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Constants.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="Vulkan_GLFW.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="GLM_defines.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanCommandBufferManager.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanContext.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanSwapChainManager.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanUtils.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanGeometry.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanGraphicsPipelineManager.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="Utils.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanTexture.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanRenderer.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanModel.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="WindowManager.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
+      <Filter>App</Filter>
     </ClInclude>
     <ClInclude Include="VulkanApplication.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanGBufferManager.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanFullScreenQuad.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="InputManager.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="AllEvents.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="EventManager.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="Transform.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
+      <Filter>App</Filter>
     </ClInclude>
     <ClInclude Include="CameraControls.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
+      <Filter>App</Filter>
     </ClInclude>
     <ClInclude Include="CreativeControls.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
+      <Filter>App</Filter>
     </ClInclude>
-    <ClInclude Include="Time.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="VulkanExtensionFunctions.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
+    <ClInclude Include="VulkanModel.hpp">
+      <Filter>Engine\Vulkan\Scene\Headers</Filter>
     </ClInclude>
     <ClInclude Include="VulkanTLAS.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
+      <Filter>Engine\Vulkan\Scene\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanRayTracingPipeline.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
+    <ClInclude Include="VulkanTexture.hpp">
+      <Filter>Engine\Vulkan\Scene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.hpp">
+      <Filter>Engine\Vulkan\Scene\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Scene.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
+      <Filter>Engine\Vulkan\Scene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.hpp">
+      <Filter>Engine\Vulkan\Scene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanGeometry.hpp">
+      <Filter>Engine\Vulkan\Scene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanGBufferManager.hpp">
+      <Filter>Engine\Vulkan\Pipeline\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanGraphicsPipelineManager.hpp">
+      <Filter>Engine\Vulkan\Pipeline\headers</Filter>
     </ClInclude>
     <ClInclude Include="VulkanGeometryPipeline.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
+      <Filter>Engine\Vulkan\Pipeline\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanFullScreenQuad.hpp">
+      <Filter>Engine\Vulkan\Pipeline\headers</Filter>
     </ClInclude>
     <ClInclude Include="VulkanLightingPipeline.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
+      <Filter>Engine\Vulkan\Pipeline\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanRayTracingPipeline.hpp">
+      <Filter>Engine\Vulkan\Pipeline\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanRenderer.hpp">
+      <Filter>Engine\Vulkan\Pipeline\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Constants.hpp">
+      <Filter>Engine\Vulkan\Imports</Filter>
+    </ClInclude>
+    <ClInclude Include="GLM_defines.hpp">
+      <Filter>Engine\Vulkan\Imports</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan_GLFW.hpp">
+      <Filter>Engine\Vulkan\Imports</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanExtensionFunctions.hpp">
+      <Filter>Engine\Vulkan\Imports</Filter>
+    </ClInclude>
+    <ClInclude Include="AllEvents.hpp">
+      <Filter>Engine\EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="EventManager.hpp">
+      <Filter>Engine\EventSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Time.hpp">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="InputManager.hpp">
+      <Filter>Engine\Inputs</Filter>
+    </ClInclude>
+    <ClInclude Include="RunTimeSettings.hpp">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanUtils.hpp">
+      <Filter>Engine\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.hpp">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanCommandBufferManager.hpp">
+      <Filter>Engine\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanContext.hpp">
+      <Filter>Engine\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanSwapChainManager.hpp">
+      <Filter>Engine\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.hpp">
+      <Filter>App</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

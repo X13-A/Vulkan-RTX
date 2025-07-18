@@ -188,7 +188,6 @@ void VulkanSwapChainManager::createFramebuffers(const VulkanContext& context, Vk
         framebufferInfo.height = swapChainExtent.height;
         framebufferInfo.layers = 1;
 
-        // Create geometry pass framebuffer
         if (vkCreateFramebuffer(context.device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create geometry pass framebuffer!");

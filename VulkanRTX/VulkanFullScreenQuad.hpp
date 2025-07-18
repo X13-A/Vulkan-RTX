@@ -5,7 +5,7 @@
 
 struct VulkanFullScreenQuadUBO
 {
-	float time; // TODO: alignas() ?
+	float time;
 };
 
 class VulkanFullScreenQuad

@@ -1,6 +1,7 @@
 #include "VulkanGraphicsPipelineManager.hpp"
 #include <array>
 #include <iostream>
+#include "RunTimeSettings.hpp"
 
 void VulkanGraphicsPipelineManager::initPipelines(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager)
 {
@@ -51,7 +52,7 @@ void VulkanGraphicsPipelineManager::handleResize(GLFWwindow* window, const Vulka
     geometryPipeline.handleResize(context, commandBufferManager, swapChainManager, gBufferManager, width, height);
     lightingPipeline.handleResize(context, commandBufferManager, swapChainManager);
     
-    rtPipeline.handleResize(context, width, height);
+    rtPipeline.handleResize(context, width, height, gBufferManager.depthImageView, gBufferManager.normalImageView, gBufferManager.albedoImageView);
 }
 
 void VulkanGraphicsPipelineManager::cleanup(VkDevice device)

@@ -15,8 +15,9 @@ void main(FragmentInput input, out float4 outColor : SV_Target0)
     float3 encodedNormal = normalSampler.Sample(uv).rgb;
     float3 normal = (encodedNormal - 0.5) * 2.0;
     float4 albedo = albedoSampler.Sample(uv);
-
     float depth = depthSampler.Sample(uv).r;
+    outColor = float4(albedo.rgb, 1);
+    return;
 
     if (uv.x < 0.33)
     {

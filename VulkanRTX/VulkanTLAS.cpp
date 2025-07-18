@@ -35,7 +35,6 @@ void VulkanTLAS::createTLAS(const VulkanContext& context, const std::vector<Vulk
 
     if (debug_vkSetDebugUtilsObjectNameEXT)
     {
-        // Name the TLAS for debug
         VkDebugUtilsObjectNameInfoEXT nameInfo{};
         nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
         nameInfo.objectType = VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR;
@@ -65,19 +64,20 @@ void VulkanTLAS::createInstanceBuffer(const VulkanContext& context, const std::v
         addressInfo.accelerationStructure = instance.blas;
         VkDeviceAddress blasAddress = rt_vkGetAccelerationStructureDeviceAddressKHR(context.device, &addressInfo);
 
-        // TODO: use transforms
-        VkTransformMatrixKHR identityMatrix = 
+        VkTransformMatrixKHR vulkanTransform;
+        for (int row = 0; row < 3; row++) 
         {
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            0.0f, 0.0f, 1.0f, 0.0f
-        };
-        memcpy(&instanceData[i].transform, &identityMatrix, sizeof(VkTransformMatrixKHR));
+            for (int col = 0; col < 4; col++) 
+            {
+                vulkanTransform.matrix[row][col] = instance.transform[col][row];
+            }
+        }
 
+        memcpy(&instanceData[i].transform, &vulkanTransform, sizeof(VkTransformMatrixKHR));
         instanceData[i].instanceCustomIndex = instance.instanceId;
         instanceData[i].mask = 0xFF; // Visible to all rays
         instanceData[i].instanceShaderBindingTableRecordOffset = 0;
-        instanceData[i].flags = VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR;
+        instanceData[i].flags = 0;
         instanceData[i].accelerationStructureReference = blasAddress;
     }
 

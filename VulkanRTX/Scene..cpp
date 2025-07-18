@@ -7,18 +7,51 @@ const ModelLoadInfo Scene::modelLoadInfos[] =
 	{
 		"portal_gun",
 		"models/portal_gun/portal_gun.obj",
-		"models/portal_gun/PortalGun_Albedo.png"
+		"models/portal_gun/PortalGun_Albedo.png",
+		glm::vec3(0, 0, 0),
+		glm::vec3(5, 5, 5),
+		glm::vec3(0, 0, 0)
 	},
 	{
 		"portal_gun_glass",
 		"models/portal_gun/portal_gun_glass.obj",
-		"textures/white.jpg"
+		"textures/white.jpg",
+		glm::vec3(0, 0, 0),
+		glm::vec3(5, 5, 5),
+		glm::vec3(0, 0, 0)
 	},
 	{
 		"viling_room",
 		"models/viking_room/viking_room.obj",
-		"models/viking_room/viking_room.png"
-	}
+		"models/viking_room/viking_room.png",
+		glm::vec3(0, -2, 0),
+		glm::vec3(5, 5, 5),
+		glm::vec3(-90, -90, 0)
+	},
+	//{
+	//	"triangle",
+	//	"models/triangle/triangle.obj",
+	//	"models/triangle/triangle.png",
+	//	glm::vec3(1, 1, 1),
+	//	glm::vec3(2, 2, 2),
+	//	glm::vec3(3, 3, 3)
+	//},
+	//{
+	//	"sphere",
+	//	"models/sphere/sphere.obj",
+	//	"textures/white.jpg",
+	//	glm::vec3(2.5, 0, 2.5),
+	//	glm::vec3(1, 1, 1),
+	//	glm::vec3(0, 0, 0)
+	//},
+	//{
+	//	"triangle",
+	//	"models/triangle/triangle.obj",
+	//	"models/portal_gun/portal_gun_glass.png",
+	//	glm::vec3(0, 0, 15),
+	//	glm::vec3(5, 5, 5),
+	//	glm::vec3(6, 6, 6)
+	//}
 };
 std::vector<VulkanModel> Scene::loadedModels = {};
 
@@ -39,6 +72,11 @@ void Scene::loadModels(const VulkanContext& context, VulkanCommandBufferManager&
 	{
 		VulkanModel model;
 		model.name = loadInfo.name;
+		
+		model.transform.setPosition(loadInfo.position);
+		model.transform.setScale(loadInfo.scale);
+		model.transform.setRotation(loadInfo.rotation);
+
 		model.init(loadInfo.objPath, loadInfo.texturePath, context, commandBufferManager, geometryDescriptorSetLayout, descriptorPool);
 		loadedModels.push_back(model);
 	}
@@ -46,25 +84,7 @@ void Scene::loadModels(const VulkanContext& context, VulkanCommandBufferManager&
 
 void Scene::update()
 {
-	static auto startTime = std::chrono::high_resolution_clock::now();
-	auto currentTime = std::chrono::high_resolution_clock::now();
-	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-	// Portal gun
-	float scale = 5.0f;
-	for (int i = 0; i < 2; i++)
-	{
-		loadedModels[i].transform.setTransformMatrix(glm::mat4(1.0f));
-		loadedModels[i].transform.scale(glm::vec3(scale, scale, scale));
-		loadedModels[i].transform.setRotation(glm::vec3(0, Time::time() * 45.0, 0));
-	}
-
-	// Viking room
-	scale = 5.0f;
-	loadedModels[2].transform.setTransformMatrix(glm::mat4(1.0f));
-	loadedModels[2].transform.scale(glm::vec3(scale, scale, scale));
-	loadedModels[2].transform.translate(glm::vec3(0, -2, 0));
-	loadedModels[2].transform.rotate(glm::vec3(-90, -90, 0));
+	// Pass
 }
 
 void Scene::cleanup(VkDevice device)

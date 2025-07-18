@@ -4,6 +4,7 @@
 #include "VulkanUtils.hpp"
 #include "VulkanExtensionFunctions.hpp"
 #include "Constants.hpp"
+#include "RunTimeSettings.hpp"
 #include <iostream>
 
 void VulkanRayTracingPipeline::init(const VulkanContext& context, uint32_t width, uint32_t height)
@@ -18,14 +19,14 @@ void VulkanRayTracingPipeline::init(const VulkanContext& context, uint32_t width
     createStorageImage(context, width, height);
 }
 
-void VulkanRayTracingPipeline::setupScene(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkAccelerationStructureKHR tlas, const std::vector<VulkanModel>& models)
+void VulkanRayTracingPipeline::writeDescriptors(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const std::vector<VulkanModel>& models, VkAccelerationStructureKHR tlas, VkImageView depthImageView, VkImageView normalsImageView, VkImageView albedoImageView)
 {
     std::vector<VkImageView> allTextureViews;
     createRayTracingResources(context, commandBufferManager, tlas, models, allTextureViews);
-    writeDescriptorSet(context, tlas, allTextureViews);
+    writeDescriptorSet(context, depthImageView, normalsImageView, albedoImageView, tlas, allTextureViews);
 }
 
-void VulkanRayTracingPipeline::handleResize(const VulkanContext& context, uint32_t width, uint32_t height)
+void VulkanRayTracingPipeline::handleResize(const VulkanContext& context, uint32_t width, uint32_t height, VkImageView depthImageView, VkImageView normalsImageView, VkImageView albedoImageView)
 {
     if (storageImageView != VK_NULL_HANDLE)
     {
@@ -58,6 +59,58 @@ void VulkanRayTracingPipeline::handleResize(const VulkanContext& context, uint32
     imageWrite.descriptorCount = 1;
     imageWrite.pImageInfo = &imageInfo;
     descriptorWrites.push_back(imageWrite);
+
+
+    // Binding 7: Depth
+    VkDescriptorImageInfo depthInfos;
+    depthInfos.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+    depthInfos.imageView = depthImageView;
+    depthInfos.sampler = globalTextureSampler;
+
+    VkWriteDescriptorSet depthWrite{};
+    depthWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    depthWrite.dstSet = descriptorSet;
+    depthWrite.dstBinding = 7;
+    depthWrite.dstArrayElement = 0;
+    depthWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    depthWrite.descriptorCount = 1;
+    depthWrite.pImageInfo = &depthInfos;
+
+    descriptorWrites.push_back(depthWrite);
+
+    // Binding 8: Normals
+    VkDescriptorImageInfo normalsInfos;
+    normalsInfos.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    normalsInfos.imageView = normalsImageView;
+    normalsInfos.sampler = globalTextureSampler;
+
+    VkWriteDescriptorSet normalsWrite{};
+    normalsWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    normalsWrite.dstSet = descriptorSet;
+    normalsWrite.dstBinding = 8;
+    normalsWrite.dstArrayElement = 0;
+    normalsWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    normalsWrite.descriptorCount = 1;
+    normalsWrite.pImageInfo = &normalsInfos;
+
+    descriptorWrites.push_back(normalsWrite);
+
+    // Binding 9: Albedo
+    VkDescriptorImageInfo albedoInfos;
+    albedoInfos.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    albedoInfos.imageView = albedoImageView;
+    albedoInfos.sampler = globalTextureSampler;
+
+    VkWriteDescriptorSet albedoWrite{};
+    albedoWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    albedoWrite.dstSet = descriptorSet;
+    albedoWrite.dstBinding = 9;
+    albedoWrite.dstArrayElement = 0;
+    albedoWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    albedoWrite.descriptorCount = 1;
+    albedoWrite.pImageInfo = &albedoInfos;
+
+    descriptorWrites.push_back(albedoWrite);
 
     vkUpdateDescriptorSets(context.device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 }
@@ -104,22 +157,56 @@ void VulkanRayTracingPipeline::createRayTracingDescriptorSetLayout(const VulkanC
     indexBufferBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
     indexBufferBinding.pImmutableSamplers = nullptr;
 
-    // Textures array
-    VkDescriptorSetLayoutBinding textureBinding{};
-    textureBinding.binding = 5;
-    textureBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    textureBinding.descriptorCount = MAX_ALBEDO_TEXTURES;
-    textureBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
-    textureBinding.pImmutableSamplers = nullptr;
+    // Offset Buffer
+    VkDescriptorSetLayoutBinding offsetBufferBinding{};
+    offsetBufferBinding.binding = 5;
+    offsetBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    offsetBufferBinding.descriptorCount = 1;
+    offsetBufferBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+    offsetBufferBinding.pImmutableSamplers = nullptr;
 
-    std::array<VkDescriptorSetLayoutBinding, 6> bindings =
+    // Textures array
+    VkDescriptorSetLayoutBinding instancesAlbedoBinding{};
+    instancesAlbedoBinding.binding = 6;
+    instancesAlbedoBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    instancesAlbedoBinding.descriptorCount = MAX_ALBEDO_TEXTURES;
+    instancesAlbedoBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+    instancesAlbedoBinding.pImmutableSamplers = nullptr;
+
+    // GBuffer
+    VkDescriptorSetLayoutBinding depthBinding{};
+    depthBinding.binding = 7;
+    depthBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    depthBinding.descriptorCount = 1;
+    depthBinding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+    depthBinding.pImmutableSamplers = nullptr;
+
+    VkDescriptorSetLayoutBinding normalsBinding{};
+    normalsBinding.binding = 8;
+    normalsBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    normalsBinding.descriptorCount = 1;
+    normalsBinding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+    normalsBinding.pImmutableSamplers = nullptr;
+
+    VkDescriptorSetLayoutBinding albedoBinding{};
+    albedoBinding.binding = 9;
+    albedoBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    albedoBinding.descriptorCount = 1;
+    albedoBinding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+    albedoBinding.pImmutableSamplers = nullptr;
+
+    std::array<VkDescriptorSetLayoutBinding, 10> bindings =
     {
         tlasBinding,
         storageImageBinding,
         uniformBinding,
         vertexBufferBinding,
         indexBufferBinding,
-        textureBinding
+        offsetBufferBinding,
+        instancesAlbedoBinding,
+        depthBinding,
+        normalsBinding,
+        albedoBinding
     };
 
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -197,7 +284,7 @@ void VulkanRayTracingPipeline::createRayTracingPipeline(const VulkanContext& con
     VkRayTracingShaderGroupCreateInfoKHR raygenGroup{};
     raygenGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
     raygenGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
-    raygenGroup.generalShader = RT_RAYGEN_SHADER_INDEX; // Raygen shader index
+    raygenGroup.generalShader = RT_RAYGEN_SHADER_INDEX;
     raygenGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
     raygenGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
     raygenGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
@@ -207,7 +294,7 @@ void VulkanRayTracingPipeline::createRayTracingPipeline(const VulkanContext& con
     VkRayTracingShaderGroupCreateInfoKHR missGroup{};
     missGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
     missGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_GENERAL_KHR;
-    missGroup.generalShader = RT_MISS_SHADER_INDEX; // Miss shader index
+    missGroup.generalShader = RT_MISS_SHADER_INDEX;
     missGroup.closestHitShader = VK_SHADER_UNUSED_KHR;
     missGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
     missGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
@@ -218,7 +305,7 @@ void VulkanRayTracingPipeline::createRayTracingPipeline(const VulkanContext& con
     hitGroup.sType = VK_STRUCTURE_TYPE_RAY_TRACING_SHADER_GROUP_CREATE_INFO_KHR;
     hitGroup.type = VK_RAY_TRACING_SHADER_GROUP_TYPE_TRIANGLES_HIT_GROUP_KHR;
     hitGroup.generalShader = VK_SHADER_UNUSED_KHR;
-    hitGroup.closestHitShader = RT_CLOSEST_HIT_GENERAL_SHADER_INDEX; // Closest hit shader index
+    hitGroup.closestHitShader = RT_CLOSEST_HIT_GENERAL_SHADER_INDEX;
     hitGroup.anyHitShader = VK_SHADER_UNUSED_KHR;
     hitGroup.intersectionShader = VK_SHADER_UNUSED_KHR;
     shaderGroups.push_back(hitGroup);
@@ -230,7 +317,7 @@ void VulkanRayTracingPipeline::createRayTracingPipeline(const VulkanContext& con
     pipelineInfo.pStages = shaderStages.data();
     pipelineInfo.groupCount = static_cast<uint32_t>(shaderGroups.size());
     pipelineInfo.pGroups = shaderGroups.data();
-    pipelineInfo.maxPipelineRayRecursionDepth = RT_RECURSION_DEPTH; // Recursion depth
+    pipelineInfo.maxPipelineRayRecursionDepth = RT_RECURSION_DEPTH;
     pipelineInfo.layout = pipelineLayout;
 
     if (rt_vkCreateRayTracingPipelinesKHR(context.device, VK_NULL_HANDLE, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS)
@@ -246,7 +333,6 @@ void VulkanRayTracingPipeline::createRayTracingPipeline(const VulkanContext& con
 
 void VulkanRayTracingPipeline::createShaderBindingTable(const VulkanContext& context)
 {
-    // 1. Récupérer les propriétés du ray tracing
     VkPhysicalDeviceRayTracingPipelinePropertiesKHR rtProps{};
     rtProps.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR;
 
@@ -255,27 +341,23 @@ void VulkanRayTracingPipeline::createShaderBindingTable(const VulkanContext& con
     props.pNext = &rtProps;
     vkGetPhysicalDeviceProperties2(context.physicalDevice, &props);
 
-    // 2. Calculer les tailles et alignements
     uint32_t handleSize = rtProps.shaderGroupHandleSize;
     uint32_t handleSizeAligned = ((handleSize + rtProps.shaderGroupBaseAlignment - 1) / rtProps.shaderGroupBaseAlignment) * rtProps.shaderGroupBaseAlignment;
 
     uint32_t groupCount = 3; // raygen + miss + hit
     uint32_t sbtSize = groupCount * handleSizeAligned;
 
-    // 3. Récupérer les handles des shader groups depuis la pipeline
     std::vector<uint8_t> shaderHandleStorage(sbtSize);
     if (rt_vkGetRayTracingShaderGroupHandlesKHR(context.device, pipeline, 0, groupCount, sbtSize, shaderHandleStorage.data()) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not get ray tracing shader group handles!");
     }
 
-    // 4. Créer le buffer SBT avec VulkanUtils
     VkBufferUsageFlags sbtUsage = VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
     VkMemoryPropertyFlags sbtMemProps = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
     VulkanUtils::Buffers::createBuffer(context, sbtSize, sbtUsage, sbtMemProps, sbtBuffer, sbtBufferMemory, true);
 
-    // 5. Copier les handles dans le buffer SBT
     void* data;
     vkMapMemory(context.device, sbtBufferMemory, 0, sbtSize, 0, &data);
 
@@ -288,21 +370,16 @@ void VulkanRayTracingPipeline::createShaderBindingTable(const VulkanContext& con
 
     vkUnmapMemory(context.device, sbtBufferMemory);
 
-    // 6. Obtenir l'adresse device du buffer SBT
     VkDeviceAddress sbtAddress = VulkanUtils::Buffers::getBufferDeviceAdress(context, sbtBuffer);
 
-    // 7. Configurer les entrées SBT pour chaque type de shader
-    // Raygen (index 0)
     raygenSbtEntry.deviceAddress = sbtAddress;
     raygenSbtEntry.stride = handleSizeAligned;
     raygenSbtEntry.size = handleSizeAligned;
 
-    // Miss (index 1) 
     missSbtEntry.deviceAddress = sbtAddress + handleSizeAligned;
     missSbtEntry.stride = handleSizeAligned;
     missSbtEntry.size = handleSizeAligned;
 
-    // Hit (index 2)
     hitSbtEntry.deviceAddress = sbtAddress + handleSizeAligned * 2;
     hitSbtEntry.stride = handleSizeAligned;
     hitSbtEntry.size = handleSizeAligned;
@@ -326,7 +403,7 @@ void VulkanRayTracingPipeline::createStorageImage(const VulkanContext& context, 
 
 void VulkanRayTracingPipeline::createUniformBuffer(const VulkanContext& context)
 {
-    VkDeviceSize bufferSize = sizeof(CameraData);
+    VkDeviceSize bufferSize = sizeof(SceneData);
     VkBufferUsageFlags usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
     VkMemoryPropertyFlags properties = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
@@ -335,9 +412,9 @@ void VulkanRayTracingPipeline::createUniformBuffer(const VulkanContext& context)
     vkMapMemory(context.device, uniformBufferMemory, 0, bufferSize, 0, &uniformBufferMapped);
 }
 
-void VulkanRayTracingPipeline::updateUniformBuffer(const CameraData& cameraData)
+void VulkanRayTracingPipeline::updateUniformBuffer(const SceneData& sceneData)
 {
-    memcpy(uniformBufferMapped, &cameraData, sizeof(cameraData));
+    memcpy(uniformBufferMapped, &sceneData, sizeof(sceneData));
 }
 
 void VulkanRayTracingPipeline::createDescriptorPool(const VulkanContext& context)
@@ -350,9 +427,9 @@ void VulkanRayTracingPipeline::createDescriptorPool(const VulkanContext& context
     poolSizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     poolSizes[2].descriptorCount = 1;
     poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    poolSizes[3].descriptorCount = 2; // vertex + index
+    poolSizes[3].descriptorCount = 3; // vertex + index + offset
     poolSizes[4].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[4].descriptorCount = MAX_ALBEDO_TEXTURES;
+    poolSizes[4].descriptorCount = MAX_ALBEDO_TEXTURES + 3; // +3 because of GBuffer
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -383,22 +460,40 @@ void VulkanRayTracingPipeline::createRayTracingResources(const VulkanContext& co
     allVertices.reserve(totalVertices);
     allIndices.reserve(totalIndices);
 
-    // Combine
-    for (const auto& model : models) 
+    std::vector<InstanceData> allInstanceData;
+    allInstanceData.reserve(models.size());
+
+    uint32_t vertexOffset = 0;
+    uint32_t indexOffset = 0;
+    for (const auto& model : models)
     {
+        allInstanceData.push_back(
+        {
+            indexOffset,
+            vertexOffset 
+        });
+
         allVertices.insert(allVertices.end(), model.vertices.begin(), model.vertices.end());
         allIndices.insert(allIndices.end(), model.indices.begin(), model.indices.end());
+        
+        vertexOffset += model.vertices.size();
+        indexOffset += model.indices.size();
     }
 
     // Create vertex buffer
     VkBufferUsageFlags vertexUsageFlags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
     VkMemoryPropertyFlags vertexMemoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-    VulkanUtils::Buffers::createVertexBuffer(context, commandBufferManager, allVertices, globalVertexBuffer, globalVertexBufferMemory, vertexUsageFlags, vertexMemoryFlags, false);
+    VulkanUtils::Buffers::createAndFillBuffer<VulkanVertex>(context, commandBufferManager, allVertices, globalVertexBuffer, globalVertexBufferMemory, vertexUsageFlags, vertexMemoryFlags, false);
 
     // Create index buffer
     VkBufferUsageFlags indexUsageFlags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
     VkMemoryPropertyFlags indexMemoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-    VulkanUtils::Buffers::createIndexBuffer(context, commandBufferManager, allIndices, globalIndexBuffer, globalIndexBufferMemory, indexUsageFlags, indexMemoryFlags, false);
+    VulkanUtils::Buffers::createAndFillBuffer<uint32_t>(context, commandBufferManager, allIndices, globalIndexBuffer, globalIndexBufferMemory, indexUsageFlags, indexMemoryFlags, false);
+
+    // Create offset buffer
+    VkBufferUsageFlags instanceDataUsageFlags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    VkMemoryPropertyFlags instanceDataMemoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    VulkanUtils::Buffers::createAndFillBuffer<InstanceData>(context, commandBufferManager, allInstanceData, instanceDataBuffer, instanceDataBufferMemory, instanceDataUsageFlags, instanceDataMemoryFlags, false);
 
     // Collect all image views
     for (const auto& model : models) 
@@ -412,7 +507,6 @@ void VulkanRayTracingPipeline::createRayTracingResources(const VulkanContext& co
 
 void VulkanRayTracingPipeline::createDescriptorSet(const VulkanContext& context)
 {
-    // Allouer le descriptor set
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = descriptorPool;
@@ -425,7 +519,7 @@ void VulkanRayTracingPipeline::createDescriptorSet(const VulkanContext& context)
     }
 }
 
-void VulkanRayTracingPipeline::writeDescriptorSet(const VulkanContext& context, VkAccelerationStructureKHR tlas, const std::vector<VkImageView>& textureViews)
+void VulkanRayTracingPipeline::writeDescriptorSet(const VulkanContext& context, VkImageView depthImageView, VkImageView normalsImageView, VkImageView albedoImageView, VkAccelerationStructureKHR tlas, const std::vector<VkImageView>& textureViews)
 {
     std::vector<VkWriteDescriptorSet> descriptorWrites;
 
@@ -465,7 +559,7 @@ void VulkanRayTracingPipeline::writeDescriptorSet(const VulkanContext& context, 
     VkDescriptorBufferInfo uniformBufferInfo{};
     uniformBufferInfo.buffer = uniformBuffer;
     uniformBufferInfo.offset = 0;
-    uniformBufferInfo.range = sizeof(CameraData);
+    uniformBufferInfo.range = sizeof(SceneData);
 
     VkWriteDescriptorSet uniformWrite{};
     uniformWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -509,24 +603,96 @@ void VulkanRayTracingPipeline::writeDescriptorSet(const VulkanContext& context, 
     indexWrite.pBufferInfo = &indexBufferInfo;
     descriptorWrites.push_back(indexWrite);
 
-    // Binding 5: Array de textures
-    std::vector<VkDescriptorImageInfo> textureInfos(textureViews.size());
-    for (size_t i = 0; i < textureViews.size(); i++) 
+    // Binding 5: Instance data Buffer
+    VkDescriptorBufferInfo offsetBufferInfo{};
+    offsetBufferInfo.buffer = instanceDataBuffer;
+    offsetBufferInfo.offset = 0;
+    offsetBufferInfo.range = VK_WHOLE_SIZE;
+
+    VkWriteDescriptorSet offsetWrite{};
+    offsetWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    offsetWrite.dstSet = descriptorSet;
+    offsetWrite.dstBinding = 5;
+    offsetWrite.dstArrayElement = 0;
+    offsetWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    offsetWrite.descriptorCount = 1;
+    offsetWrite.pBufferInfo = &offsetBufferInfo;
+    descriptorWrites.push_back(offsetWrite);
+
+    if (textureViews.size() > MAX_ALBEDO_TEXTURES)
+    {
+        std::cerr << "WARNING: reached maximum texture count !" << std::endl;
+    }
+
+    // Binding 6: Instance textures
+    std::vector<VkDescriptorImageInfo> textureInfos(MAX_ALBEDO_TEXTURES);
+    for (size_t i = 0; i < MAX_ALBEDO_TEXTURES; i++)
     {
         textureInfos[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        textureInfos[i].imageView = textureViews[i];
+        textureInfos[i].imageView = textureViews[std::min(i, textureViews.size() - 1)]; // TODO: use proper fallback here
         textureInfos[i].sampler = globalTextureSampler;
     }
 
     VkWriteDescriptorSet textureWrite{};
     textureWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     textureWrite.dstSet = descriptorSet;
-    textureWrite.dstBinding = 5;
+    textureWrite.dstBinding = 6;
     textureWrite.dstArrayElement = 0;
     textureWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    textureWrite.descriptorCount = static_cast<uint32_t>(textureViews.size());
+    textureWrite.descriptorCount = MAX_ALBEDO_TEXTURES;
     textureWrite.pImageInfo = textureInfos.data();
     descriptorWrites.push_back(textureWrite);
+
+    // Binding 7: Depth
+    VkDescriptorImageInfo depthInfos;
+    depthInfos.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+    depthInfos.imageView = depthImageView;
+    depthInfos.sampler = globalTextureSampler;
+
+    VkWriteDescriptorSet depthWrite{};
+    depthWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    depthWrite.dstSet = descriptorSet;
+    depthWrite.dstBinding = 7;
+    depthWrite.dstArrayElement = 0;
+    depthWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    depthWrite.descriptorCount = 1;
+    depthWrite.pImageInfo = &depthInfos;
+
+    descriptorWrites.push_back(depthWrite);
+
+    // Binding 8: Normals
+    VkDescriptorImageInfo normalsInfos;
+    normalsInfos.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    normalsInfos.imageView = normalsImageView;
+    normalsInfos.sampler = globalTextureSampler;
+
+    VkWriteDescriptorSet normalsWrite{};
+    normalsWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    normalsWrite.dstSet = descriptorSet;
+    normalsWrite.dstBinding = 8;
+    normalsWrite.dstArrayElement = 0;
+    normalsWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    normalsWrite.descriptorCount = 1;
+    normalsWrite.pImageInfo = &normalsInfos;
+
+    descriptorWrites.push_back(normalsWrite);
+
+    // Binding 9: Albedo
+    VkDescriptorImageInfo albedoInfos;
+    albedoInfos.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    albedoInfos.imageView = albedoImageView;
+    albedoInfos.sampler = globalTextureSampler;
+
+    VkWriteDescriptorSet albedoWrite{};
+    albedoWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    albedoWrite.dstSet = descriptorSet;
+    albedoWrite.dstBinding = 9;
+    albedoWrite.dstArrayElement = 0;
+    albedoWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    albedoWrite.descriptorCount = 1;
+    albedoWrite.pImageInfo = &albedoInfos;
+
+    descriptorWrites.push_back(albedoWrite);
 
     vkUpdateDescriptorSets(context.device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 }
@@ -551,21 +717,24 @@ void VulkanRayTracingPipeline::traceRays(VkCommandBuffer commandBuffer, uint32_t
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pipeline);
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_RAY_TRACING_KHR, pipelineLayout, 0, 1, &descriptorSet, 0, nullptr);
 
+    PushConstants push;
+    push.frameCount = frameCount;
+
     // Push constants
     vkCmdPushConstants(commandBuffer,
         pipelineLayout,
         VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR,
         0,
-        sizeof(uint32_t),
-        &frameCount);
+        sizeof(PushConstants),
+        &push);
 
 
     if (debug_vkCmdBeginDebugUtilsLabelEXT)
     {
         VkDebugUtilsLabelEXT labelInfo{};
         labelInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-        labelInfo.pLabelName = "BEFORE_TRACE_RAYS";
-        labelInfo.color[0] = 1.0f; // Rouge
+        labelInfo.pLabelName = "RTX ON";
+        labelInfo.color[0] = 1.0f;
         labelInfo.color[1] = 0.0f;
         labelInfo.color[2] = 0.0f;
         labelInfo.color[3] = 1.0f;
@@ -573,7 +742,7 @@ void VulkanRayTracingPipeline::traceRays(VkCommandBuffer commandBuffer, uint32_t
     }
 
     // RAY TRACE !
-    rt_vkCmdTraceRaysKHR(commandBuffer, &raygenSbtEntry, &missSbtEntry, &hitSbtEntry, &callableSbtEntry, storageImageWidth, storageImageHeight, 1);
+    rt_vkCmdTraceRaysKHR(commandBuffer, &raygenSbtEntry, &missSbtEntry, &hitSbtEntry, &callableSbtEntry, storageImageWidth * RunTimeSettings::renderScale, storageImageHeight * RunTimeSettings::renderScale, RT_RECURSION_DEPTH);
 
     if (debug_vkCmdEndDebugUtilsLabelEXT) 
     {
@@ -627,6 +796,14 @@ void VulkanRayTracingPipeline::cleanup(VkDevice device)
     if (globalIndexBufferMemory != VK_NULL_HANDLE)
     {
         vkFreeMemory(device, globalIndexBufferMemory, nullptr);
+    }
+    if (instanceDataBuffer != VK_NULL_HANDLE)
+    {
+        vkDestroyBuffer(device, instanceDataBuffer, nullptr);
+    }
+    if (instanceDataBufferMemory != VK_NULL_HANDLE)
+    {
+        vkFreeMemory(device, instanceDataBufferMemory, nullptr);
     }
     if (globalTextureSampler != VK_NULL_HANDLE)
     {

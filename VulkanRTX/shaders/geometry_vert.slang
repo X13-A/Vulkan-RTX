@@ -28,7 +28,6 @@ VertexOutput main(VertexInput input)
     output.svPosition = mul(ubo.projMat, mul(ubo.viewMat, mul(ubo.modelMat, float4(input.position, 1.0))));
     output.fragTexCoord = input.texCoord;
     output.fragNormal = mul(ubo.normalMat, float4(input.normal, 0)).xyz;
-
     output.fragNormal = (output.fragNormal * 0.5) + 0.5;
     return output;
 }

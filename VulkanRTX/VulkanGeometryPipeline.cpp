@@ -15,7 +15,6 @@ void VulkanGeometryPipeline::init(const VulkanContext& context, VulkanCommandBuf
 
 void VulkanGeometryPipeline::createDescriptorSetLayouts(const VulkanContext& context)
 {
-    // Geometry Pass: Uniform buffer and texture sampler
     VkDescriptorSetLayoutBinding uboLayoutBinding{};
     uboLayoutBinding.binding = 0;
     uboLayoutBinding.descriptorCount = 1;
@@ -36,7 +35,6 @@ void VulkanGeometryPipeline::createDescriptorSetLayouts(const VulkanContext& con
         samplerLayoutBinding
     };
 
-    // Create descriptor layout for the geometry pass
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
     layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
@@ -50,7 +48,6 @@ void VulkanGeometryPipeline::createDescriptorSetLayouts(const VulkanContext& con
 
 void VulkanGeometryPipeline::createRenderPasses(const VulkanContext& context, VkFormat swapChainImageFormat)
 {
-    // Create the render pass for the geometry pass (writes to G-buffer)
     VkAttachmentDescription depthAttachment = {};
     depthAttachment.format = VulkanUtils::DepthStencil::findDepthFormat(context.physicalDevice);
     depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -109,7 +106,6 @@ void VulkanGeometryPipeline::createRenderPasses(const VulkanContext& context, Vk
     renderPassInfo.subpassCount = 1;
     renderPassInfo.pSubpasses = &subpass;
 
-    // Create the render pass for the geometry pass
     if (vkCreateRenderPass(context.device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create geometry pass render pass!");
@@ -118,7 +114,6 @@ void VulkanGeometryPipeline::createRenderPasses(const VulkanContext& context, Vk
 
 void VulkanGeometryPipeline::createFramebuffers(const VulkanContext& context, const VulkanGBufferManager& gBufferManager, uint32_t width, uint32_t height)
 {
-    // Geometry pass framebuffers
     std::array<VkImageView, 3> geometryAttachments = 
     {
         gBufferManager.normalImageView,
@@ -135,7 +130,6 @@ void VulkanGeometryPipeline::createFramebuffers(const VulkanContext& context, co
     geometryFramebufferInfo.height = height;
     geometryFramebufferInfo.layers = 1;
 
-    // Create geometry pass framebuffer (G-buffer)
     if (vkCreateFramebuffer(context.device, &geometryFramebufferInfo, nullptr, &framebuffer) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create geometry pass framebuffer!");
@@ -161,7 +155,6 @@ void VulkanGeometryPipeline::createPipelineLayouts(const VulkanContext& context)
 
 void VulkanGeometryPipeline::createPipeline(const VulkanContext& context, const VulkanSwapChainManager& swapChainManager)
 {
-    // Vertex and fragment shaders for geometry pass
     std::vector<char> vertShaderCode = readFile("shaders/geometry_vert.spv");
     std::vector<char> fragShaderCode = readFile("shaders/geometry_frag.spv");
 
@@ -182,7 +175,7 @@ void VulkanGeometryPipeline::createPipeline(const VulkanContext& context, const 
 
     VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
-    // Define vertex input state (vertex binding and attributes)
+    // Define vertex input state
     VkVertexInputBindingDescription bindingDescription = VulkanVertex::getBindingDescription();
     std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = VulkanVertex::getAttributeDescriptions();
 
@@ -293,7 +286,6 @@ void VulkanGeometryPipeline::createPipeline(const VulkanContext& context, const 
         throw std::runtime_error("failed to create geometry pass graphics pipeline!");
     }
 
-    // Clean up shader modules as they are no longer needed after pipeline creation
     vkDestroyShaderModule(context.device, vertShaderModule, nullptr);
     vkDestroyShaderModule(context.device, fragShaderModule, nullptr);
 }
@@ -384,18 +376,13 @@ VkPipelineLayout VulkanGeometryPipeline::getPipelineLayout() const
 
 void VulkanGeometryPipeline::cleanup(VkDevice device)
 {
-    // Cleanup pipelines
     vkDestroyPipeline(device, pipeline, nullptr);
 
-    // Cleanup pipeline layouts
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 
-    // Cleanup render passes
     vkDestroyRenderPass(device, renderPass, nullptr);
 
-    // Cleanup descriptor set layouts
     vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
-    // Cleanup framebuffer
     vkDestroyFramebuffer(device, framebuffer, nullptr);
 }

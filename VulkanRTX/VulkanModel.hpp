@@ -53,7 +53,6 @@ public:
     
     void cleanup(VkDevice device);
 
-    // New methods for ray tracing
     void createBLAS(
         const VulkanContext& context,
         VulkanCommandBufferManager& commandBufferManager);

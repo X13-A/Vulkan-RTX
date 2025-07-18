@@ -1,13 +1,27 @@
 #include "VulkanContext.hpp"
 #include "VulkanModel.hpp"
 
-// Structure pour les données caméra (doit correspondre au shader)
-struct CameraData 
+struct SceneData 
 {
     glm::mat4 view;
     glm::mat4 proj;
     glm::mat4 viewInverse;
     glm::mat4 projInverse;
+    glm::vec3 cameraPos;
+    float padding;
+    glm::vec2 nearFar;
+    int spp;
+};
+
+struct InstanceData
+{
+    uint32_t indexOffset;
+    uint32_t vertexOffset;
+};
+
+struct PushConstants
+{
+    uint32_t frameCount;
 };
 
 class VulkanRayTracingPipeline
@@ -49,12 +63,15 @@ private:
     VkBuffer globalIndexBuffer;
     VkDeviceMemory globalIndexBufferMemory;
 
+    VkBuffer instanceDataBuffer;
+    VkDeviceMemory instanceDataBufferMemory;
+
     // Sampler
     VkSampler globalTextureSampler;
 
 public:
     void init(const VulkanContext& context, uint32_t width, uint32_t height);
-    void setupScene(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkAccelerationStructureKHR tlas, const std::vector<VulkanModel>& models);
+    void writeDescriptors(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const std::vector<VulkanModel>& models, VkAccelerationStructureKHR tlas, VkImageView depthImageView, VkImageView normalsImageView, VkImageView albedoImageView);
 
     void createRayTracingDescriptorSetLayout(const VulkanContext& context);
     void createRayTracingPipelineLayout(const VulkanContext& context);
@@ -65,14 +82,14 @@ public:
 
     void createDescriptorPool(const VulkanContext& context);
     void createDescriptorSet(const VulkanContext& context);
-    void writeDescriptorSet(const VulkanContext& context, VkAccelerationStructureKHR tlas, const std::vector<VkImageView>& textureViews);
+    void writeDescriptorSet(const VulkanContext& context, VkImageView depthImageView, VkImageView normalsImageView, VkImageView albedoImageView, VkAccelerationStructureKHR tlas, const std::vector<VkImageView>& textureViews);
     
     void createStorageImage(const VulkanContext& context, uint32_t width, uint32_t height);
     void createUniformBuffer(const VulkanContext& context);
-    void updateUniformBuffer(const CameraData& cameraData);
+    void updateUniformBuffer(const SceneData& sceneData);
 
     void traceRays(VkCommandBuffer commandBuffer, uint32_t frameCount);
-    void handleResize(const VulkanContext& context, uint32_t width, uint32_t height);
+    void handleResize(const VulkanContext& context, uint32_t width, uint32_t height, VkImageView depthImageView, VkImageView normalsImageView, VkImageView albedoImageView);
     void cleanup(VkDevice device);
 
     // Getters

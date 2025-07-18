@@ -140,19 +140,19 @@ void VulkanRenderer::drawFrame(GLFWwindow* window, const VulkanContext& context,
         VkCommandBuffer commandBuffer = commandBufferManager.beginSingleTimeCommands(context.device);
         VulkanUtils::Image::blitImage(
             commandBuffer,
-            graphicsPipeline.rtPipeline.getStorageImage(),       // srcImage
-            swapChainManager.swapChainImages[imageIndex],        // dstImage
-            VK_FORMAT_R8G8B8A8_UNORM,                            // srcFormat
-            swapChainManager.swapChainImageFormat,               // dstFormat
-            VK_ACCESS_SHADER_WRITE_BIT,                          // srcOriginalAccessMask
-            0,                                                   // dstOriginalAccessMask
-            VK_IMAGE_LAYOUT_GENERAL,                             // srcOriginalLayout
-            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,                     // dstOriginalLayout
-            graphicsPipeline.rtPipeline.getStorageImageWidth(),  // srcWidth
-            graphicsPipeline.rtPipeline.getStorageImageHeight(), // srcHeight
-            swapChainManager.swapChainExtent.width,              // dstWidth
-            swapChainManager.swapChainExtent.height,             // dstHeight
-            VK_FILTER_LINEAR                                     // filter
+            graphicsPipeline.rtPipeline.getStorageImage(),       
+            swapChainManager.swapChainImages[imageIndex],        
+            VK_FORMAT_R8G8B8A8_UNORM,                            
+            swapChainManager.swapChainImageFormat,               
+            VK_ACCESS_SHADER_WRITE_BIT,                          
+            0,                                                   
+            VK_IMAGE_LAYOUT_GENERAL,                             
+            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,                     
+            graphicsPipeline.rtPipeline.getStorageImageWidth(),  
+            graphicsPipeline.rtPipeline.getStorageImageHeight(), 
+            swapChainManager.swapChainExtent.width,              
+            swapChainManager.swapChainExtent.height,             
+            VK_FILTER_LINEAR                                     
         );
         commandBufferManager.endSingleTimeCommands(context.device, context.graphicsQueue, commandBuffer);
     }
@@ -196,14 +196,18 @@ void VulkanRenderer::updateUniformBuffers(const Camera& camera, const std::vecto
     }
 
     VulkanFullScreenQuadUBO fullScreenUBO{};
-    fullScreenUBO.time = 0; // TODO
+    fullScreenUBO.time = 0; // TODO ?
     memcpy(fullScreenQuad.uniformBuffersMapped[currentImage], &fullScreenUBO, sizeof(fullScreenUBO));
 
-    CameraData camData;
+    SceneData camData;
     camData.proj = camera.getProjectionMatrix();
     camData.view = camera.getViewMatrix();
     camData.projInverse = glm::inverse(camera.getProjectionMatrix());
     camData.viewInverse = glm::inverse(camera.getViewMatrix());
+    camData.cameraPos = camera.transform.getPosition();
+    camData.padding = 0;
+    camData.nearFar = glm::vec2(camera.getNearPlane(), camera.getFarPlane());
+    camData.spp = RunTimeSettings::spp;
     rtPipeline.updateUniformBuffer(camData);
 }
 

@@ -20,7 +20,6 @@ void VulkanModel::loadObj(std::string objPath)
         throw std::runtime_error(warn + err);
     }
 
-    // Load the model
     std::unordered_map<VulkanVertex, uint32_t> uniqueVertices{};
     for (const auto& shape : shapes)
     {
@@ -61,11 +60,11 @@ void VulkanModel::init(std::string objPath, std::string texturePath, const Vulka
     
     VkBufferUsageFlags vertexUsageFlags = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
     VkMemoryPropertyFlags vertexMemoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-    VulkanUtils::Buffers::createVertexBuffer(context, commandBufferManager, vertices, vertexBuffer, vertexBufferMemory, vertexUsageFlags, vertexMemoryFlags, true);
+    VulkanUtils::Buffers::createAndFillBuffer<VulkanVertex>(context, commandBufferManager, vertices, vertexBuffer, vertexBufferMemory, vertexUsageFlags, vertexMemoryFlags, true);
 
     VkBufferUsageFlags indexUsageFlags = VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
     VkMemoryPropertyFlags indexMemoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-    VulkanUtils::Buffers::createIndexBuffer(context, commandBufferManager, indices, indexBuffer, indexBufferMemory, indexUsageFlags, indexMemoryFlags, true);
+    VulkanUtils::Buffers::createAndFillBuffer<uint32_t>(context, commandBufferManager, indices, indexBuffer, indexBufferMemory, indexUsageFlags, indexMemoryFlags, true);
 
     albedoTexture.init(texturePath, context, commandBufferManager);
     createUniformBuffers(context);
@@ -166,13 +165,13 @@ void VulkanModel::createBLAS(
     VkDeviceAddress vertexBufferAddress = VulkanUtils::Buffers::getBufferDeviceAdress(context, vertexBuffer);
     VkDeviceAddress indexBufferAddress = VulkanUtils::Buffers::getBufferDeviceAdress(context, indexBuffer);
 
-    // Define geometry
+    // Geometry
     VkAccelerationStructureGeometryKHR accelGeometry{};
     accelGeometry.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_KHR;
     accelGeometry.geometryType = VK_GEOMETRY_TYPE_TRIANGLES_KHR;
     accelGeometry.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
 
-    // Define triangles data
+    // Triangle data
     accelGeometry.geometry.triangles.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_GEOMETRY_TRIANGLES_DATA_KHR;
     accelGeometry.geometry.triangles.vertexFormat = VK_FORMAT_R32G32B32_SFLOAT;
     accelGeometry.geometry.triangles.vertexData.deviceAddress = vertexBufferAddress;
@@ -184,7 +183,7 @@ void VulkanModel::createBLAS(
     accelGeometry.geometry.triangles.transformData.hostAddress = nullptr;
     accelGeometry.geometry.triangles.transformData = {};
 
-    // Configure construction parameters
+    // Build params
     VkAccelerationStructureBuildGeometryInfoKHR buildInfo{};
     buildInfo.sType = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_BUILD_GEOMETRY_INFO_KHR;
     buildInfo.type = VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR;
@@ -264,7 +263,6 @@ void VulkanModel::createBLAS(
 
     if (debug_vkSetDebugUtilsObjectNameEXT)
     {
-        // Name the BLAS for debug
         VkDebugUtilsObjectNameInfoEXT nameInfo{};
         nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
         nameInfo.objectType = VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR;
