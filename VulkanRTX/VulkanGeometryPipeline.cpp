@@ -1,49 +1,14 @@
 #include "VulkanGeometryPipeline.hpp"
 #include <stdexcept>
 #include "Utils.hpp"
+#include "DescriptorSetLayoutManager.hpp"
 
 void VulkanGeometryPipeline::init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager, const VulkanGBufferManager& gBufferManager)
 {
     createRenderPasses(context, swapChainManager.swapChainImageFormat);
-
-    createDescriptorSetLayouts(context);
     createPipelineLayouts(context);
     createPipeline(context, swapChainManager);
-
     createFramebuffers(context, gBufferManager, swapChainManager.swapChainExtent.width, swapChainManager.swapChainExtent.height);
-}
-
-void VulkanGeometryPipeline::createDescriptorSetLayouts(const VulkanContext& context)
-{
-    VkDescriptorSetLayoutBinding uboLayoutBinding{};
-    uboLayoutBinding.binding = 0;
-    uboLayoutBinding.descriptorCount = 1;
-    uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    uboLayoutBinding.pImmutableSamplers = nullptr;
-    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-    VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-    samplerLayoutBinding.binding = 1;
-    samplerLayoutBinding.descriptorCount = 1;
-    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    samplerLayoutBinding.pImmutableSamplers = nullptr;
-    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-    std::array<VkDescriptorSetLayoutBinding, 2> bindings =
-    {
-        uboLayoutBinding,
-        samplerLayoutBinding
-    };
-
-    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-    layoutInfo.pBindings = bindings.data();
-
-    if (vkCreateDescriptorSetLayout(context.device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create geometry pass descriptor set layout!");
-    }
 }
 
 void VulkanGeometryPipeline::createRenderPasses(const VulkanContext& context, VkFormat swapChainImageFormat)
@@ -139,7 +104,11 @@ void VulkanGeometryPipeline::createFramebuffers(const VulkanContext& context, co
 void VulkanGeometryPipeline::createPipelineLayouts(const VulkanContext& context)
 {
     // Geometry Pipeline Layout
-    std::array<VkDescriptorSetLayout, 1> geometryDescriptorSetLayouts = { descriptorSetLayout };
+    std::array<VkDescriptorSetLayout, 2> geometryDescriptorSetLayouts =
+    {
+        DescriptorSetLayoutManager::getModelLayout(),
+        DescriptorSetLayoutManager::getMaterialLayout() 
+    };
 
     VkPipelineLayoutCreateInfo geometryPipelineLayoutInfo{};
     geometryPipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -337,21 +306,44 @@ void VulkanGeometryPipeline::recordDrawCommands(const VulkanSwapChainManager& sw
 
     for (const VulkanModel& model : models)
     {
-        VkBuffer vertexBuffers[] = { model.vertexBuffer };
-        VkDeviceSize offsets[] = { 0 };
-        vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-        vkCmdBindIndexBuffer(commandBuffer, model.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-        vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &model.descriptorSets[currentFrame], 0, nullptr);
+        // Bind model descriptor set once per model (transform/geometry data)
+        vkCmdBindDescriptorSets(commandBuffer,
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            pipelineLayout,
+            0,  // Set 0: Model layout
+            1,
+            &model.modelDescriptorSets[currentFrame],
+            0, nullptr);
 
-        vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(model.indices.size()), 1, 0, 0, 0);
+        // Render each submesh
+        for (const ShadedMesh& shadedMesh : model.shadedMeshes)
+        {
+            const VulkanMesh& mesh = shadedMesh.mesh;
+            const VulkanMaterial& material = shadedMesh.material;
+
+            // Bind vertex and index buffers for this mesh
+            VkBuffer vertexBuffers[] = { mesh.vertexBuffer };
+            VkDeviceSize offsets[] = { 0 };
+            vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+            vkCmdBindIndexBuffer(commandBuffer, mesh.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+            // Bind material descriptor set for this mesh
+            vkCmdBindDescriptorSets(commandBuffer,
+                VK_PIPELINE_BIND_POINT_GRAPHICS,
+                pipelineLayout,
+                1,  // Set 1: Material layout
+                1,
+                &material.descriptorSets[currentFrame],
+                0, nullptr);
+
+            // Draw this mesh
+            vkCmdDrawIndexed(commandBuffer,
+                static_cast<uint32_t>(mesh.indices.size()),
+                1, 0, 0, 0);
+        }
     }
 
     vkCmdEndRenderPass(commandBuffer);
-}
-
-VkDescriptorSetLayout VulkanGeometryPipeline::getDescriptorSetLayout() const
-{
-    return descriptorSetLayout;
 }
 
 VkRenderPass VulkanGeometryPipeline::getRenderPass() const
@@ -381,8 +373,6 @@ void VulkanGeometryPipeline::cleanup(VkDevice device)
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 
     vkDestroyRenderPass(device, renderPass, nullptr);
-
-    vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
     vkDestroyFramebuffer(device, framebuffer, nullptr);
 }

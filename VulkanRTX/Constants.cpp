@@ -7,7 +7,7 @@ const uint32_t GLFW_WINDOW_HEIGHT = 600;
 const char* GLFW_WINDOW_NAME = "Vulkan";
 
 // Ray tracing
-const int RT_RECURSION_DEPTH = 1;
+const int RT_RECURSION_DEPTH = 3;
 const int RT_RAYGEN_SHADER_INDEX = 0;
 const int RT_MISS_SHADER_INDEX = 1;
 const int RT_CLOSEST_HIT_GENERAL_SHADER_INDEX = 2;

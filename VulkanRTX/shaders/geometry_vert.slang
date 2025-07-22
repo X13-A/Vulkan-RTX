@@ -6,6 +6,7 @@ struct UniformBufferObject
     float4x4 normalMat;
 };
 
+[[vk::binding(0, 0)]] 
 ConstantBuffer<UniformBufferObject> ubo;
 
 struct VertexInput

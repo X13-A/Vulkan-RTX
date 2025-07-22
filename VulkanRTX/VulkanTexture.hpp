@@ -8,14 +8,16 @@
 class VulkanTexture
 {
 public:
-    VkImage textureImage;
-    VkDeviceMemory textureImageMemory;
-    VkImageView textureImageView;
-    VkSampler textureSampler;
+    VkImage image;
+    VkDeviceMemory imageMemory;
+    VkImageView imageView;
+    VkSampler sampler;
 
 public:
     void init(std::string path, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager);
-    void createTextureImageView(const VulkanContext& context);
-    void createTextureImage(std::string path, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager);
+    void createImageView(const VulkanContext& context);
+    void createImage(std::string path, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager);
     void cleanup(VkDevice device);
+
+    static VulkanTexture create1x1Texture(float r, float g, float b, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager);
 };

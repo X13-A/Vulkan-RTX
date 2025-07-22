@@ -9,7 +9,6 @@ struct ModelLoadInfo
 {
 	std::string name;
 	std::string objPath;
-	std::string texturePath;
 	glm::vec3 position;
 	glm::vec3 scale;
 	glm::vec3 rotation;
@@ -18,13 +17,17 @@ struct ModelLoadInfo
 class Scene
 {
 private:
-	static std::vector<VulkanModel> loadedModels;
-	static const ModelLoadInfo modelLoadInfos[];
+	static std::vector<VulkanModel> models; // The loaded models
+	static std::vector<ModelInfo> modelInfos; // Information on models, fetched at runtime
+	static const ModelLoadInfo modelLoadInfos[]; // Configuration to load model files
 
 public:	
 	static uint32_t getModelCount();
+	static uint32_t getMaterialCount();
+	static uint32_t getMeshCount();
 	static const std::vector<VulkanModel>& getModels();
-	static void loadModels(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkDescriptorSetLayout geometryDescriptorSetLayout, VkDescriptorPool descriptorPool);
+	static void fetchModels();
+	static void loadModels(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkDescriptorPool descriptorPool);
 	static void update();
 	static void cleanup(VkDevice device);
 };

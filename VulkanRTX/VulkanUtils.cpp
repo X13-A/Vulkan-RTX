@@ -1,6 +1,8 @@
 #include "VulkanUtils.hpp"
 #include <iostream>
 #include <vector>
+#include "Utils.hpp"
+using namespace VulkanUtils;
 
 VkFormat VulkanUtils::Hardware::findSupportedFormat(VkPhysicalDevice physicalDevice, const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
 {

@@ -9,6 +9,7 @@
 #include "Vulkan_GLFW.hpp"
 #include <vector>
 #include "Transform.hpp"
+#include "VulkanMesh.hpp"
 
 struct VulkanModelUBO
 {
@@ -18,25 +19,28 @@ struct VulkanModelUBO
     alignas(16) glm::mat4 normalMat;
 };
 
+struct ShadedMesh
+{
+    // 1 to 1 relationship
+    VulkanMesh mesh;
+    VulkanMaterial material;
+};
+
 class VulkanModel
 {
 public:
     std::string name;
-    std::vector<VulkanVertex> vertices;
-    std::vector<uint32_t> indices;
-    VkBuffer vertexBuffer;
-    VkDeviceMemory vertexBufferMemory;
-    VkBuffer indexBuffer;
-    VkDeviceMemory indexBufferMemory;
-    VulkanTexture albedoTexture;
+    Transform transform;
 
-    std::vector<VkDescriptorSet> descriptorSets;
-    
+    std::vector<ShadedMesh> shadedMeshes;
+
+    // Model uniforms
     std::vector<VkBuffer> uniformBuffers;
     std::vector<VkDeviceMemory> uniformBuffersMemory;
     std::vector<void*> uniformBuffersMapped;
 
-    Transform transform;
+    // These descriptor sets are used for model-unique data only (no textures)
+    std::vector<VkDescriptorSet> modelDescriptorSets;
 
     // Ray tracing
     VkAccelerationStructureKHR blasHandle;
@@ -45,15 +49,28 @@ public:
     VkDeviceAddress blasBufferAddress;
 
 public:
-    void loadObj(std::string objPath);
     
-    void init(std::string objPath, std::string texturePath, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkDescriptorSetLayout geometryDescriptorSetLayout, VkDescriptorPool descriptorPool);
-    void createDescriptorSets(const VulkanContext& context, VkDescriptorSetLayout geometryDescriptorSetLayout, VkDescriptorPool descriptorPool);
-    void createUniformBuffers(const VulkanContext& context);
-    
+    void load(ModelInfo info, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkDescriptorPool descriptorPool);
     void cleanup(VkDevice device);
+
+    void createDescriptorSets(const VulkanContext& context, VkDescriptorPool descriptorPool);
+    void createUniformBuffers(const VulkanContext& context);
 
     void createBLAS(
         const VulkanContext& context,
         VulkanCommandBufferManager& commandBufferManager);
+
 };
+
+// One model has multiple meshes
+// One mesh has one material
+// One material has a few textures (albedo, etc)
+
+// Eeach model has descriptor sets for their geometry (Transform data)
+// Each mesh has specific descriptor sets for it's textures etc
+
+// Each Model builds one BLAS with geometry indexing :
+//    - buildInfo.geometryCount = submeshes.size();
+//    - buildInfo.pGeometries = geometries.data();
+
+// This allows material indexing in the RT shader

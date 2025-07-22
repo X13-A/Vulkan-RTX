@@ -1,62 +1,13 @@
 #include "VulkanLightingPipeline.hpp"
 #include <stdexcept>
 #include "Utils.hpp"
+#include "DescriptorSetLayoutManager.hpp"
 
 void VulkanLightingPipeline::init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager)
 {
     createRenderPasses(context, swapChainManager.swapChainImageFormat);
-    createDescriptorSetLayouts(context);
     createPipelineLayouts(context);
     createPipeline(context, swapChainManager);
-}
-
-void VulkanLightingPipeline::createDescriptorSetLayouts(const VulkanContext& context)
-{
-    VkDescriptorSetLayoutBinding lightingUboLayoutBinding{};
-    lightingUboLayoutBinding.binding = 0;
-    lightingUboLayoutBinding.descriptorCount = 1;
-    lightingUboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    lightingUboLayoutBinding.pImmutableSamplers = nullptr;
-    lightingUboLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-    VkDescriptorSetLayoutBinding depthSamplerLayoutBinding{};
-    depthSamplerLayoutBinding.binding = 1;
-    depthSamplerLayoutBinding.descriptorCount = 1;
-    depthSamplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    depthSamplerLayoutBinding.pImmutableSamplers = nullptr;
-    depthSamplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-    VkDescriptorSetLayoutBinding normalSamplerLayoutBinding{};
-    normalSamplerLayoutBinding.binding = 2;
-    normalSamplerLayoutBinding.descriptorCount = 1;
-    normalSamplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    normalSamplerLayoutBinding.pImmutableSamplers = nullptr;
-    normalSamplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-    VkDescriptorSetLayoutBinding albedoSamplerLayoutBinding{};
-    albedoSamplerLayoutBinding.binding = 3;
-    albedoSamplerLayoutBinding.descriptorCount = 1;
-    albedoSamplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    albedoSamplerLayoutBinding.pImmutableSamplers = nullptr;
-    albedoSamplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-    std::array<VkDescriptorSetLayoutBinding, 4> lightingBindings =
-    {
-        lightingUboLayoutBinding,
-        depthSamplerLayoutBinding,
-        normalSamplerLayoutBinding,
-        albedoSamplerLayoutBinding
-    };
-
-    VkDescriptorSetLayoutCreateInfo lightingLayoutInfo{};
-    lightingLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    lightingLayoutInfo.bindingCount = static_cast<uint32_t>(lightingBindings.size());
-    lightingLayoutInfo.pBindings = lightingBindings.data();
-
-    if (vkCreateDescriptorSetLayout(context.device, &lightingLayoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create lighting pass descriptor set layout!");
-    }
 }
 
 void VulkanLightingPipeline::createRenderPasses(const VulkanContext& context, VkFormat swapChainImageFormat)
@@ -96,7 +47,10 @@ void VulkanLightingPipeline::createRenderPasses(const VulkanContext& context, Vk
 
 void VulkanLightingPipeline::createPipelineLayouts(const VulkanContext& context)
 {
-    std::array<VkDescriptorSetLayout, 1> lightingDescriptorSetLayouts = { descriptorSetLayout };
+    std::array<VkDescriptorSetLayout, 1> lightingDescriptorSetLayouts = 
+    {
+        DescriptorSetLayoutManager::getFullScreenQuadLayout() 
+    };
 
     VkPipelineLayoutCreateInfo lightingPipelineLayoutInfo{};
     lightingPipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -248,10 +202,6 @@ void VulkanLightingPipeline::handleResize(const VulkanContext& context, VulkanCo
     createPipeline(context, swapChainManager);
 }
 
-VkDescriptorSetLayout VulkanLightingPipeline::getDescriptorSetLayout() const
-{
-    return descriptorSetLayout;
-}
 VkRenderPass VulkanLightingPipeline::getRenderPass() const
 {
     return renderPass;
@@ -274,8 +224,6 @@ void VulkanLightingPipeline::cleanup(VkDevice device)
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 
     vkDestroyRenderPass(device, renderPass, nullptr);
-
-    vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 }
 
 void VulkanLightingPipeline::recordDrawCommands(const VulkanSwapChainManager& swapChainManager, const VulkanFullScreenQuad& fullScreenQuad, VkCommandBuffer commandBuffer, uint32_t currentFrame, uint32_t imageIndex)

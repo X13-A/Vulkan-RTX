@@ -11,21 +11,36 @@ void VulkanGraphicsPipelineManager::initPipelines(const VulkanContext& context, 
     rtPipeline.init(context, swapChainManager.swapChainExtent.width, swapChainManager.swapChainExtent.height);
 }
 
-void VulkanGraphicsPipelineManager::createDescriptorPool(const VulkanContext& context, size_t modelCount, size_t fullScreenQuadCount)
+void VulkanGraphicsPipelineManager::createDescriptorPool(const VulkanContext& context, size_t modelCount, size_t meshCount, size_t fullScreenQuadCount)
 {
     std::array<VkDescriptorPoolSize, 2> poolSizes{};
-    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSizes[0].descriptorCount = static_cast<uint32_t>(modelCount * MAX_FRAMES_IN_FLIGHT + fullScreenQuadCount * MAX_FRAMES_IN_FLIGHT);
 
+    // Uniform buffer descriptors
+    // - 1 per model
+    // - 1 per fullscreen quad
+    poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    poolSizes[0].descriptorCount = static_cast<uint32_t>((modelCount + fullScreenQuadCount) * MAX_FRAMES_IN_FLIGHT);
+
+    // Combined image sampler descriptors
+    // - 1 per material (albedo texture) -> Use meshCount because a mesh 100% has a material (can be a fallback)
+    // - TODO: add normals, smoothness, etc
+    // - 3 per fullscreen quad (G-Buffer textures: depth, normal, albedo)
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = static_cast<uint32_t>(modelCount * MAX_FRAMES_IN_FLIGHT + fullScreenQuadCount * 3 * MAX_FRAMES_IN_FLIGHT); // * 3 because 3 textures in G-Buffer
+    poolSizes[1].descriptorCount = static_cast<uint32_t>((meshCount + fullScreenQuadCount * 3) * MAX_FRAMES_IN_FLIGHT);
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
     poolInfo.pPoolSizes = poolSizes.data();
-    poolInfo.maxSets = static_cast<uint32_t>(modelCount * MAX_FRAMES_IN_FLIGHT + fullScreenQuadCount * MAX_FRAMES_IN_FLIGHT);
 
+    // Total descriptor sets needed:
+    // - 1 per model (geometry/transform)
+    // - 1 per material (textures) 
+    // - 1 per fullscreen quad (lighting)
+    // TODO: problem here !
+    poolInfo.maxSets = static_cast<uint32_t>((modelCount + meshCount + fullScreenQuadCount) * MAX_FRAMES_IN_FLIGHT);
+    
+    std::cout << "Creating descriptor pool with " << poolInfo.maxSets << " max sets" << std::endl;
     if (vkCreateDescriptorPool(context.device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
     {
         throw std::runtime_error("failed to create descriptor pool!");

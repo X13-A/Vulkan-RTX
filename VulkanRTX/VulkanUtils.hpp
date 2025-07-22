@@ -4,41 +4,36 @@
 #include "VulkanCommandBufferManager.hpp"
 #include "VulkanGeometry.hpp"
 
-class VulkanUtils
+
+namespace VulkanUtils
 {
-public:
-    class Hardware
+    namespace Hardware
     {
-    public:
-        static VkFormat findSupportedFormat(VkPhysicalDevice physicalDevice, const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+        VkFormat findSupportedFormat(VkPhysicalDevice physicalDevice, const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
     };
 
-    class Shaders
+    namespace Shaders
     {
-    public:
-        static VkShaderModule createShaderModule(const VulkanContext& context, const std::vector<char>& code);
+        VkShaderModule createShaderModule(const VulkanContext& context, const std::vector<char>& code);
     };
 
-    class DepthStencil
+    namespace DepthStencil
     {
-    public:
-        static bool hasStencilComponent(VkFormat format);
-        static VkFormat findDepthFormat(VkPhysicalDevice physicalDevice);
+        bool hasStencilComponent(VkFormat format);
+        VkFormat findDepthFormat(VkPhysicalDevice physicalDevice);
     };
 
-    class Memory
+    namespace Memory
     {
-    public:
-        static uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
+        uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
     };
 
-    class Image
+    namespace Image
     {
-    public:
-        static void copyBufferToImage(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-        static void createImage(const VulkanContext& context, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-        static VkImageView createImageView(const VulkanContext& context, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
-        static void blitImage(
+        void copyBufferToImage(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+        void createImage(const VulkanContext& context, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+        VkImageView createImageView(const VulkanContext& context, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+        void blitImage(
             VkCommandBuffer commandBuffer,
             VkImage srcImage, VkImage dstImage,
             VkFormat srcFormat, VkFormat dstFormat,
@@ -48,23 +43,21 @@ public:
             uint32_t dstWidth, uint32_t dstHeight,
             VkFilter filter
         );
-        static void transition_depthRW_to_depthR_existingCmd(const VulkanContext& context, VkCommandBuffer commandBuffer, VkImage image, VkFormat format);
-        static void transitionImageLayout(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+        void transition_depthRW_to_depthR_existingCmd(const VulkanContext& context, VkCommandBuffer commandBuffer, VkImage image, VkFormat format);
+        void transitionImageLayout(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
     };
 
-    class Textures
+    namespace Textures
     {
-    public:
-        static void createSampler(const VulkanContext& context, VkSampler* sampler);
+        void createSampler(const VulkanContext& context, VkSampler* sampler);
     };
 
-    class Buffers
+    namespace Buffers
     {
-    public:
-        static void createBuffer(const VulkanContext& context, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory, bool deviceAdressing = false);
+        void createBuffer(const VulkanContext& context, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory, bool deviceAdressing = false);
         
         template<typename T>
-        static void createAndFillBuffer(
+        void createAndFillBuffer(
             const VulkanContext& context,
             VulkanCommandBufferManager& commandBuffers,
             const std::vector<T>& data,
@@ -74,9 +67,9 @@ public:
             VkMemoryPropertyFlags memoryFlags,
             bool deviceAdressing = false);
 
-        static void createScratchBuffer(const VulkanContext& context, VkDeviceSize size, VkBuffer& scratchBuffer, VkDeviceMemory& scratchBufferMemory);
-        static void copyBuffer(const VulkanContext& context, VulkanCommandBufferManager& commandBuffers, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-        static VkDeviceAddress getBufferDeviceAdress(const VulkanContext& context, VkBuffer buffer);
+        void createScratchBuffer(const VulkanContext& context, VkDeviceSize size, VkBuffer& scratchBuffer, VkDeviceMemory& scratchBufferMemory);
+        void copyBuffer(const VulkanContext& context, VulkanCommandBufferManager& commandBuffers, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+        VkDeviceAddress getBufferDeviceAdress(const VulkanContext& context, VkBuffer buffer);
     };
 };
 

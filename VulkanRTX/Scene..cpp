@@ -4,30 +4,41 @@
 
 const ModelLoadInfo Scene::modelLoadInfos[] =
 {
+	//{
+	//	"ancient-temple-stylized",
+	//	"models/ancient-temple-stylized/ancient-temple-stylized.obj",
+	//	glm::vec3(5, 0, 0),
+	//	glm::vec3(0.25f, 0.25f, 0.25f),
+	//	glm::vec3(-36, 90, 0)
+	//},
+	{
+		"atrium",
+		"models/Atrium/atrium.obj",
+		glm::vec3(0, 0, 0),
+		glm::vec3(1, 1, 1),
+		glm::vec3(0, 0, 0)
+	},
 	{
 		"portal_gun",
-		"models/portal_gun/portal_gun.obj",
-		"models/portal_gun/PortalGun_Albedo.png",
-		glm::vec3(0, 0, 0),
+		"models/portal_gun_pbr/portal_gun.obj",
+		glm::vec3(0, 2, 0),
 		glm::vec3(5, 5, 5),
 		glm::vec3(0, 0, 0)
 	},
-	{
-		"portal_gun_glass",
-		"models/portal_gun/portal_gun_glass.obj",
-		"textures/white.jpg",
-		glm::vec3(0, 0, 0),
-		glm::vec3(5, 5, 5),
-		glm::vec3(0, 0, 0)
-	},
-	{
-		"viling_room",
-		"models/viking_room/viking_room.obj",
-		"models/viking_room/viking_room.png",
-		glm::vec3(0, -2, 0),
-		glm::vec3(5, 5, 5),
-		glm::vec3(-90, -90, 0)
-	},
+	//{
+	//	"portal_gun_glass",
+	//	"models/portal_gun/portal_gun_glass.obj",
+	//	glm::vec3(0, 0, 0),
+	//	glm::vec3(5, 5, 5),
+	//	glm::vec3(0, 0, 0)
+	//},
+	//{
+	//	"viling_room",
+	//	"models/viking_room/viking_room.obj",
+	//	glm::vec3(0, -2, 0),
+	//	glm::vec3(5, 5, 5),
+	//	glm::vec3(-90, -90, 0)
+	//},
 	//{
 	//	"triangle",
 	//	"models/triangle/triangle.obj",
@@ -39,8 +50,7 @@ const ModelLoadInfo Scene::modelLoadInfos[] =
 	//{
 	//	"sphere",
 	//	"models/sphere/sphere.obj",
-	//	"textures/white.jpg",
-	//	glm::vec3(2.5, 0, 2.5),
+	//	glm::vec3(2.5, 5, 2.5),
 	//	glm::vec3(1, 1, 1),
 	//	glm::vec3(0, 0, 0)
 	//},
@@ -53,32 +63,64 @@ const ModelLoadInfo Scene::modelLoadInfos[] =
 	//	glm::vec3(6, 6, 6)
 	//}
 };
-std::vector<VulkanModel> Scene::loadedModels = {};
-
+std::vector<VulkanModel> Scene::models = {};
+std::vector<ModelInfo> Scene::modelInfos = {};
 
 uint32_t Scene::getModelCount()
 {
 	return sizeof(Scene::modelLoadInfos) / sizeof(ModelLoadInfo);
 }
 
-const std::vector<VulkanModel>& Scene::getModels()
+uint32_t Scene::getMaterialCount()
 {
-	return loadedModels;
+	uint32_t count = 0;
+	for (const ModelInfo& model : modelInfos)
+	{
+		count += model.materials.size();
+	}
+	return count;
 }
 
-void Scene::loadModels(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkDescriptorSetLayout geometryDescriptorSetLayout, VkDescriptorPool descriptorPool)
+uint32_t Scene::getMeshCount()
 {
-	for (ModelLoadInfo loadInfo : modelLoadInfos)
+	uint32_t count = 0;
+	for (const ModelInfo& model : modelInfos)
 	{
+		count += model.meshes.size();
+	}
+	return count;
+}
+
+
+const std::vector<VulkanModel>& Scene::getModels()
+{
+	return models;
+}
+
+void Scene::fetchModels()
+{
+	for (const ModelLoadInfo& loadInfo : modelLoadInfos)
+	{
+		ModelInfo info = ObjLoader::loadObj(loadInfo.objPath);
+		modelInfos.push_back(info);
+	}
+}
+
+void Scene::loadModels(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkDescriptorPool descriptorPool)
+{
+	for (int i = 0; i < modelInfos.size(); i++)
+	{
+		ModelInfo info = modelInfos[i];
+		ModelLoadInfo loadInfo = modelLoadInfos[i];
+
 		VulkanModel model;
 		model.name = loadInfo.name;
-		
 		model.transform.setPosition(loadInfo.position);
 		model.transform.setScale(loadInfo.scale);
 		model.transform.setRotation(loadInfo.rotation);
 
-		model.init(loadInfo.objPath, loadInfo.texturePath, context, commandBufferManager, geometryDescriptorSetLayout, descriptorPool);
-		loadedModels.push_back(model);
+		model.load(info, context, commandBufferManager, descriptorPool);
+		models.push_back(model);
 	}
 }
 
@@ -89,9 +131,9 @@ void Scene::update()
 
 void Scene::cleanup(VkDevice device)
 {
-	for (VulkanModel& model : loadedModels)
+	for (VulkanModel& model : models)
 	{
 		model.cleanup(device);
 	}
-	loadedModels.clear();
+	models.clear();
 }

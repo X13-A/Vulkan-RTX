@@ -1,9 +1,11 @@
 #include "VulkanFullScreenQuad.hpp"
 #include <stdexcept>
 #include "VulkanUtils.hpp"
+#include "DescriptorSetLayoutManager.hpp"
+#include <iostream>
 
 
-void VulkanFullScreenQuad::init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkDescriptorSetLayout layout, VkDescriptorPool pool, VkImageView depthImageView, VkImageView normalImageView, VkImageView albedoImageView)
+void VulkanFullScreenQuad::init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkDescriptorPool pool, VkImageView depthImageView, VkImageView normalImageView, VkImageView albedoImageView)
 {
     vertices = {
         // Position                      // Texture Coordinates // Normal
@@ -22,13 +24,13 @@ void VulkanFullScreenQuad::init(const VulkanContext& context, VulkanCommandBuffe
     VulkanUtils::Buffers::createAndFillBuffer<VulkanVertex>(context, commandBufferManager, vertices, vertexBuffer, vertexBufferMemory, usageFlags, memoryFlags);
 
     createUniformBuffers(context);
-    createDescriptorSets(context, layout, pool);
+    createDescriptorSets(context, pool);
     writeDescriptorSets(context, depthImageView, normalImageView, albedoImageView);
 }
 
-void VulkanFullScreenQuad::createDescriptorSets(const VulkanContext& context, VkDescriptorSetLayout layout, VkDescriptorPool pool)
+void VulkanFullScreenQuad::createDescriptorSets(const VulkanContext& context, VkDescriptorPool pool)
 {
-    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, layout);
+    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, DescriptorSetLayoutManager::getFullScreenQuadLayout());
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = pool;
@@ -36,9 +38,10 @@ void VulkanFullScreenQuad::createDescriptorSets(const VulkanContext& context, Vk
     allocInfo.pSetLayouts = layouts.data();
 
     descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+    std::cout << "Allocating " << allocInfo.descriptorSetCount << " sets (quad)\n";
     if (vkAllocateDescriptorSets(context.device, &allocInfo, descriptorSets.data()) != VK_SUCCESS)
     {
-        throw std::runtime_error("failed to allocate descriptor sets!");
+        throw std::runtime_error("failed to allocate descriptor sets! (quad)");
     }
 }
 

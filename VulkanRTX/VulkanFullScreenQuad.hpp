@@ -23,8 +23,8 @@ public:
 	VkSampler gBufferSampler;
 
 public:
-	void init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkDescriptorSetLayout layout, VkDescriptorPool pool, VkImageView depthImageView, VkImageView normalImageView, VkImageView albedoImageView);
-	void createDescriptorSets(const VulkanContext& context, VkDescriptorSetLayout geometryDescriptorSetLayout, VkDescriptorPool descriptorPool);
+	void init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkDescriptorPool pool, VkImageView depthImageView, VkImageView normalImageView, VkImageView albedoImageView);
+	void createDescriptorSets(const VulkanContext& context, VkDescriptorPool descriptorPool);
 	void writeDescriptorSets(const VulkanContext& context, VkImageView depthImageView, VkImageView normalImageView, VkImageView albedoImageView);
 	void createUniformBuffers(const VulkanContext& context);
 	void cleanup(VkDevice device);

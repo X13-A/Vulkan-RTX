@@ -154,7 +154,10 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="CreativeControls.cpp" />
+    <ClCompile Include="DescriptorSetLayoutManager.cpp" />
     <ClCompile Include="EventManager.cpp" />
+    <ClCompile Include="ObjLoader.cpp" />
+    <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="VulkanGBufferManager.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="main.cpp" />
@@ -171,6 +174,8 @@
     <ClCompile Include="VulkanGeometryPipeline.cpp" />
     <ClCompile Include="VulkanGraphicsPipelineManager.cpp" />
     <ClCompile Include="VulkanLightingPipeline.cpp" />
+    <ClCompile Include="VulkanMaterial.cpp" />
+    <ClCompile Include="VulkanMesh.cpp" />
     <ClCompile Include="VulkanModel.cpp" />
     <ClCompile Include="VulkanExtensionFunctions.cpp" />
     <ClCompile Include="VulkanRayTracingPipeline.cpp" />
@@ -187,12 +192,14 @@
     <ClInclude Include="CameraControls.hpp" />
     <ClInclude Include="Constants.hpp" />
     <ClInclude Include="CreativeControls.hpp" />
+    <ClInclude Include="DescriptorSetLayoutManager.hpp" />
     <ClInclude Include="EventManager.hpp" />
     <ClInclude Include="GLM_defines.hpp" />
     <ClInclude Include="InputManager.hpp" />
-    <ClInclude Include="Mesh.hpp" />
+    <ClInclude Include="ObjLoader.hpp" />
     <ClInclude Include="RunTimeSettings.hpp" />
     <ClInclude Include="Scene.hpp" />
+    <ClInclude Include="TextureManager.hpp" />
     <ClInclude Include="Time.hpp" />
     <ClInclude Include="Transform.hpp" />
     <ClInclude Include="Utils.hpp" />
@@ -203,6 +210,8 @@
     <ClInclude Include="VulkanGeometryPipeline.hpp" />
     <ClInclude Include="VulkanGraphicsPipelineManager.hpp" />
     <ClInclude Include="VulkanLightingPipeline.hpp" />
+    <ClInclude Include="VulkanMaterial.hpp" />
+    <ClInclude Include="VulkanMesh.hpp" />
     <ClInclude Include="VulkanModel.hpp" />
     <ClInclude Include="VulkanExtensionFunctions.hpp" />
     <ClInclude Include="VulkanRayTracingPipeline.hpp" />

@@ -6,6 +6,8 @@
 #include "VulkanTLAS.hpp"
 #include "Scene.hpp"
 #include "RunTimeSettings.hpp"
+#include "DescriptorSetLayoutManager.hpp"
+#include "TextureManager.hpp"
 
 void VulkanApplication::handleWindowResize(const WindowResizeEvent& e)
 {
@@ -39,9 +41,16 @@ void VulkanApplication::initVulkan()
     context.initDevice();
     context.loadFunctionPointers();
 
+    DescriptorSetLayoutManager::createModelLayout(context);
+    DescriptorSetLayoutManager::createMaterialLayout(context);
+    DescriptorSetLayoutManager::createFullScreenQuadLayout(context);
+
     // CommandBuffers
     commandBufferManager.createCommandPool(context);
     commandBufferManager.createCommandBuffers(context);
+
+    // Load textures
+    TextureManager::loadTextures(context, commandBufferManager);
 
     // Swapchain, pipeline
     swapChainManager.init(windowManager.getWindow(), context);
@@ -50,8 +59,11 @@ void VulkanApplication::initVulkan()
     // Swapchain ressources
     swapChainManager.createFramebuffers(context, graphicsPipelineManager.lightingPipeline.getRenderPass());
     
-    graphicsPipelineManager.createDescriptorPool(context, Scene::getModelCount(), FULLSCREEN_QUAD_COUNT);
-    Scene::loadModels(context, commandBufferManager, graphicsPipelineManager.geometryPipeline.getDescriptorSetLayout(), graphicsPipelineManager.descriptorPool);
+    Scene::fetchModels();
+    
+    graphicsPipelineManager.createDescriptorPool(context, Scene::getModelCount(), Scene::getMeshCount(), FULLSCREEN_QUAD_COUNT);
+
+    Scene::loadModels(context, commandBufferManager, graphicsPipelineManager.descriptorPool);
 
     // Create TLAS
     sceneTLAS.createTLAS(context, Scene::getModels(), commandBufferManager);
@@ -61,7 +73,6 @@ void VulkanApplication::initVulkan()
 
     // Init fullscreen quad
     fullScreenQuad.init(context, commandBufferManager, 
-        graphicsPipelineManager.lightingPipeline.getDescriptorSetLayout(), 
         graphicsPipelineManager.descriptorPool,
         graphicsPipelineManager.gBufferManager.depthImageView,
         graphicsPipelineManager.gBufferManager.normalImageView, 
@@ -175,6 +186,8 @@ void VulkanApplication::cleanup()
     graphicsPipelineManager.cleanup(context.device);
     renderer.cleanup(context.device);
     commandBufferManager.cleanup(context.device);
+    DescriptorSetLayoutManager::cleanup(context.device);
+    TextureManager::cleanup(context.device);
     context.cleanup();
     windowManager.cleanup();
     glfwTerminate();

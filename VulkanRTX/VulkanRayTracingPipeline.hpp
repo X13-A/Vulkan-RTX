@@ -15,6 +15,13 @@ struct SceneData
 
 struct InstanceData
 {
+    glm::mat4 normalMatrix;
+    uint32_t meshOffset;
+    glm::vec3 padding;
+};
+
+struct MeshData
+{
     uint32_t indexOffset;
     uint32_t vertexOffset;
 };
@@ -57,14 +64,18 @@ private:
     VkDescriptorSet descriptorSet;
 
     // buffers
-    VkBuffer globalVertexBuffer;
-    VkDeviceMemory globalVertexBufferMemory;
+    VkBuffer instanceDataBuffer;
+    VkDeviceMemory instanceDataBufferMemory;
 
     VkBuffer globalIndexBuffer;
     VkDeviceMemory globalIndexBufferMemory;
 
-    VkBuffer instanceDataBuffer;
-    VkDeviceMemory instanceDataBufferMemory;
+    VkBuffer meshDataBuffer;
+    VkDeviceMemory meshDataBufferMemory;
+
+    VkBuffer globalVertexBuffer;
+    VkDeviceMemory globalVertexBufferMemory;
+
 
     // Sampler
     VkSampler globalTextureSampler;

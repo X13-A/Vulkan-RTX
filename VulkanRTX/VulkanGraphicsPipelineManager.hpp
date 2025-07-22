@@ -22,7 +22,7 @@ public:
 
 public:
     void initPipelines(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager);
-    void createDescriptorPool(const VulkanContext& context, size_t modelCount, size_t fullScreenQuadCount);
+    void createDescriptorPool(const VulkanContext& context, size_t modelCount, size_t materialCount, size_t fullScreenQuadCount);
     void handleResize(GLFWwindow* window, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager);
     void cleanup(VkDevice device);
 };

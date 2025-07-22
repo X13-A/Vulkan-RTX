@@ -130,6 +130,21 @@
     <ClCompile Include="WindowManager.cpp">
       <Filter>App</Filter>
     </ClCompile>
+    <ClCompile Include="VulkanMaterial.cpp">
+      <Filter>Engine\Vulkan\Scene\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanMesh.cpp">
+      <Filter>Engine\Vulkan\Scene\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjLoader.cpp">
+      <Filter>Engine\Vulkan\Scene\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="DescriptorSetLayoutManager.cpp">
+      <Filter>Engine\Vulkan\Scene\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureManager.cpp">
+      <Filter>Engine\Vulkan\Pipeline\source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="WindowManager.hpp">
@@ -228,8 +243,20 @@
     <ClInclude Include="VulkanSwapChainManager.hpp">
       <Filter>Engine\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.hpp">
-      <Filter>App</Filter>
+    <ClInclude Include="VulkanMesh.hpp">
+      <Filter>Engine\Vulkan\Scene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanMaterial.hpp">
+      <Filter>Engine\Vulkan\Scene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="DescriptorSetLayoutManager.hpp">
+      <Filter>Engine\Vulkan\Scene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjLoader.hpp">
+      <Filter>Engine\Vulkan\Scene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureManager.hpp">
+      <Filter>Engine\Vulkan\Pipeline\headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -4,7 +4,7 @@ struct FragmentInput
     float3 fragNormal : TEXCOORD1;
 };
 
-[[vk::binding(1)]] Sampler2D albedoSampler;
+[[vk::binding(0, 1)]] Sampler2D albedoSampler;
 
 void main(FragmentInput input, out float4 outNormal : SV_Target0, out float4 outAlbedo : SV_Target2)
 {

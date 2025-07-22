@@ -9,7 +9,6 @@
 class VulkanGeometryPipeline
 {
 private:
-    VkDescriptorSetLayout descriptorSetLayout;
     VkRenderPass renderPass;
     VkFramebuffer framebuffer;
     VkPipelineLayout pipelineLayout;
@@ -21,13 +20,11 @@ public:
     void handleResize(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager, const VulkanGBufferManager& gBufferManager, uint32_t width, uint32_t height);
     void recordDrawCommands(const VulkanSwapChainManager& swapChainManager, const std::vector<VulkanModel>& models, VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
-    VkDescriptorSetLayout getDescriptorSetLayout() const;
     VkRenderPass getRenderPass() const;
     VkFramebuffer getFrameBuffer() const;
     VkPipeline getPipeline() const;
     VkPipelineLayout getPipelineLayout() const;
 private:
-    void createDescriptorSetLayouts(const VulkanContext& context);
     void createDescriptorPool(const VulkanContext& context, size_t modelCount, size_t fullScreenQuadCount);
     void createRenderPasses(const VulkanContext& context, VkFormat swapChainImageFormat);
     void createFramebuffers(const VulkanContext& context, const VulkanGBufferManager& gBufferManager, uint32_t width, uint32_t height);
