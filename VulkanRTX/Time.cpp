@@ -28,6 +28,11 @@ double Time::FPS()
     return 1.0f / Time::deltaTime();
 }
 
+void Time::resetFrameCount()
+{
+    frameCount = 0;
+}
+
 uint32_t Time::getFrameCount()
 {
     return frameCount;

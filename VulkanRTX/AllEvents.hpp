@@ -18,5 +18,6 @@ struct MouseScrollEvent
 
 struct WindowResizeEvent
 {
-    int width, height;
+    int nativeWidth, nativeHeight;
+    int scaledWidth, scaledHeight;
 };

@@ -34,7 +34,9 @@ private:
     VulkanRenderer renderer;
 
     std::chrono::time_point<std::chrono::high_resolution_clock> lastTime;
-    int frameCount = 0;
+
+    int nativeWidth, nativeHeight;
+    int scaledWidth, scaledHeight;
 
 public:
     void run();

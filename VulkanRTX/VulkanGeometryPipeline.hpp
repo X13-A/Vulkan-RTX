@@ -14,20 +14,21 @@ private:
     VkPipelineLayout pipelineLayout;
     VkPipeline pipeline;
 
+    int width, height;
+
 public:
-    void init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager, const VulkanGBufferManager& gBufferManager);
+    void init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, int width, int height, const VulkanGBufferManager& gBufferManager);
     void cleanup(VkDevice device);
-    void handleResize(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager, const VulkanGBufferManager& gBufferManager, uint32_t width, uint32_t height);
-    void recordDrawCommands(const VulkanSwapChainManager& swapChainManager, const std::vector<VulkanModel>& models, VkCommandBuffer commandBuffer, uint32_t currentFrame);
+    void handleResize(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanGBufferManager& gBufferManager, int width, int height);
+    void recordDrawCommands(int width, int height, const std::vector<VulkanModel>& models, VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
     VkRenderPass getRenderPass() const;
     VkFramebuffer getFrameBuffer() const;
     VkPipeline getPipeline() const;
     VkPipelineLayout getPipelineLayout() const;
 private:
-    void createDescriptorPool(const VulkanContext& context, size_t modelCount, size_t fullScreenQuadCount);
-    void createRenderPasses(const VulkanContext& context, VkFormat swapChainImageFormat);
+    void createRenderPasses(const VulkanContext& context);
     void createFramebuffers(const VulkanContext& context, const VulkanGBufferManager& gBufferManager, uint32_t width, uint32_t height);
     void createPipelineLayouts(const VulkanContext& context);
-    void createPipeline(const VulkanContext& context, const VulkanSwapChainManager& swapChain);
+    void createPipeline(const VulkanContext& context);
 };

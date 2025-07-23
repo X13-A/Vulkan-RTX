@@ -62,6 +62,8 @@ Vertex readVertex(uint vertexIndex)
 [shader("closesthit")]
 void main(inout RayPayload payload, in Attributes attribs)
 {
+    payload.depth = payload.depth + 1;
+
     InstanceData instanceData = instanceDataBuffer[InstanceIndex()];
     uint meshIndex = instanceData.meshOffset + GeometryIndex();
     MeshData meshData = meshDataBuffer[meshIndex];
@@ -91,14 +93,58 @@ void main(inout RayPayload payload, in Attributes attribs)
     normal = mul(instanceData.normalMatrix, float4(normal, 0)).xyz;
     normal = normalize(normal);
 
-    float4 textureColor = texture0[meshIndex].SampleLevel(uv, 0);
-    
-    float NdotL = max(0, dot(normal, -SUN_DIR));
-    payload.color = textureColor.rgb * NdotL;
-    payload.hitGeometry = true;
+    // CRITICAL: Update hit position
+    float3 hitPos = WorldRayOrigin() + RayTCurrent() * WorldRayDirection();
+    payload.pos = hitPos;
     payload.t = RayTCurrent();
+    payload.hitGeometry = true;
 
-    float3 origin = WorldRayOrigin();
-    float3 direction = WorldRayDirection();
-    payload.pos = origin + payload.t * direction;
+    float4 textureColor = texture0[meshIndex].SampleLevel(uv, 0);
+
+    // Direct lighting
+    float NdotL = max(0, dot(normal, -SUN_DIR));
+    float3 directLight = textureColor.rgb * NdotL * SUN_COLOR;
+
+    // Recursive bounce
+    if (payload.depth < payload.maxDepth) 
+    {
+        // Check shadow for direct lighting
+        RayPayload shadowPayload;
+        shadowPayload.hitGeometry = false;
+        shadowPayload.depth = payload.maxDepth + 10;
+        shadowPayload.maxDepth = 1;
+
+        RayDesc shadowRay;
+        shadowRay.Origin = payload.pos;
+        shadowRay.Direction = -SUN_DIR;
+        shadowRay.TMin = 0.01;
+        shadowRay.TMax = 1000.0;
+        TraceRay(scene, 0, 0xFF, 0, 1, 0, shadowRay, shadowPayload);
+
+        if (shadowPayload.hitGeometry) 
+        {
+            directLight = 0;
+        }
+
+        payload.color = directLight;
+
+        uint seed = whiteNoise(payload.pos.xy, payload.depth);
+        float3 bounceDir = cosine_weighted_hemisphere(normal, seed);
+    
+        RayPayload bouncePayload;
+        bouncePayload.depth = payload.depth + 1;
+        bouncePayload.maxDepth = payload.maxDepth;
+        bouncePayload.color = float3(0, 0, 0);
+        bouncePayload.hitGeometry = false;
+    
+        RayDesc ray;
+        ray.Origin = payload.pos;
+        ray.Direction = bounceDir;
+        ray.TMin = 0.01;
+        ray.TMax = 1000.0;
+
+        TraceRay(scene, 0, 0xFF, 0, 1, 0, ray, bouncePayload);
+
+        payload.color += textureColor.rgb * bouncePayload.color * 0.8;
+    }
 }

@@ -11,11 +11,22 @@
 
 void VulkanApplication::handleWindowResize(const WindowResizeEvent& e)
 {
-    if (e.width <= 0 || e.height <= 0)
+    if (e.scaledWidth <= 0 || e.scaledHeight <= 0 || e.nativeWidth <= 0 || e.nativeHeight <= 0)
     {
         return;
     }
-    camera.setPerspective(camera.getFOV(), e.width / (float) e.height, camera.getNearPlane(), camera.getFarPlane());
+
+    Time::resetFrameCount();
+    scaledWidth = e.scaledWidth;
+    scaledHeight = e.scaledHeight;
+    nativeWidth = e.nativeWidth;
+    nativeHeight = e.nativeHeight;
+
+    std::cout << "Resizing resources..." << std::endl;
+    camera.setPerspective(camera.getFOV(), e.scaledWidth / (float) e.scaledHeight, camera.getNearPlane(), camera.getFarPlane());
+    swapChainManager.handleResize(e.nativeWidth, e.nativeHeight, context, commandBufferManager, graphicsPipelineManager.lightingPipeline.getRenderPass());
+    graphicsPipelineManager.handleResize(e.nativeWidth, e.nativeHeight, e.scaledWidth, e.scaledHeight, context, commandBufferManager);
+    fullScreenQuad.writeDescriptorSets(context, graphicsPipelineManager.gBufferManager.depthImageView, graphicsPipelineManager.gBufferManager.normalImageView, graphicsPipelineManager.gBufferManager.albedoImageView);
 }
 
 void VulkanApplication::run()
@@ -53,8 +64,12 @@ void VulkanApplication::initVulkan()
     TextureManager::loadTextures(context, commandBufferManager);
 
     // Swapchain, pipeline
-    swapChainManager.init(windowManager.getWindow(), context);
-    graphicsPipelineManager.initPipelines(context, commandBufferManager, swapChainManager);
+    glfwGetFramebufferSize(windowManager.getWindow(), &nativeWidth, &nativeHeight);
+    scaledWidth = static_cast<int> ((float)nativeWidth * RunTimeSettings::renderScale);
+    scaledHeight = static_cast<int> ((float)nativeHeight * RunTimeSettings::renderScale);
+
+    swapChainManager.init(nativeWidth, nativeHeight, context);
+    graphicsPipelineManager.initPipelines(nativeWidth, nativeHeight, scaledWidth, scaledHeight, context, commandBufferManager, swapChainManager.swapChainImageFormat);
 
     // Swapchain ressources
     swapChainManager.createFramebuffers(context, graphicsPipelineManager.lightingPipeline.getRenderPass());
@@ -89,6 +104,7 @@ void VulkanApplication::handleInputs()
     controls->update(inputManager);
     if (inputManager.isKeyJustPressed(KeyboardKey::R))
     {
+        Time::resetFrameCount();
         RunTimeSettings::displayRayTracing = !RunTimeSettings::displayRayTracing;
         std::cout << "Ray tracing enabled: " << RunTimeSettings::displayRayTracing << std::endl;
     }
@@ -96,6 +112,12 @@ void VulkanApplication::handleInputs()
     {
         RunTimeSettings::renderScale = std::max(std::fmod(RunTimeSettings::renderScale, 1.0f) + 0.1, 0.1);
         std::cout << "New render scale: " << RunTimeSettings::renderScale << std::endl;
+
+        WindowResizeEvent e;
+        glfwGetFramebufferSize(windowManager.getWindow(), &e.nativeWidth, &e.nativeHeight);
+        e.scaledWidth = static_cast<int> ((float)nativeWidth * RunTimeSettings::renderScale);
+        e.scaledHeight = static_cast<int> ((float)nativeHeight * RunTimeSettings::renderScale);
+        EventManager::get().trigger(e);
     }
     if (inputManager.isKeyJustPressed(KeyboardKey::O))
     {
@@ -107,6 +129,11 @@ void VulkanApplication::handleInputs()
         RunTimeSettings::spp = std::max(0, (int)RunTimeSettings::spp + 1);
         std::cout << "Samples per pixel: " << RunTimeSettings::spp << std::endl;
     }
+    if (inputManager.isKeyPressed(KeyboardKey::F))
+    {
+        Time::resetFrameCount();
+        std::cout << "Reset frame count !" << std::endl;
+    }
 }
 
 void VulkanApplication::mainLoop()
@@ -115,14 +142,14 @@ void VulkanApplication::mainLoop()
     {
         try
         {
-            Time::update();
             glfwPollEvents();
             inputManager.retrieveInputs(windowManager.getWindow());
             handleInputs();
 
             Scene::update();
-            renderer.drawFrame(windowManager.getWindow(), context, swapChainManager, graphicsPipelineManager, commandBufferManager, camera, Scene::getModels(), fullScreenQuad);
+            renderer.drawFrame(nativeWidth, nativeHeight, scaledWidth, scaledHeight, windowManager.getWindow(), context, swapChainManager, graphicsPipelineManager, commandBufferManager, camera, Scene::getModels(), fullScreenQuad);
         
+            Time::update();
             updateFPS();
         }
         catch (std::exception e)
@@ -137,6 +164,7 @@ void VulkanApplication::mainLoop()
 
 void VulkanApplication::updateFPS()
 {
+    static int frameCount = 0;
     frameCount++;
 
     auto currentTime = std::chrono::high_resolution_clock::now();

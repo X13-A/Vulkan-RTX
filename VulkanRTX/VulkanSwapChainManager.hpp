@@ -30,12 +30,12 @@ public:
     static SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);
     static VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
     static VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-    static VkExtent2D chooseSwapExtent(GLFWwindow* window, const VkSurfaceCapabilitiesKHR& capabilities);
+    static VkExtent2D chooseSwapExtent(int width, int height, const VkSurfaceCapabilitiesKHR& capabilities);
 
-    void init(GLFWwindow* window, const VulkanContext& context);
-    void createSwapChain(GLFWwindow* window, const VulkanContext& context);
+    void init(int width, int height, const VulkanContext& context);
+    void createSwapChain(int width, int height, const VulkanContext& context);
     void createImageViews(const VulkanContext& context);
     void cleanup(VkDevice device);
     void createFramebuffers(const VulkanContext& context, VkRenderPass renderPass);
-    void handleResize(GLFWwindow* window, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkRenderPass renderPass);
+    void handleResize(int width, int height, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkRenderPass renderPass);
 };

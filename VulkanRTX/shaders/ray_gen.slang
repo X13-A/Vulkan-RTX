@@ -15,6 +15,8 @@ ConstantBuffer<SceneData> sceneData;
 [[vk::binding(8)]] Sampler2D depthBuffer;
 [[vk::binding(9)]] Sampler2D normalBuffer;
 [[vk::binding(10)]] Sampler2D albedoBuffer;
+[[vk::binding(11)]] Sampler2D previousFrame;
+
 
 [shader("raygeneration")]
 void main()
@@ -26,6 +28,7 @@ void main()
 
     // Read GBuffer
     float3 encodedNormal = normalBuffer.SampleLevel(uv, 0).rgb;
+
     float3 normal = normalize((encodedNormal - 0.5) * 2.0);
     float4 albedo = albedoBuffer.SampleLevel(uv, 0).rgba;
     float depth = depthBuffer.SampleLevel(uv, 0).r;
@@ -45,17 +48,19 @@ void main()
     // World pos
     float3 worldPos = origin.xyz + dir * depth;
 
+    float3 previousColor = previousFrame.SampleLevel(uv, 0).rgb;
+
     // Sky color
     if (depth >= far - 0.1)
     {
         float3 skyColor = getSkyLight(normalizedDir);
-        renderTarget[pixelCoord] = float4(skyColor, 1.0);
+        
+        // Blend with previous frame
+        float weight = 1.0 / float(pushConstants.frameCount + 1);
+        float3 finalColor = lerp(previousColor, skyColor, weight);
+        renderTarget[pixelCoord] = float4(finalColor, 1.0);
         return;
     }
-    
-    // RayPayload debugPayload = traceRay(scene, sceneData.cameraPos, dir);
-    // renderTarget[pixelCoord] = float4(debugPayload.color, 1.0);
-    // return;
 
     uint baseSeed = whiteNoise(uv, pushConstants.frameCount);
     float spp = sceneData.spp;
@@ -64,31 +69,32 @@ void main()
     for (int i = 0; i < spp; i++)
     {
         uint sampleSeed = baseSeed + i * 1024;
-        float3 giRayDir;
-        giRayDir = cosine_weighted_hemisphere(normal, sampleSeed);
-        RayPayload giRayPayload = traceRay(scene, worldPos, giRayDir);
+        float3 giRayDir = cosine_weighted_hemisphere(normal, sampleSeed);
+    
+        RayPayload giRayPayload;
+        giRayPayload.depth = 0;
+        giRayPayload.maxDepth = sceneData.maxDepth;
+        giRayPayload.color = float3(0, 0, 0);
+        giRayPayload.hitGeometry = false;
+        giRayPayload.t = 0;
+        giRayPayload.pos = worldPos;
 
-        // Handle skybox
-        if (!giRayPayload.hitGeometry)
-        {
-            giColor += giRayPayload.color;
-            continue;
-        }
-        
-        // Handle geometry
-        RayPayload giShadowPayload = traceRay(scene, giRayPayload.pos, -SUN_DIR);
-       
-        // Shadowed secondary intersections don't contribute
-        if (!giShadowPayload.hitGeometry)
-        {
-            float cos_theta = max(0, dot(giRayDir, normal));
-            giColor += giShadowPayload.color * giRayPayload.color;
-        }
+        RayDesc ray;
+        ray.Origin = worldPos;
+        ray.Direction = giRayDir;
+        ray.TMin = 0.01;
+        ray.TMax = 1000.0;
+
+        TraceRay(scene, 0, 0xFF, 0, 1, 0, ray, giRayPayload);
+    
+        giColor += giRayPayload.color;
     }
 
-    giColor = albedo.rgb * giColor * (1.0f / spp);
+    float3 currentColor = albedo.rgb * giColor * (1.0f / spp);
     
-    float3 finalColor = giColor;
-
+    // Temporal accumulation
+    float weight = 1.0 / float(pushConstants.frameCount + 1);
+    float3 finalColor = lerp(previousColor, currentColor, weight);
+    
     renderTarget[pixelCoord] = float4(finalColor, 1.0);
 }

@@ -26,5 +26,6 @@ public:
 
     static double FPS();
 
+    static void resetFrameCount();
     static unsigned int getFrameCount();
 };

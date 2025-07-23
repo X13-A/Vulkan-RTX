@@ -3,15 +3,15 @@
 #include "Utils.hpp"
 #include "DescriptorSetLayoutManager.hpp"
 
-void VulkanGeometryPipeline::init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager, const VulkanGBufferManager& gBufferManager)
+void VulkanGeometryPipeline::init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, int width, int height, const VulkanGBufferManager& gBufferManager)
 {
-    createRenderPasses(context, swapChainManager.swapChainImageFormat);
+    createRenderPasses(context);
     createPipelineLayouts(context);
-    createPipeline(context, swapChainManager);
-    createFramebuffers(context, gBufferManager, swapChainManager.swapChainExtent.width, swapChainManager.swapChainExtent.height);
+    createPipeline(context);
+    createFramebuffers(context, gBufferManager, width, height);
 }
 
-void VulkanGeometryPipeline::createRenderPasses(const VulkanContext& context, VkFormat swapChainImageFormat)
+void VulkanGeometryPipeline::createRenderPasses(const VulkanContext& context)
 {
     VkAttachmentDescription depthAttachment = {};
     depthAttachment.format = VulkanUtils::DepthStencil::findDepthFormat(context.physicalDevice);
@@ -122,7 +122,7 @@ void VulkanGeometryPipeline::createPipelineLayouts(const VulkanContext& context)
     }
 }
 
-void VulkanGeometryPipeline::createPipeline(const VulkanContext& context, const VulkanSwapChainManager& swapChainManager)
+void VulkanGeometryPipeline::createPipeline(const VulkanContext& context)
 {
     std::vector<char> vertShaderCode = readFile("shaders/geometry_vert.spv");
     std::vector<char> fragShaderCode = readFile("shaders/geometry_frag.spv");
@@ -160,19 +160,6 @@ void VulkanGeometryPipeline::createPipeline(const VulkanContext& context, const 
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     inputAssembly.primitiveRestartEnable = VK_FALSE;
-
-    // Viewport and Scissor (can be dynamic)
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = static_cast<float>(swapChainManager.swapChainExtent.width);
-    viewport.height = static_cast<float>(swapChainManager.swapChainExtent.height);
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-
-    VkRect2D scissor{};
-    scissor.offset = { 0, 0 };
-    scissor.extent = swapChainManager.swapChainExtent;
 
     VkPipelineViewportStateCreateInfo viewportState{};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -259,25 +246,30 @@ void VulkanGeometryPipeline::createPipeline(const VulkanContext& context, const 
     vkDestroyShaderModule(context.device, fragShaderModule, nullptr);
 }
 
-void VulkanGeometryPipeline::handleResize(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager, const VulkanGBufferManager& gBufferManager, uint32_t width, uint32_t height)
+void VulkanGeometryPipeline::handleResize(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanGBufferManager& gBufferManager, int width, int height)
 {
     // Pipelines
+    // TODO: this is not necessary because of dynamic state
     vkDestroyPipeline(context.device, pipeline, nullptr);
-    createPipeline(context, swapChainManager);
+    createPipeline(context);
 
     // Framebuffers
     vkDestroyFramebuffer(context.device, framebuffer, nullptr);
     createFramebuffers(context, gBufferManager, width, height);
 }
 
-void VulkanGeometryPipeline::recordDrawCommands(const VulkanSwapChainManager& swapChainManager, const std::vector<VulkanModel>& models, VkCommandBuffer commandBuffer, uint32_t currentFrame)
+void VulkanGeometryPipeline::recordDrawCommands(int width, int height, const std::vector<VulkanModel>& models, VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
+    VkExtent2D extent;
+    extent.width = width;
+    extent.height = height;
+
     VkRenderPassBeginInfo geometryRenderPassInfo{};
     geometryRenderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     geometryRenderPassInfo.renderPass = renderPass;
     geometryRenderPassInfo.framebuffer = framebuffer;
     geometryRenderPassInfo.renderArea.offset = { 0, 0 };
-    geometryRenderPassInfo.renderArea.extent = swapChainManager.swapChainExtent;
+    geometryRenderPassInfo.renderArea.extent = extent;
 
     std::array<VkClearValue, 3> geometryClearValues{};
     geometryClearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
@@ -293,15 +285,15 @@ void VulkanGeometryPipeline::recordDrawCommands(const VulkanSwapChainManager& sw
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
-    viewport.width = static_cast<float>(swapChainManager.swapChainExtent.width);
-    viewport.height = static_cast<float>(swapChainManager.swapChainExtent.height);
+    viewport.width = width;
+    viewport.height = height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
     VkRect2D scissor{};
     scissor.offset = { 0, 0 };
-    scissor.extent = swapChainManager.swapChainExtent;
+    scissor.extent = extent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     for (const VulkanModel& model : models)

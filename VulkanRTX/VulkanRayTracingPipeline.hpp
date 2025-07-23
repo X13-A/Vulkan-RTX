@@ -8,9 +8,10 @@ struct SceneData
     glm::mat4 viewInverse;
     glm::mat4 projInverse;
     glm::vec3 cameraPos;
-    float padding;
+    uint32_t recursionDepth;
     glm::vec2 nearFar;
     int spp;
+
 };
 
 struct InstanceData
@@ -53,6 +54,10 @@ private:
     VkImageView storageImageView;
     uint32_t storageImageWidth;
     uint32_t storageImageHeight;
+
+    VkImage last_storageImage;
+    VkDeviceMemory last_storageImageMemory;
+    VkImageView last_storageImageView;
 
     // Uniform Buffer
     VkBuffer uniformBuffer;
@@ -105,6 +110,7 @@ public:
 
     // Getters
     VkImage getStorageImage() const;
+    VkImage getLastStorageImage() const;
     VkDescriptorSet getDescriptorSet() const;
     VkPipelineLayout getPipelineLayout() const;
     uint32_t getStorageImageWidth() const;

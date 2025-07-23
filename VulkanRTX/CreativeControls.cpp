@@ -19,6 +19,7 @@ void CreativeControls::handleMouseOffset(const MouseOffsetEvent& e)
     if (pitch < -89.0f) pitch = -89.0f;
 
     camera.transform.setRotation(glm::vec3(pitch, yaw, 0.0));
+    Time::resetFrameCount();
 }
 
 void CreativeControls::handleMouseScroll(const MouseScrollEvent& e)
@@ -27,33 +28,46 @@ void CreativeControls::handleMouseScroll(const MouseScrollEvent& e)
     if (fov < 1.0f) fov = 1.0f;
     if (fov > 90.0f) fov = 90.0f;
     camera.setFOV(fov);
+    Time::resetFrameCount();
 }
 
 void CreativeControls::update(InputManager& inputManager)
 {
+    bool moved = false;
     if (inputManager.isKeyPressed(KeyboardKey::Space))
     {
         camera.transform.translate(glm::vec3(0, moveSpeed * Time::deltaTime(), 0));
+        moved = true;
     }
     if (inputManager.isKeyPressed(KeyboardKey::LSHIFT))
     {
         camera.transform.translate(glm::vec3(0, -moveSpeed * Time::deltaTime(), 0));
+        moved = true;
     }
     if (inputManager.isKeyPressed(KeyboardKey::A))
     {
         camera.transform.translate(glm::vec3(-moveSpeed * Time::deltaTime(), 0, 0));
+        moved = true;
     }
     if (inputManager.isKeyPressed(KeyboardKey::D))
     {
         camera.transform.translate(glm::vec3(moveSpeed * Time::deltaTime(), 0, 0));
+        moved = true;
     }
     if (inputManager.isKeyPressed(KeyboardKey::W))
     {
         camera.transform.translate(glm::vec3(0, 0, -moveSpeed * Time::deltaTime()));
+        moved = true;
     }
     if (inputManager.isKeyPressed(KeyboardKey::S))
     {
         camera.transform.translate(glm::vec3(0, 0, moveSpeed * Time::deltaTime()));
+        moved = true;
+    }
+
+    if (moved)
+    {
+        Time::resetFrameCount();
     }
 }
 

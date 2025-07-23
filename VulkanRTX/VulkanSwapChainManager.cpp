@@ -54,7 +54,7 @@ VkPresentModeKHR VulkanSwapChainManager::chooseSwapPresentMode(const std::vector
     return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D VulkanSwapChainManager::chooseSwapExtent(GLFWwindow* window, const VkSurfaceCapabilitiesKHR& capabilities)
+VkExtent2D VulkanSwapChainManager::chooseSwapExtent(int width, int height, const VkSurfaceCapabilitiesKHR& capabilities)
 {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
     {
@@ -62,9 +62,6 @@ VkExtent2D VulkanSwapChainManager::chooseSwapExtent(GLFWwindow* window, const Vk
     }
     else
     {
-        int width, height;
-        glfwGetFramebufferSize(window, &width, &height);
-
         VkExtent2D actualExtent =
         {
             static_cast<uint32_t>(width),
@@ -78,19 +75,19 @@ VkExtent2D VulkanSwapChainManager::chooseSwapExtent(GLFWwindow* window, const Vk
     }
 }
 
-void VulkanSwapChainManager::init(GLFWwindow* window, const VulkanContext& context)
+void VulkanSwapChainManager::init(int width, int height, const VulkanContext& context)
 {
-    createSwapChain(window, context);
+    createSwapChain(width, height, context);
     createImageViews(context);
 }
 
-void VulkanSwapChainManager::createSwapChain(GLFWwindow* window, const VulkanContext& context)
+void VulkanSwapChainManager::createSwapChain(int width, int height, const VulkanContext& context)
 {
     SwapChainSupportDetails swapChainSupport = querySwapChainSupport(context.physicalDevice, context.surface);
 
     VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
     VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-    VkExtent2D extent = chooseSwapExtent(window, swapChainSupport.capabilities);
+    VkExtent2D extent = chooseSwapExtent(width, height, swapChainSupport.capabilities);
 
     swapChainImageFormat = surfaceFormat.format;
     swapChainExtent = extent;
@@ -195,21 +192,12 @@ void VulkanSwapChainManager::createFramebuffers(const VulkanContext& context, Vk
     }
 }
 
-void VulkanSwapChainManager::handleResize(GLFWwindow* window, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkRenderPass renderPass)
+void VulkanSwapChainManager::handleResize(int width, int height, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkRenderPass renderPass)
 {
-    int width = 0, height = 0;
-    glfwGetFramebufferSize(window, &width, &height);
-
-    while (width == 0 || height == 0)
-    {
-        glfwGetFramebufferSize(window, &width, &height);
-        glfwWaitEvents();
-    }
-
     vkDeviceWaitIdle(context.device);
 
     cleanup(context.device);
-    createSwapChain(window, context);
+    createSwapChain(width, height, context);
     createImageViews(context);
     createFramebuffers(context, renderPass);
 }

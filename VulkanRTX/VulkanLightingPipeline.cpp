@@ -2,12 +2,13 @@
 #include <stdexcept>
 #include "Utils.hpp"
 #include "DescriptorSetLayoutManager.hpp"
+#include "RunTimeSettings.hpp"
 
-void VulkanLightingPipeline::init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager)
+void VulkanLightingPipeline::init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkFormat swapChainImageFormat)
 {
-    createRenderPasses(context, swapChainManager.swapChainImageFormat);
+    createRenderPasses(context, swapChainImageFormat);
     createPipelineLayouts(context);
-    createPipeline(context, swapChainManager);
+    createPipeline(context);
 }
 
 void VulkanLightingPipeline::createRenderPasses(const VulkanContext& context, VkFormat swapChainImageFormat)
@@ -64,7 +65,7 @@ void VulkanLightingPipeline::createPipelineLayouts(const VulkanContext& context)
     }
 }
 
-void VulkanLightingPipeline::createPipeline(const VulkanContext& context, const VulkanSwapChainManager& swapChainManager)
+void VulkanLightingPipeline::createPipeline(const VulkanContext& context)
 {
     std::vector<char> lightingVertShaderCode = readFile("shaders/lighting_vert.spv");
     std::vector<char> lightingFragShaderCode = readFile("shaders/lighting_frag.spv");
@@ -129,19 +130,6 @@ void VulkanLightingPipeline::createPipeline(const VulkanContext& context, const 
     multisampling.sampleShadingEnable = VK_FALSE;
     multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
-    // Viewport and Scissor
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = static_cast<float>(swapChainManager.swapChainExtent.width);
-    viewport.height = static_cast<float>(swapChainManager.swapChainExtent.height);
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-
-    VkRect2D scissor{};
-    scissor.offset = { 0, 0 };
-    scissor.extent = swapChainManager.swapChainExtent;
-
     VkPipelineViewportStateCreateInfo viewportState{};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewportState.viewportCount = 1;
@@ -196,10 +184,11 @@ void VulkanLightingPipeline::createPipeline(const VulkanContext& context, const 
     vkDestroyShaderModule(context.device, lightingFragShaderModule, nullptr);
 }
 
-void VulkanLightingPipeline::handleResize(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager)
+void VulkanLightingPipeline::handleResize(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager)
 {
+    // TODO: this is not necessary because of dynamic state
     vkDestroyPipeline(context.device, pipeline, nullptr);
-    createPipeline(context, swapChainManager);
+    createPipeline(context);
 }
 
 VkRenderPass VulkanLightingPipeline::getRenderPass() const
@@ -226,7 +215,7 @@ void VulkanLightingPipeline::cleanup(VkDevice device)
     vkDestroyRenderPass(device, renderPass, nullptr);
 }
 
-void VulkanLightingPipeline::recordDrawCommands(const VulkanSwapChainManager& swapChainManager, const VulkanFullScreenQuad& fullScreenQuad, VkCommandBuffer commandBuffer, uint32_t currentFrame, uint32_t imageIndex)
+void VulkanLightingPipeline::recordDrawCommands(int width, int height, const VulkanSwapChainManager& swapChainManager, const VulkanFullScreenQuad& fullScreenQuad, VkCommandBuffer commandBuffer, uint32_t currentFrame, uint32_t imageIndex)
 {
     VkRenderPassBeginInfo lightingRenderPassInfo{};
     lightingRenderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -243,6 +232,24 @@ void VulkanLightingPipeline::recordDrawCommands(const VulkanSwapChainManager& sw
 
     vkCmdBeginRenderPass(commandBuffer, &lightingRenderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+    VkExtent2D extent;
+    extent.width = width;
+    extent.height = height;
+
+    VkViewport viewport{};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = width;
+    viewport.height = height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+    VkRect2D scissor{};
+    scissor.offset = { 0, 0 };
+    scissor.extent = extent;
+    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &fullScreenQuad.descriptorSets[currentFrame], 0, nullptr);
 

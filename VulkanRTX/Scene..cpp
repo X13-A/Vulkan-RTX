@@ -18,10 +18,17 @@ const ModelLoadInfo Scene::modelLoadInfos[] =
 		glm::vec3(1, 1, 1),
 		glm::vec3(0, 0, 0)
 	},
+	//{
+	//	"moai",
+	//	"models/Moai/moai.obj",
+	//	glm::vec3(0, 0.1, 0),
+	//	glm::vec3(0.2, 0.2, 0.2),
+	//	glm::vec3(0, 0, 0)
+	//},
 	{
 		"portal_gun",
 		"models/portal_gun_pbr/portal_gun.obj",
-		glm::vec3(0, 2, 0),
+		glm::vec3(0, 2.2, 0),
 		glm::vec3(5, 5, 5),
 		glm::vec3(0, 0, 0)
 	},

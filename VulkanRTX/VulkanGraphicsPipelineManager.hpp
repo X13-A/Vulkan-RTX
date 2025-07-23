@@ -21,8 +21,8 @@ public:
     VulkanGBufferManager gBufferManager;
 
 public:
-    void initPipelines(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager);
+    void initPipelines(int nativeWidth, int nativeHeight, int scaledWidth, int scaledHeight, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkFormat swapChainImageFormat);
     void createDescriptorPool(const VulkanContext& context, size_t modelCount, size_t materialCount, size_t fullScreenQuadCount);
-    void handleResize(GLFWwindow* window, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager);
+    void handleResize(int nativeWidth, int nativeHeight, int scaledWidth, int scaledHeight, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager);
     void cleanup(VkDevice device);
 };

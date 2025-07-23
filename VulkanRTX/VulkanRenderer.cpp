@@ -38,7 +38,7 @@ void VulkanRenderer::createSyncObjects(const VulkanContext& context, const Vulka
     }
 }
 
-void VulkanRenderer::recordCommandBuffer(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager, VulkanGraphicsPipelineManager& graphicsPipeline, uint32_t imageIndex, uint32_t currentFrame, const std::vector<VulkanModel>& models, const VulkanFullScreenQuad& fullScreenQuad)
+void VulkanRenderer::recordCommandBuffer(int nativeWidth, int nativeHeight, int scaledWidth, int scaledHeight, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager swapChainManager, VulkanGraphicsPipelineManager& graphicsPipeline, uint32_t imageIndex, uint32_t currentFrame, const std::vector<VulkanModel>& models, const VulkanFullScreenQuad& fullScreenQuad)
 {
     VkCommandBufferBeginInfo beginInfo{};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -50,9 +50,9 @@ void VulkanRenderer::recordCommandBuffer(const VulkanContext& context, VulkanCom
         throw std::runtime_error("failed to begin recording command buffer!");
     }
 
-    graphicsPipeline.geometryPipeline.recordDrawCommands(swapChainManager, models, commandBuffer, currentFrame);
+    graphicsPipeline.geometryPipeline.recordDrawCommands(scaledWidth, scaledHeight, models, commandBuffer, currentFrame);
     VulkanUtils::Image::transition_depthRW_to_depthR_existingCmd(context, commandBuffer, graphicsPipeline.gBufferManager.depthImage, VK_FORMAT_D32_SFLOAT);
-    graphicsPipeline.lightingPipeline.recordDrawCommands(swapChainManager, fullScreenQuad, commandBuffer, currentFrame, imageIndex);
+    graphicsPipeline.lightingPipeline.recordDrawCommands(nativeWidth, nativeHeight, swapChainManager, fullScreenQuad, commandBuffer, currentFrame, imageIndex);
 
     if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS)
     {
@@ -60,21 +60,20 @@ void VulkanRenderer::recordCommandBuffer(const VulkanContext& context, VulkanCom
     }
 }
 
-void VulkanRenderer::handleResize(GLFWwindow* window, const VulkanContext& context, VulkanSwapChainManager& swapChainManager, VulkanGraphicsPipelineManager& graphicsPipeline, VulkanCommandBufferManager& commandBufferManager, VulkanFullScreenQuad& fullScreenQuad)
+void VulkanRenderer::triggerResize(GLFWwindow* window, const VulkanContext& context, VulkanSwapChainManager& swapChainManager, VulkanGraphicsPipelineManager& graphicsPipeline, VulkanCommandBufferManager& commandBufferManager, VulkanFullScreenQuad& fullScreenQuad)
 {
-    std::cout << "Resizing resources..." << std::endl;
-
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
-    EventManager::get().trigger(WindowResizeEvent{ width, height });
-    
-    // TODO: use EventManager here
-    swapChainManager.handleResize(window, context, commandBufferManager, graphicsPipeline.lightingPipeline.getRenderPass());
-    graphicsPipeline.handleResize(window, context, commandBufferManager, swapChainManager);
-    fullScreenQuad.writeDescriptorSets(context, graphicsPipeline.gBufferManager.depthImageView, graphicsPipeline.gBufferManager.normalImageView, graphicsPipeline.gBufferManager.albedoImageView);
+
+    WindowResizeEvent e;
+    e.nativeWidth = width;
+    e.nativeHeight = height;
+    e.scaledWidth = static_cast<int> ((float)width * RunTimeSettings::renderScale);
+    e.scaledHeight = static_cast<int> ((float)height * RunTimeSettings::renderScale);
+    EventManager::get().trigger(e);
 }
 
-void VulkanRenderer::drawFrame(GLFWwindow* window, const VulkanContext& context, VulkanSwapChainManager& swapChainManager, VulkanGraphicsPipelineManager& graphicsPipeline, VulkanCommandBufferManager& commandBufferManager, const Camera& camera, const std::vector<VulkanModel>& models, VulkanFullScreenQuad& fullScreenQuad)
+void VulkanRenderer::drawFrame(int nativeWidth, int nativeHeight, int scaledWidth, int scaledHeight, GLFWwindow* window, const VulkanContext& context, VulkanSwapChainManager& swapChainManager, VulkanGraphicsPipelineManager& graphicsPipeline, VulkanCommandBufferManager& commandBufferManager, const Camera& camera, const std::vector<VulkanModel>& models, VulkanFullScreenQuad& fullScreenQuad)
 {
     vkWaitForFences(context.device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
@@ -85,7 +84,7 @@ void VulkanRenderer::drawFrame(GLFWwindow* window, const VulkanContext& context,
     // Handle resize
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
-        handleResize(window, context, swapChainManager, graphicsPipeline, commandBufferManager, fullScreenQuad);
+        triggerResize(window, context, swapChainManager, graphicsPipeline, commandBufferManager, fullScreenQuad);
         return;
     }
     else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
@@ -96,7 +95,7 @@ void VulkanRenderer::drawFrame(GLFWwindow* window, const VulkanContext& context,
     // Sync
     vkResetFences(context.device, 1, &inFlightFences[currentFrame]);
     vkResetCommandBuffer(commandBufferManager.commandBuffers[currentFrame], 0);
-    recordCommandBuffer(context, commandBufferManager, swapChainManager, graphicsPipeline, imageIndex, currentFrame, models, fullScreenQuad);
+    recordCommandBuffer(nativeWidth, nativeHeight, scaledWidth, scaledHeight, context, commandBufferManager, swapChainManager, graphicsPipeline, imageIndex, currentFrame, models, fullScreenQuad);
 
     // Update uniforms
     updateUniformBuffers(camera, models, fullScreenQuad, swapChainManager, graphicsPipeline.rtPipeline, currentFrame);
@@ -154,6 +153,27 @@ void VulkanRenderer::drawFrame(GLFWwindow* window, const VulkanContext& context,
             swapChainManager.swapChainExtent.height,             
             VK_FILTER_LINEAR                                     
         );
+
+        // Save last image for blending
+        // TODO: skip useless transition, keep TRANSFER_SRC_BIT
+        // TODO: just do a raw copy instead of blit since they have same size, might be faster
+        VulkanUtils::Image::blitImage(
+            commandBuffer,
+            graphicsPipeline.rtPipeline.getStorageImage(),
+            graphicsPipeline.rtPipeline.getLastStorageImage(),
+            VK_FORMAT_R8G8B8A8_UNORM,
+            VK_FORMAT_R8G8B8A8_UNORM,
+            VK_ACCESS_SHADER_WRITE_BIT,
+            VK_ACCESS_SHADER_READ_BIT,
+            VK_IMAGE_LAYOUT_GENERAL,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            graphicsPipeline.rtPipeline.getStorageImageWidth(),
+            graphicsPipeline.rtPipeline.getStorageImageHeight(),
+            graphicsPipeline.rtPipeline.getStorageImageWidth(),
+            graphicsPipeline.rtPipeline.getStorageImageHeight(),
+            VK_FILTER_LINEAR
+        );
+
         commandBufferManager.endSingleTimeCommands(context.device, context.graphicsQueue, commandBuffer);
     }
 
@@ -171,7 +191,7 @@ void VulkanRenderer::drawFrame(GLFWwindow* window, const VulkanContext& context,
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || swapChainManager.framebufferResized)
     {
         swapChainManager.framebufferResized = false;
-        handleResize(window, context, swapChainManager, graphicsPipeline, commandBufferManager, fullScreenQuad);
+        triggerResize(window, context, swapChainManager, graphicsPipeline, commandBufferManager, fullScreenQuad);
     }
     else if (result != VK_SUCCESS)
     {
@@ -205,7 +225,7 @@ void VulkanRenderer::updateUniformBuffers(const Camera& camera, const std::vecto
     camData.projInverse = glm::inverse(camera.getProjectionMatrix());
     camData.viewInverse = glm::inverse(camera.getViewMatrix());
     camData.cameraPos = camera.transform.getPosition();
-    camData.padding = 0;
+    camData.recursionDepth = RT_RECURSION_DEPTH;
     camData.nearFar = glm::vec2(camera.getNearPlane(), camera.getFarPlane());
     camData.spp = RunTimeSettings::spp;
     rtPipeline.updateUniformBuffer(camData);

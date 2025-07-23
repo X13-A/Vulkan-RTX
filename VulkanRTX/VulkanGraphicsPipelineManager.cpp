@@ -3,12 +3,12 @@
 #include <iostream>
 #include "RunTimeSettings.hpp"
 
-void VulkanGraphicsPipelineManager::initPipelines(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager)
+void VulkanGraphicsPipelineManager::initPipelines(int nativeWidth, int nativeHeight, int scaledWidth, int scaledHeight, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkFormat swapChainImageFormat)
 {
-    gBufferManager.init(context, commandBufferManager, swapChainManager.swapChainExtent.width, swapChainManager.swapChainExtent.height);
-    geometryPipeline.init(context, commandBufferManager, swapChainManager, gBufferManager);
-    lightingPipeline.init(context, commandBufferManager, swapChainManager);
-    rtPipeline.init(context, swapChainManager.swapChainExtent.width, swapChainManager.swapChainExtent.height);
+    gBufferManager.init(context, commandBufferManager, scaledWidth, scaledHeight);
+    geometryPipeline.init(context, commandBufferManager, scaledWidth, scaledHeight, gBufferManager);
+    lightingPipeline.init(context, commandBufferManager, swapChainImageFormat);
+    rtPipeline.init(context, scaledWidth, scaledHeight);
 }
 
 void VulkanGraphicsPipelineManager::createDescriptorPool(const VulkanContext& context, size_t modelCount, size_t meshCount, size_t fullScreenQuadCount)
@@ -37,7 +37,6 @@ void VulkanGraphicsPipelineManager::createDescriptorPool(const VulkanContext& co
     // - 1 per model (geometry/transform)
     // - 1 per material (textures) 
     // - 1 per fullscreen quad (lighting)
-    // TODO: problem here !
     poolInfo.maxSets = static_cast<uint32_t>((modelCount + meshCount + fullScreenQuadCount) * MAX_FRAMES_IN_FLIGHT);
     
     std::cout << "Creating descriptor pool with " << poolInfo.maxSets << " max sets" << std::endl;
@@ -47,27 +46,18 @@ void VulkanGraphicsPipelineManager::createDescriptorPool(const VulkanContext& co
     }
 }
 
-void VulkanGraphicsPipelineManager::handleResize(GLFWwindow* window, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanSwapChainManager& swapChainManager)
+void VulkanGraphicsPipelineManager::handleResize(int nativeWidth, int nativeHeight, int scaledWidth, int scaledHeight, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager)
 {
-    int width = 0, height = 0;
-    glfwGetFramebufferSize(window, &width, &height);
-
-    while (width == 0 || height == 0)
-    {
-        glfwGetFramebufferSize(window, &width, &height);
-        glfwWaitEvents();
-    }
-
     vkDeviceWaitIdle(context.device);
 
     // GBuffer
     gBufferManager.cleanup(context.device);
-    gBufferManager.init(context, commandBufferManager, width, height);
+    gBufferManager.init(context, commandBufferManager, scaledWidth, scaledHeight);
 
-    geometryPipeline.handleResize(context, commandBufferManager, swapChainManager, gBufferManager, width, height);
-    lightingPipeline.handleResize(context, commandBufferManager, swapChainManager);
+    geometryPipeline.handleResize(context, commandBufferManager, gBufferManager, scaledWidth, scaledHeight);
+    lightingPipeline.handleResize(context, commandBufferManager);
     
-    rtPipeline.handleResize(context, width, height, gBufferManager.depthImageView, gBufferManager.normalImageView, gBufferManager.albedoImageView);
+    rtPipeline.handleResize(context, scaledWidth, scaledHeight, gBufferManager.depthImageView, gBufferManager.normalImageView, gBufferManager.albedoImageView);
 }
 
 void VulkanGraphicsPipelineManager::cleanup(VkDevice device)
