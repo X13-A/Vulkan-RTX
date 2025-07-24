@@ -12,9 +12,16 @@ const ModelLoadInfo Scene::modelLoadInfos[] =
 	//	glm::vec3(-36, 90, 0)
 	//},
 	{
+		"sponza",
+		"models/Sponza/sponza.obj",
+		glm::vec3(0, 0, 0),
+		glm::vec3(0.01, 0.01, 0.01),
+		glm::vec3(0, 0, 0)
+	},
+	{
 		"atrium",
 		"models/Atrium/atrium.obj",
-		glm::vec3(0, 0, 0),
+		glm::vec3(50, 0, 0),
 		glm::vec3(1, 1, 1),
 		glm::vec3(0, 0, 0)
 	},
@@ -28,7 +35,7 @@ const ModelLoadInfo Scene::modelLoadInfos[] =
 	{
 		"portal_gun",
 		"models/portal_gun_pbr/portal_gun.obj",
-		glm::vec3(0, 2.2, 0),
+		glm::vec3(50, 2.2, 0),
 		glm::vec3(5, 5, 5),
 		glm::vec3(0, 0, 0)
 	},

@@ -93,7 +93,6 @@ void main(inout RayPayload payload, in Attributes attribs)
     normal = mul(instanceData.normalMatrix, float4(normal, 0)).xyz;
     normal = normalize(normal);
 
-    // CRITICAL: Update hit position
     float3 hitPos = WorldRayOrigin() + RayTCurrent() * WorldRayDirection();
     payload.pos = hitPos;
     payload.t = RayTCurrent();
@@ -101,33 +100,11 @@ void main(inout RayPayload payload, in Attributes attribs)
 
     float4 textureColor = texture0[meshIndex].SampleLevel(uv, 0);
 
-    // Direct lighting
-    float NdotL = max(0, dot(normal, -SUN_DIR));
-    float3 directLight = textureColor.rgb * NdotL * SUN_COLOR;
-
+    payload.color = float3(0, 0, 0);
+    
     // Recursive bounce
     if (payload.depth < payload.maxDepth) 
     {
-        // Check shadow for direct lighting
-        RayPayload shadowPayload;
-        shadowPayload.hitGeometry = false;
-        shadowPayload.depth = payload.maxDepth + 10;
-        shadowPayload.maxDepth = 1;
-
-        RayDesc shadowRay;
-        shadowRay.Origin = payload.pos;
-        shadowRay.Direction = -SUN_DIR;
-        shadowRay.TMin = 0.01;
-        shadowRay.TMax = 1000.0;
-        TraceRay(scene, 0, 0xFF, 0, 1, 0, shadowRay, shadowPayload);
-
-        if (shadowPayload.hitGeometry) 
-        {
-            directLight = 0;
-        }
-
-        payload.color = directLight;
-
         uint seed = whiteNoise(payload.pos.xy, payload.depth);
         float3 bounceDir = cosine_weighted_hemisphere(normal, seed);
     
@@ -143,8 +120,8 @@ void main(inout RayPayload payload, in Attributes attribs)
         ray.TMin = 0.01;
         ray.TMax = 1000.0;
 
+        // TODO: attenuate using geometry function ? -> no because bouceDir is already biased towards normal
         TraceRay(scene, 0, 0xFF, 0, 1, 0, ray, bouncePayload);
-
-        payload.color += textureColor.rgb * bouncePayload.color * 0.8;
+        payload.color = textureColor.rgb * bouncePayload.color;
     }
 }

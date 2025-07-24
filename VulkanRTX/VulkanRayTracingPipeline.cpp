@@ -362,7 +362,7 @@ void VulkanRayTracingPipeline::createRayTracingPipeline(const VulkanContext& con
     pipelineInfo.pStages = shaderStages.data();
     pipelineInfo.groupCount = static_cast<uint32_t>(shaderGroups.size());
     pipelineInfo.pGroups = shaderGroups.data();
-    pipelineInfo.maxPipelineRayRecursionDepth = RT_RECURSION_DEPTH;
+    pipelineInfo.maxPipelineRayRecursionDepth = RT_MAX_RECURSION_DEPTH;
     pipelineInfo.layout = pipelineLayout;
 
     if (rt_vkCreateRayTracingPipelinesKHR(context.device, VK_NULL_HANDLE, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS)
@@ -865,7 +865,6 @@ void VulkanRayTracingPipeline::traceRays(VkCommandBuffer commandBuffer, uint32_t
 
     PushConstants push;
     push.frameCount = frameCount;
-    std::cout << frameCount << std::endl;
 
     // Push constants
     vkCmdPushConstants(commandBuffer,
@@ -889,7 +888,7 @@ void VulkanRayTracingPipeline::traceRays(VkCommandBuffer commandBuffer, uint32_t
     }
 
     // RAY TRACE !
-    rt_vkCmdTraceRaysKHR(commandBuffer, &raygenSbtEntry, &missSbtEntry, &hitSbtEntry, &callableSbtEntry, storageImageWidth, storageImageHeight, RT_RECURSION_DEPTH);
+    rt_vkCmdTraceRaysKHR(commandBuffer, &raygenSbtEntry, &missSbtEntry, &hitSbtEntry, &callableSbtEntry, storageImageWidth, storageImageHeight, RT_MAX_RECURSION_DEPTH);
 
     if (debug_vkCmdEndDebugUtilsLabelEXT) 
     {

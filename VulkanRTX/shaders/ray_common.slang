@@ -20,10 +20,10 @@ struct SceneData
     int spp;
 };
 
-static float3 SUN_DIR = normalize(-float3(0.5, 1, 0.0));
+static float3 SUN_DIR = normalize(-float3(0.5, 1, 0.5));
 //static float3 SUN_COLOR = float3(15.0, 12.0, 8.0) * 1.0;
-static float3 SUN_COLOR = float3(10.0, 10.0, 10.0) * 3.0;
-static float3 SKY_COLOR = float3(62.0 / 255.0, 105.0 / 255.0, 196.0 / 255.0) * 0.2;
+static float3 SUN_COLOR = float3(10.0, 10.0, 10.0) * 50.0;
+static float3 SKY_COLOR = float3(62.0 / 255.0, 105.0 / 255.0, 196.0 / 255.0) * 1;
 
 float3 getSkyLight(float3 rayDir)
 {

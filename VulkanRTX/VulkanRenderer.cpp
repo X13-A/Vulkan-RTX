@@ -219,16 +219,16 @@ void VulkanRenderer::updateUniformBuffers(const Camera& camera, const std::vecto
     fullScreenUBO.time = 0; // TODO ?
     memcpy(fullScreenQuad.uniformBuffersMapped[currentImage], &fullScreenUBO, sizeof(fullScreenUBO));
 
-    SceneData camData;
-    camData.proj = camera.getProjectionMatrix();
-    camData.view = camera.getViewMatrix();
-    camData.projInverse = glm::inverse(camera.getProjectionMatrix());
-    camData.viewInverse = glm::inverse(camera.getViewMatrix());
-    camData.cameraPos = camera.transform.getPosition();
-    camData.recursionDepth = RT_RECURSION_DEPTH;
-    camData.nearFar = glm::vec2(camera.getNearPlane(), camera.getFarPlane());
-    camData.spp = RunTimeSettings::spp;
-    rtPipeline.updateUniformBuffer(camData);
+    SceneData sceneData;
+    sceneData.proj = camera.getProjectionMatrix();
+    sceneData.view = camera.getViewMatrix();
+    sceneData.projInverse = glm::inverse(camera.getProjectionMatrix());
+    sceneData.viewInverse = glm::inverse(camera.getViewMatrix());
+    sceneData.cameraPos = camera.transform.getPosition();
+    sceneData.recursionDepth = std::clamp(RunTimeSettings::rt_recursion_depth, 0, RT_MAX_RECURSION_DEPTH);
+    sceneData.nearFar = glm::vec2(camera.getNearPlane(), camera.getFarPlane());
+    sceneData.spp = RunTimeSettings::spp;
+    rtPipeline.updateUniformBuffer(sceneData);
 }
 
 void VulkanRenderer::cleanup(VkDevice device)

@@ -134,6 +134,20 @@ void VulkanApplication::handleInputs()
         Time::resetFrameCount();
         std::cout << "Reset frame count !" << std::endl;
     }
+    if (inputManager.isKeyJustPressed(KeyboardKey::K))
+    {
+        Time::resetFrameCount();
+        RunTimeSettings::rt_recursion_depth -= 1;
+        RunTimeSettings::rt_recursion_depth = std::clamp(RunTimeSettings::rt_recursion_depth, 0, RT_MAX_RECURSION_DEPTH);
+        std::cout << "RT recursion depth: " << RunTimeSettings::rt_recursion_depth << std::endl;
+    }
+    if (inputManager.isKeyJustPressed(KeyboardKey::L))
+    {
+        Time::resetFrameCount();
+        RunTimeSettings::rt_recursion_depth += 1;
+        RunTimeSettings::rt_recursion_depth = std::clamp(RunTimeSettings::rt_recursion_depth, 0, RT_MAX_RECURSION_DEPTH);
+        std::cout << "RT recursion depth: " << RunTimeSettings::rt_recursion_depth << std::endl;
+    }
 }
 
 void VulkanApplication::mainLoop()
