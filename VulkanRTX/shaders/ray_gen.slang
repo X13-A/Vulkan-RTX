@@ -1,10 +1,5 @@
 #include "ray_common.slang"
 
-struct PushConstants
-{
-    uint frameCount;
-};
-
 [[push_constant]]
 PushConstants pushConstants;
 
@@ -12,10 +7,10 @@ RaytracingAccelerationStructure scene;
 RWTexture2D<float4> renderTarget;
 ConstantBuffer<SceneData> sceneData;
 
-[[vk::binding(8)]] Sampler2D depthBuffer;
-[[vk::binding(9)]] Sampler2D normalBuffer;
-[[vk::binding(10)]] Sampler2D albedoBuffer;
-[[vk::binding(11)]] Sampler2D previousFrame;
+[[vk::binding(9)]] Sampler2D depthBuffer;
+[[vk::binding(10)]] Sampler2D normalBuffer;
+[[vk::binding(11)]] Sampler2D albedoBuffer;
+[[vk::binding(12)]] Sampler2D previousFrame;
 
 
 [shader("raygeneration")]
@@ -33,6 +28,17 @@ void main()
     float4 albedo = albedoBuffer.SampleLevel(uv, 0).rgba;
     float depth = depthBuffer.SampleLevel(uv, 0).r;
 
+    float3 previousColor = previousFrame.SampleLevel(uv, 0).rgb;
+
+    if (distance(albedo.rgb, float3(1, 1, 1)) < 0.5)
+    {
+        albedo = float4(SKY_COLOR * 2.5, 1);
+        float weight = 1.0 / float(pushConstants.frameCount + 1);
+        float3 finalColor1 = lerp(previousColor, albedo.rgb, weight);
+        renderTarget[pixelCoord] = float4(finalColor1, 1.0);
+        return;
+    }
+
     // Linearize depth
     float near = sceneData.nearFar.x;
     float far = sceneData.nearFar.y;
@@ -48,7 +54,6 @@ void main()
     // World pos
     float3 worldPos = origin.xyz + dir * depth;
 
-    float3 previousColor = previousFrame.SampleLevel(uv, 0).rgb;
 
     // Sky color
     if (depth >= far - 0.1)
@@ -62,15 +67,18 @@ void main()
         return;
     }
 
-    uint baseSeed = whiteNoise(uv, pushConstants.frameCount);
+    uint pixelId = pixelCoord.x + pixelCoord.y * screenSize.x;
+    uint rngState = hash(pixelId + pushConstants.rng);
+
     float spp = sceneData.spp;
     float3 giColor = float3(0, 0, 0);
     
     for (int i = 0; i < spp; i++)
     {
-        uint sampleSeed = baseSeed + i * 1024;
-        float3 giRayDir = cosine_weighted_hemisphere(normal, sampleSeed);
-    
+        uint rng = rngInt(rngState);
+
+        float3 giRayDir = cosine_weighted_hemisphere(normal, rng);
+
         RayPayload giRayPayload;
         giRayPayload.depth = 0;
         giRayPayload.maxDepth = sceneData.maxDepth;
@@ -78,6 +86,7 @@ void main()
         giRayPayload.hitGeometry = false;
         giRayPayload.t = 0;
         giRayPayload.pos = worldPos;
+        giRayPayload.rngState = rngState;
 
         RayDesc ray;
         ray.Origin = worldPos;

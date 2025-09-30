@@ -3,6 +3,8 @@ struct VertexInput
     float3 position : POSITION;
     float2 texCoord : TEXCOORD0;
     float3 normal : TEXCOORD1;
+    float3 tangent : TEXCOORD2;
+    float3 bitangent : TEXCOORD3;
 }
 
 struct VertexOutput 

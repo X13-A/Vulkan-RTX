@@ -28,6 +28,9 @@ struct MeshData
     uint vertexOffset;
 };
 
+[[push_constant]]
+PushConstants pushConstants;
+
 // Ressources
 [[vk::binding(0)]] RaytracingAccelerationStructure scene;
 [[vk::binding(2)]] ConstantBuffer<SceneData> sceneData;
@@ -35,7 +38,8 @@ struct MeshData
 [[vk::binding(4)]] StructuredBuffer<uint> indexBuffer;
 [[vk::binding(5)]] StructuredBuffer<MeshData> meshDataBuffer;
 [[vk::binding(6)]] StructuredBuffer<InstanceData> instanceDataBuffer;
-[[vk::binding(7)]] Sampler2D texture0[256];
+[[vk::binding(7)]] Sampler2D materialsAlbedo[256];
+[[vk::binding(8)]] Sampler2D materialsNormal[256];
 
 Vertex readVertex(uint vertexIndex)
 {
@@ -98,29 +102,37 @@ void main(inout RayPayload payload, in Attributes attribs)
     payload.t = RayTCurrent();
     payload.hitGeometry = true;
 
-    float4 textureColor = texture0[meshIndex].SampleLevel(uv, 0);
+    float4 textureColor = materialsAlbedo[meshIndex].SampleLevel(uv, 0);
+    float4 normalMapValue = materialsNormal[meshIndex].SampleLevel(uv, 0);
+    if (distance(textureColor.rgb, float3(1, 1, 1)) < 0.5)
+    {
+        textureColor = float4(SKY_COLOR, 1);
+        textureColor *= 10;
+    }
 
     payload.color = float3(0, 0, 0);
     
+    uint rngState = payload.rngState;
+
     // Recursive bounce
     if (payload.depth < payload.maxDepth) 
     {
-        uint seed = whiteNoise(payload.pos.xy, payload.depth);
-        float3 bounceDir = cosine_weighted_hemisphere(normal, seed);
-    
+        uint rng = rngInt(rngState);
+        float3 bounceDir = cosine_weighted_hemisphere(normal, rng);
+
         RayPayload bouncePayload;
         bouncePayload.depth = payload.depth + 1;
         bouncePayload.maxDepth = payload.maxDepth;
         bouncePayload.color = float3(0, 0, 0);
         bouncePayload.hitGeometry = false;
-    
+        bouncePayload.rngState = rngState;
+
         RayDesc ray;
         ray.Origin = payload.pos;
         ray.Direction = bounceDir;
         ray.TMin = 0.01;
         ray.TMax = 1000.0;
 
-        // TODO: attenuate using geometry function ? -> no because bouceDir is already biased towards normal
         TraceRay(scene, 0, 0xFF, 0, 1, 0, ray, bouncePayload);
         payload.color = textureColor.rgb * bouncePayload.color;
     }

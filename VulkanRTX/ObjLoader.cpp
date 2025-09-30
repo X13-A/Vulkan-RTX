@@ -21,6 +21,50 @@ std::string normalizePath(const std::string& baseDir, const std::string& texture
     return baseDir + cleanTextureName;
 }
 
+void computeTangents(MeshInfo& mesh)
+{
+    // Iterate over each triangle
+    for (int i = 0; i < mesh.indices.size(); i += 3)
+    {
+        uint32_t i1 = mesh.indices[i];
+        uint32_t i2 = mesh.indices[i+1];
+        uint32_t i3 = mesh.indices[i+2];
+
+        VulkanVertex& v1 = mesh.vertices[i1];
+        VulkanVertex& v2 = mesh.vertices[i2];
+        VulkanVertex& v3 = mesh.vertices[i3];
+
+        glm::vec3 edge1 = v2.pos - v1.pos;
+        glm::vec3 edge2 = v3.pos - v1.pos;
+        glm::vec2 deltaUV1 = v2.texCoord - v1.texCoord;
+        glm::vec2 deltaUV2 = v3.texCoord - v1.texCoord;
+
+        float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+        glm::vec3 tangent;
+        tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+        tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+        tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+
+        v1.tangent += tangent;
+        v2.tangent += tangent;
+        v3.tangent += tangent;
+        
+        glm::vec3 bitangent;
+        bitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+        bitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+        bitangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+
+        v1.bitangent += bitangent;
+        v2.bitangent += bitangent;
+        v3.bitangent += bitangent;
+    }
+    for (VulkanVertex& vertex : mesh.vertices)
+    {
+        vertex.tangent = glm::normalize(vertex.tangent);
+        vertex.bitangent = glm::normalize(vertex.bitangent);
+    }
+}
+
 ModelInfo ObjLoader::loadObj(const std::string& objPath)
 {
     tinyobj::attrib_t attrib;
@@ -57,7 +101,7 @@ ModelInfo ObjLoader::loadObj(const std::string& objPath)
 
         matInfo.metallicFactor = mat.metallic;
         matInfo.roughnessFactor = mat.roughness;
-        matInfo.aoFactor = mat.ambient[0]; // fallback for AO
+        matInfo.aoFactor = 0;
 
         model.materials.push_back(matInfo);
     }
@@ -105,7 +149,7 @@ ModelInfo ObjLoader::loadObj(const std::string& objPath)
 
             mesh.indices.push_back(uniqueVertices[vertex]);
         }
-
+        computeTangents(mesh);
         model.meshes.push_back(mesh);
 
         // Assign material index

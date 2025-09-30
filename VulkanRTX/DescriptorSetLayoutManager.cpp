@@ -1,10 +1,20 @@
 #include "DescriptorSetLayoutManager.hpp"
 #include <stdexcept>
 #include <array>
+#include "Constants.hpp"
 
 VkDescriptorSetLayout DescriptorSetLayoutManager::modelLayout = VK_NULL_HANDLE;
 VkDescriptorSetLayout DescriptorSetLayoutManager::materialLayout = VK_NULL_HANDLE;
 VkDescriptorSetLayout DescriptorSetLayoutManager::fullScreenQuadLayout = VK_NULL_HANDLE;
+VkDescriptorSetLayout DescriptorSetLayoutManager::rayTracingDescriptorSetLayout = VK_NULL_HANDLE;
+
+void DescriptorSetLayoutManager::createLayouts(const VulkanContext& context)
+{
+    DescriptorSetLayoutManager::createModelLayout(context);
+    DescriptorSetLayoutManager::createMaterialLayout(context);
+    DescriptorSetLayoutManager::createFullScreenQuadLayout(context);
+    DescriptorSetLayoutManager::createRayTracingDescriptorSetLayout(context);
+}
 
 void DescriptorSetLayoutManager::createModelLayout(const VulkanContext& context)
 {
@@ -13,7 +23,7 @@ void DescriptorSetLayoutManager::createModelLayout(const VulkanContext& context)
     uboLayoutBinding.descriptorCount = 1;
     uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     uboLayoutBinding.pImmutableSamplers = nullptr;
-    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
     std::array<VkDescriptorSetLayoutBinding, 1> bindings =
     {
@@ -43,8 +53,15 @@ void DescriptorSetLayoutManager::createMaterialLayout(const VulkanContext& conte
     albedoBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
     bindings.push_back(albedoBinding);
 
+    VkDescriptorSetLayoutBinding normalBinding{};
+    normalBinding.binding = 1;
+    normalBinding.descriptorCount = 1;
+    normalBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    normalBinding.pImmutableSamplers = nullptr;
+    normalBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    bindings.push_back(normalBinding);
+
     // TODO:
-    // Normal
     // Roughness
     // Metallic
     // etc
@@ -109,6 +126,140 @@ void DescriptorSetLayoutManager::createFullScreenQuadLayout(const VulkanContext&
     }
 }
 
+void DescriptorSetLayoutManager::createRayTracingDescriptorSetLayout(const VulkanContext& context)
+{
+    int binding = 0;
+
+    // TLAS
+    VkDescriptorSetLayoutBinding tlasBinding{};
+    tlasBinding.binding = binding++;
+    tlasBinding.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+    tlasBinding.descriptorCount = 1;
+    tlasBinding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+    tlasBinding.pImmutableSamplers = nullptr;
+
+    // Storage Image
+    VkDescriptorSetLayoutBinding storageImageBinding{};
+    storageImageBinding.binding = binding++;
+    storageImageBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+    storageImageBinding.descriptorCount = 1;
+    storageImageBinding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+    storageImageBinding.pImmutableSamplers = nullptr;
+
+    // Uniform Buffer
+    VkDescriptorSetLayoutBinding uniformBinding{};
+    uniformBinding.binding = binding++;
+    uniformBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    uniformBinding.descriptorCount = 1;
+    uniformBinding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR | VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR | VK_SHADER_STAGE_MISS_BIT_KHR;
+    uniformBinding.pImmutableSamplers = nullptr;
+
+    // Vertex Buffer
+    VkDescriptorSetLayoutBinding vertexBufferBinding{};
+    vertexBufferBinding.binding = binding++;
+    vertexBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    vertexBufferBinding.descriptorCount = 1;
+    vertexBufferBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+    vertexBufferBinding.pImmutableSamplers = nullptr;
+
+    // Index Buffer
+    VkDescriptorSetLayoutBinding indexBufferBinding{};
+    indexBufferBinding.binding = binding++;
+    indexBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    indexBufferBinding.descriptorCount = 1;
+    indexBufferBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+    indexBufferBinding.pImmutableSamplers = nullptr;
+
+    // Mesh Data Buffer
+    VkDescriptorSetLayoutBinding meshDataBufferBinding{};
+    meshDataBufferBinding.binding = binding++;
+    meshDataBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    meshDataBufferBinding.descriptorCount = 1;
+    meshDataBufferBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+    meshDataBufferBinding.pImmutableSamplers = nullptr;
+
+    // Instance Data Buffer
+    VkDescriptorSetLayoutBinding instanceDataBufferBinding{};
+    instanceDataBufferBinding.binding = binding++;
+    instanceDataBufferBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    instanceDataBufferBinding.descriptorCount = 1;
+    instanceDataBufferBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+    instanceDataBufferBinding.pImmutableSamplers = nullptr;
+
+    // Textures array
+    VkDescriptorSetLayoutBinding instancesAlbedoBinding{};
+    instancesAlbedoBinding.binding = binding++;
+    instancesAlbedoBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    instancesAlbedoBinding.descriptorCount = MAX_MESHES;
+    instancesAlbedoBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+    instancesAlbedoBinding.pImmutableSamplers = nullptr;
+
+    // Textures array
+    VkDescriptorSetLayoutBinding instancesNormalBinding{};
+    instancesNormalBinding.binding = binding++;
+    instancesNormalBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    instancesNormalBinding.descriptorCount = MAX_MESHES;
+    instancesNormalBinding.stageFlags = VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+    instancesNormalBinding.pImmutableSamplers = nullptr;
+
+    // GBuffer
+    VkDescriptorSetLayoutBinding depthBinding{};
+    depthBinding.binding = binding++;
+    depthBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    depthBinding.descriptorCount = 1;
+    depthBinding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+    depthBinding.pImmutableSamplers = nullptr;
+
+    VkDescriptorSetLayoutBinding normalsBinding{};
+    normalsBinding.binding = binding++;
+    normalsBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    normalsBinding.descriptorCount = 1;
+    normalsBinding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+    normalsBinding.pImmutableSamplers = nullptr;
+
+    VkDescriptorSetLayoutBinding albedoBinding{};
+    albedoBinding.binding = binding++;
+    albedoBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    albedoBinding.descriptorCount = 1;
+    albedoBinding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+    albedoBinding.pImmutableSamplers = nullptr;
+
+    // Frame accumulation
+    VkDescriptorSetLayoutBinding lastImageBinding{};
+    lastImageBinding.binding = binding++;
+    lastImageBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    lastImageBinding.descriptorCount = 1;
+    lastImageBinding.stageFlags = VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+    lastImageBinding.pImmutableSamplers = nullptr;
+
+    std::array<VkDescriptorSetLayoutBinding, 13> bindings =
+    {
+        tlasBinding,
+        storageImageBinding,
+        uniformBinding,
+        vertexBufferBinding,
+        indexBufferBinding,
+        meshDataBufferBinding,
+        instanceDataBufferBinding,
+        instancesAlbedoBinding,
+        instancesNormalBinding,
+        depthBinding,
+        normalsBinding,
+        albedoBinding,
+        lastImageBinding
+    };
+
+    VkDescriptorSetLayoutCreateInfo layoutInfo{};
+    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+    layoutInfo.pBindings = bindings.data();
+
+    if (vkCreateDescriptorSetLayout(context.device, &layoutInfo, nullptr, &rayTracingDescriptorSetLayout) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not create descriptor set layout (ray tracing)!");
+    }
+}
+
 VkDescriptorSetLayout DescriptorSetLayoutManager::getModelLayout()
 {
     if (modelLayout == VK_NULL_HANDLE)
@@ -136,6 +287,15 @@ VkDescriptorSetLayout DescriptorSetLayoutManager::getFullScreenQuadLayout()
     return fullScreenQuadLayout;
 }
 
+VkDescriptorSetLayout DescriptorSetLayoutManager::getRayTracingLayout()
+{
+    if (rayTracingDescriptorSetLayout == VK_NULL_HANDLE)
+    {
+        throw std::runtime_error("Descriptor set layout not initialized !");
+    }
+    return rayTracingDescriptorSetLayout;
+}
+
 void DescriptorSetLayoutManager::cleanup(VkDevice device)
 {
     if (modelLayout != VK_NULL_HANDLE)
@@ -149,5 +309,9 @@ void DescriptorSetLayoutManager::cleanup(VkDevice device)
     if (fullScreenQuadLayout != VK_NULL_HANDLE)
     {
         vkDestroyDescriptorSetLayout(device, fullScreenQuadLayout, nullptr);
+    }
+    if (rayTracingDescriptorSetLayout != VK_NULL_HANDLE)
+    {
+        vkDestroyDescriptorSetLayout(device, rayTracingDescriptorSetLayout, nullptr);
     }
 }

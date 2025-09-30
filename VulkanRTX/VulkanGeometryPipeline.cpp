@@ -2,6 +2,8 @@
 #include <stdexcept>
 #include "Utils.hpp"
 #include "DescriptorSetLayoutManager.hpp"
+#include "RunTimeSettings.hpp"
+#include <iostream>
 
 void VulkanGeometryPipeline::init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, int width, int height, const VulkanGBufferManager& gBufferManager)
 {
@@ -146,7 +148,7 @@ void VulkanGeometryPipeline::createPipeline(const VulkanContext& context)
 
     // Define vertex input state
     VkVertexInputBindingDescription bindingDescription = VulkanVertex::getBindingDescription();
-    std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = VulkanVertex::getAttributeDescriptions();
+    std::array<VkVertexInputAttributeDescription, 5> attributeDescriptions = VulkanVertex::getAttributeDescriptions();
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -258,6 +260,32 @@ void VulkanGeometryPipeline::handleResize(const VulkanContext& context, VulkanCo
     createFramebuffers(context, gBufferManager, width, height);
 }
 
+void VulkanGeometryPipeline::drawMesh(const ShadedMesh& shadedMesh, VkCommandBuffer cmdBuffer, uint32_t currentFrame)
+{
+    const VulkanMesh& mesh = shadedMesh.mesh;
+    const VulkanMaterial& material = shadedMesh.material;
+
+    // Bind vertex and index buffers for this mesh
+    VkBuffer vertexBuffers[] = { mesh.vertexBuffer };
+    VkDeviceSize offsets[] = { 0 };
+    vkCmdBindVertexBuffers(cmdBuffer, 0, 1, vertexBuffers, offsets);
+    vkCmdBindIndexBuffer(cmdBuffer, mesh.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+    // Bind material descriptor set for this mesh
+    vkCmdBindDescriptorSets(cmdBuffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        pipelineLayout,
+        1,  // Set 1: Material layout
+        1,
+        &material.descriptorSets[currentFrame],
+        0, nullptr);
+
+    // Draw this mesh
+    vkCmdDrawIndexed(cmdBuffer,
+        static_cast<uint32_t>(mesh.indices.size()),
+        1, 0, 0, 0);
+}
+
 void VulkanGeometryPipeline::recordDrawCommands(int width, int height, const std::vector<VulkanModel>& models, VkCommandBuffer commandBuffer, uint32_t currentFrame)
 {
     VkExtent2D extent;
@@ -296,8 +324,15 @@ void VulkanGeometryPipeline::recordDrawCommands(int width, int height, const std
     scissor.extent = extent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
+    int i = 0;
     for (const VulkanModel& model : models)
     {
+        // DEBUG: Skip first model as it is a gizmo used later
+        if (i++ == 0)
+        {
+            continue;
+        }
+
         // Bind model descriptor set once per model (transform/geometry data)
         vkCmdBindDescriptorSets(commandBuffer,
             VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -310,32 +345,60 @@ void VulkanGeometryPipeline::recordDrawCommands(int width, int height, const std
         // Render each submesh
         for (const ShadedMesh& shadedMesh : model.shadedMeshes)
         {
-            const VulkanMesh& mesh = shadedMesh.mesh;
-            const VulkanMaterial& material = shadedMesh.material;
-
-            // Bind vertex and index buffers for this mesh
-            VkBuffer vertexBuffers[] = { mesh.vertexBuffer };
-            VkDeviceSize offsets[] = { 0 };
-            vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-            vkCmdBindIndexBuffer(commandBuffer, mesh.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
-
-            // Bind material descriptor set for this mesh
-            vkCmdBindDescriptorSets(commandBuffer,
-                VK_PIPELINE_BIND_POINT_GRAPHICS,
-                pipelineLayout,
-                1,  // Set 1: Material layout
-                1,
-                &material.descriptorSets[currentFrame],
-                0, nullptr);
-
-            // Draw this mesh
-            vkCmdDrawIndexed(commandBuffer,
-                static_cast<uint32_t>(mesh.indices.size()),
-                1, 0, 0, 0);
+            drawMesh(shadedMesh, commandBuffer, currentFrame);
         }
     }
 
+    drawTBNGizmo(models, currentFrame, commandBuffer);
+
     vkCmdEndRenderPass(commandBuffer);
+}
+
+void VulkanGeometryPipeline::drawTBNGizmo(const std::vector<VulkanModel>& models, uint32_t currentFrame, VkCommandBuffer commandBuffer)
+{
+    const VulkanModel* arrowGizmo = &models.at(0);
+
+    const VulkanModel& model = models.at(1);
+    const ShadedMesh& shadedMesh = model.shadedMeshes.at(0);
+    int currentVertex = RunTimeSettings::debugIndex1 % shadedMesh.mesh.vertices.size();
+    const VulkanVertex& v = shadedMesh.mesh.vertices[currentVertex];
+
+    glm::mat4x4 modelMat = model.transform.getTransformMatrix();
+    glm::mat4x4 normalMat = glm::transpose(glm::inverse(modelMat));
+
+    glm::vec3 normal = glm::normalize(glm::vec3(normalMat * glm::vec4(v.normal, 0.0f)));
+    glm::vec3 tangent = glm::normalize(glm::vec3(normalMat * glm::vec4(v.tangent, 0.0f)));
+    glm::vec3 bitangent = glm::normalize(glm::vec3(normalMat * glm::vec4(v.bitangent, 0.0f)));
+    glm::vec3 pos = glm::vec3(modelMat * glm::vec4(v.pos, 1.0f));
+
+    glm::vec3 gizmoAxes[3] = { normal, tangent, bitangent };
+    Transform t;
+    t.setTransformMatrix(glm::inverse(glm::lookAt(pos, pos + gizmoAxes[RunTimeSettings::debugIndex2 % 3], glm::vec3(0, 1, 0))));
+
+    float scale = 0.1;
+    t.setScale(glm::vec3(scale, scale, scale));
+
+    glm::mat4 gizmoModelMat = t.getTransformMatrix();
+    glm::mat4 gizmoNormalMat = glm::transpose(glm::inverse(gizmoModelMat));
+
+    // Move gizmo to the right place
+    uint8_t* base = static_cast<uint8_t*>(arrowGizmo->uniformBuffersMapped[currentFrame]);
+
+    memcpy(base + offsetof(VulkanModelUBO, modelMat), &gizmoModelMat, sizeof(gizmoModelMat));
+    memcpy(base + offsetof(VulkanModelUBO, normalMat), &gizmoNormalMat, sizeof(gizmoNormalMat));
+
+    vkCmdBindDescriptorSets(commandBuffer,
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        pipelineLayout,
+        0,  // Set 0: Model layout
+        1,
+        &arrowGizmo->modelDescriptorSets[currentFrame],
+        0, nullptr);
+
+    for (const ShadedMesh& gizmoShadedMesh : arrowGizmo->shadedMeshes)
+    {
+        drawMesh(gizmoShadedMesh, commandBuffer, currentFrame);
+    }
 }
 
 VkRenderPass VulkanGeometryPipeline::getRenderPass() const

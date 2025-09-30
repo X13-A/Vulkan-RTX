@@ -49,7 +49,7 @@ namespace VulkanUtils
 
     namespace Textures
     {
-        void createSampler(const VulkanContext& context, VkSampler* sampler);
+        void createSampler(const VulkanContext& context, VkSampler* sampler, VkFilter minFilter, VkFilter magFilter, VkSamplerMipmapMode mipMapMode);
     };
 
     namespace Buffers

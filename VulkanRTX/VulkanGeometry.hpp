@@ -6,15 +6,17 @@
 
 struct VulkanVertex
 {
-    glm::vec3 pos;
-    glm::vec2 texCoord;
-    glm::vec3 normal;
+    glm::vec3 pos = { 0, 0, 0 };
+    glm::vec2 texCoord = { 0, 0 };
+    glm::vec3 normal = { 0, 0, 0 };
+    glm::vec3 tangent = { 0, 0, 0 };
+    glm::vec3 bitangent = { 0, 0, 0 };
 
     bool operator==(const VulkanVertex& other) const;
 
     static VkVertexInputBindingDescription getBindingDescription();
 
-    static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions();
+    static std::array<VkVertexInputAttributeDescription, 5> getAttributeDescriptions();
 };
 
 namespace std

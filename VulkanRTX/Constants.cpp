@@ -10,9 +10,10 @@ const char* GLFW_WINDOW_NAME = "Vulkan";
 const int RT_MAX_RECURSION_DEPTH = 12;
 const int RT_RAYGEN_SHADER_INDEX = 0;
 const int RT_MISS_SHADER_INDEX = 1;
+const int RT_MAX_SAMPLES = 100000;
 const int RT_CLOSEST_HIT_GENERAL_SHADER_INDEX = 2;
 
-const int MAX_ALBEDO_TEXTURES = 1024;
+const int MAX_MESHES = 2048;
 const int FULLSCREEN_QUAD_COUNT = 1;
 
 #ifdef NDEBUG

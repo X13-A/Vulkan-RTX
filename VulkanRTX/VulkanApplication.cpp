@@ -36,8 +36,11 @@ void VulkanApplication::run()
 
     camera.setPerspective(60, GLFW_WINDOW_WIDTH / (float) GLFW_WINDOW_HEIGHT, 0.1, 100.0f);
     controls = new CreativeControls(camera, 10.0, 100);
-    camera.transform.setRotation(glm::vec3(0, 0, 0));
-    camera.transform.setPosition(glm::vec3(0, 0, 5));
+    //camera.transform.setRotation(glm::vec3(0, 0, 180));
+    //camera.transform.setPosition(glm::vec3(0.312806, 6.96612, -0.113628));
+    camera.transform.setTransformMatrix(glm::inverse(glm::lookAt(glm::vec3(0, 0, -5), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0))));
+    camera.transform.setScale(glm::vec3(1));
+
     EventManager::get().sink<WindowResizeEvent>().connect <&VulkanApplication::handleWindowResize>(this);
     initVulkan();
     mainLoop();
@@ -52,9 +55,7 @@ void VulkanApplication::initVulkan()
     context.initDevice();
     context.loadFunctionPointers();
 
-    DescriptorSetLayoutManager::createModelLayout(context);
-    DescriptorSetLayoutManager::createMaterialLayout(context);
-    DescriptorSetLayoutManager::createFullScreenQuadLayout(context);
+    DescriptorSetLayoutManager::createLayouts(context);
 
     // CommandBuffers
     commandBufferManager.createCommandPool(context);
@@ -119,14 +120,17 @@ void VulkanApplication::handleInputs()
         e.scaledHeight = static_cast<int> ((float)nativeHeight * RunTimeSettings::renderScale);
         EventManager::get().trigger(e);
     }
-    if (inputManager.isKeyJustPressed(KeyboardKey::O))
+    int sppOffset = 1;
+    if (inputManager.isKeyPressed(KeyboardKey::O))
     {
-        RunTimeSettings::spp = std::max(0, (int) RunTimeSettings::spp - 1);
+        Time::resetFrameCount();
+        RunTimeSettings::spp = std::max(1, (int) RunTimeSettings::spp - sppOffset);
         std::cout << "Samples per pixel: " << RunTimeSettings::spp << std::endl;
     }
-    if (inputManager.isKeyJustPressed(KeyboardKey::P))
+    if (inputManager.isKeyPressed(KeyboardKey::P))
     {
-        RunTimeSettings::spp = std::max(0, (int)RunTimeSettings::spp + 1);
+        Time::resetFrameCount();
+        RunTimeSettings::spp = std::max(1, (int)RunTimeSettings::spp + sppOffset);
         std::cout << "Samples per pixel: " << RunTimeSettings::spp << std::endl;
     }
     if (inputManager.isKeyPressed(KeyboardKey::F))
@@ -148,6 +152,35 @@ void VulkanApplication::handleInputs()
         RunTimeSettings::rt_recursion_depth = std::clamp(RunTimeSettings::rt_recursion_depth, 0, RT_MAX_RECURSION_DEPTH);
         std::cout << "RT recursion depth: " << RunTimeSettings::rt_recursion_depth << std::endl;
     }
+    if (inputManager.isKeyPressed(KeyboardKey::N))
+    {
+        Time::resetFrameCount();
+        RunTimeSettings::debugIndex1 += 1;
+        std::cout << "Debug index 1: " << RunTimeSettings::debugIndex1 << std::endl;
+    }
+    if (inputManager.isKeyPressed(KeyboardKey::B))
+    {
+        Time::resetFrameCount();
+        RunTimeSettings::debugIndex1 -= 1;
+        std::cout << "Debug index 1: " << RunTimeSettings::debugIndex1 << std::endl;
+    }
+    if (inputManager.isKeyJustPressed(KeyboardKey::V))
+    {
+        Time::resetFrameCount();
+        RunTimeSettings::debugIndex2 += 1;
+        std::cout << "Debug index 1: " << RunTimeSettings::debugIndex2 << std::endl;
+    }
+    if (inputManager.isKeyJustPressed(KeyboardKey::C))
+    {
+        Time::resetFrameCount();
+        RunTimeSettings::debugIndex2 -= 1;
+        std::cout << "Debug index 1: " << RunTimeSettings::debugIndex2 << std::endl;
+    }
+    if (inputManager.isKeyJustPressed(KeyboardKey::B))
+    {
+        Time::resetFrameCount();
+        RunTimeSettings::debugBool1 = !RunTimeSettings::debugBool1;
+    }
 }
 
 void VulkanApplication::mainLoop()
@@ -162,7 +195,7 @@ void VulkanApplication::mainLoop()
 
             Scene::update();
             renderer.drawFrame(nativeWidth, nativeHeight, scaledWidth, scaledHeight, windowManager.getWindow(), context, swapChainManager, graphicsPipelineManager, commandBufferManager, camera, Scene::getModels(), fullScreenQuad);
-        
+           
             Time::update();
             updateFPS();
         }

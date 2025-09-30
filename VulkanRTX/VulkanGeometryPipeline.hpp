@@ -20,6 +20,7 @@ public:
     void init(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, int width, int height, const VulkanGBufferManager& gBufferManager);
     void cleanup(VkDevice device);
     void handleResize(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const VulkanGBufferManager& gBufferManager, int width, int height);
+    void drawMesh(const ShadedMesh& shadedMesh, VkCommandBuffer cmdBuffer, uint32_t currentFrame);
     void recordDrawCommands(int width, int height, const std::vector<VulkanModel>& models, VkCommandBuffer commandBuffer, uint32_t currentFrame);
 
     VkRenderPass getRenderPass() const;
@@ -31,4 +32,5 @@ private:
     void createFramebuffers(const VulkanContext& context, const VulkanGBufferManager& gBufferManager, uint32_t width, uint32_t height);
     void createPipelineLayouts(const VulkanContext& context);
     void createPipeline(const VulkanContext& context);
+    void drawTBNGizmo(const std::vector<VulkanModel>& models, uint32_t currentFrame, VkCommandBuffer commandBuffer);
 };

@@ -95,10 +95,11 @@ void VulkanRenderer::drawFrame(int nativeWidth, int nativeHeight, int scaledWidt
     // Sync
     vkResetFences(context.device, 1, &inFlightFences[currentFrame]);
     vkResetCommandBuffer(commandBufferManager.commandBuffers[currentFrame], 0);
-    recordCommandBuffer(nativeWidth, nativeHeight, scaledWidth, scaledHeight, context, commandBufferManager, swapChainManager, graphicsPipeline, imageIndex, currentFrame, models, fullScreenQuad);
 
     // Update uniforms
-    updateUniformBuffers(camera, models, fullScreenQuad, swapChainManager, graphicsPipeline.rtPipeline, currentFrame);
+    updateUniformBuffers(scaledWidth, scaledHeight, camera, models, fullScreenQuad, swapChainManager, graphicsPipeline.rtPipeline, currentFrame);
+
+    recordCommandBuffer(nativeWidth, nativeHeight, scaledWidth, scaledHeight, context, commandBufferManager, swapChainManager, graphicsPipeline, imageIndex, currentFrame, models, fullScreenQuad);
 
     // Submit commands
     VkSubmitInfo submitInfo{};
@@ -151,12 +152,13 @@ void VulkanRenderer::drawFrame(int nativeWidth, int nativeHeight, int scaledWidt
             graphicsPipeline.rtPipeline.getStorageImageHeight(), 
             swapChainManager.swapChainExtent.width,              
             swapChainManager.swapChainExtent.height,             
-            VK_FILTER_LINEAR                                     
+            VK_FILTER_NEAREST                                     
         );
 
         // Save last image for blending
         // TODO: skip useless transition, keep TRANSFER_SRC_BIT
-        // TODO: just do a raw copy instead of blit since they have same size, might be faster
+        // TODO: even better, just do a raw copy instead of blit since they have same size, might be faster
+        // TODO: even better, ping pong between two textures
         VulkanUtils::Image::blitImage(
             commandBuffer,
             graphicsPipeline.rtPipeline.getStorageImage(),
@@ -171,7 +173,7 @@ void VulkanRenderer::drawFrame(int nativeWidth, int nativeHeight, int scaledWidt
             graphicsPipeline.rtPipeline.getStorageImageHeight(),
             graphicsPipeline.rtPipeline.getStorageImageWidth(),
             graphicsPipeline.rtPipeline.getStorageImageHeight(),
-            VK_FILTER_LINEAR
+            VK_FILTER_NEAREST
         );
 
         commandBufferManager.endSingleTimeCommands(context.device, context.graphicsQueue, commandBuffer);
@@ -201,7 +203,7 @@ void VulkanRenderer::drawFrame(int nativeWidth, int nativeHeight, int scaledWidt
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void VulkanRenderer::updateUniformBuffers(const Camera& camera, const std::vector<VulkanModel>& models, const VulkanFullScreenQuad& fullScreenQuad, const VulkanSwapChainManager& swapChain, VulkanRayTracingPipeline& rtPipeline, uint32_t currentImage)
+void VulkanRenderer::updateUniformBuffers(int scaledWidth, int scaledHeight, const Camera& camera, const std::vector<VulkanModel>& models, const VulkanFullScreenQuad& fullScreenQuad, const VulkanSwapChainManager& swapChain, VulkanRayTracingPipeline& rtPipeline, uint32_t currentFrame)
 {
     for (int i = 0; i < models.size(); i++)
     {
@@ -211,13 +213,14 @@ void VulkanRenderer::updateUniformBuffers(const Camera& camera, const std::vecto
         
         ubo.viewMat = camera.getViewMatrix();
         ubo.projMat = camera.getProjectionMatrix();
+        ubo.debug = RunTimeSettings::debugBool1;
 
-        memcpy(models[i].uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
+        memcpy(models[i].uniformBuffersMapped[currentFrame], &ubo, sizeof(ubo));
     }
 
     VulkanFullScreenQuadUBO fullScreenUBO{};
     fullScreenUBO.time = 0; // TODO ?
-    memcpy(fullScreenQuad.uniformBuffersMapped[currentImage], &fullScreenUBO, sizeof(fullScreenUBO));
+    memcpy(fullScreenQuad.uniformBuffersMapped[currentFrame], &fullScreenUBO, sizeof(fullScreenUBO));
 
     SceneData sceneData;
     sceneData.proj = camera.getProjectionMatrix();
@@ -228,6 +231,8 @@ void VulkanRenderer::updateUniformBuffers(const Camera& camera, const std::vecto
     sceneData.recursionDepth = std::clamp(RunTimeSettings::rt_recursion_depth, 0, RT_MAX_RECURSION_DEPTH);
     sceneData.nearFar = glm::vec2(camera.getNearPlane(), camera.getFarPlane());
     sceneData.spp = RunTimeSettings::spp;
+    sceneData.resolutionX = scaledWidth;
+    sceneData.resolutionY = scaledHeight;
     rtPipeline.updateUniformBuffer(sceneData);
 }
 

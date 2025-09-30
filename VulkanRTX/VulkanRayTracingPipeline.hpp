@@ -10,8 +10,9 @@ struct SceneData
     glm::vec3 cameraPos;
     uint32_t recursionDepth;
     glm::vec2 nearFar;
+    int resolutionX;
+    int resolutionY;
     int spp;
-
 };
 
 struct InstanceData
@@ -30,6 +31,7 @@ struct MeshData
 struct PushConstants
 {
     uint32_t frameCount;
+    uint32_t rng;
 };
 
 class VulkanRayTracingPipeline
@@ -38,7 +40,6 @@ private:
     // Pipeline
     VkPipeline pipeline;
     VkPipelineLayout pipelineLayout;
-    VkDescriptorSetLayout descriptorSetLayout;
 
     // Shader binding table
     VkBuffer sbtBuffer;
@@ -81,24 +82,25 @@ private:
     VkBuffer globalVertexBuffer;
     VkDeviceMemory globalVertexBufferMemory;
 
-
     // Sampler
     VkSampler globalTextureSampler;
+    VkSampler pointTextureSampler;
+
+    int sampleCount;
 
 public:
     void init(const VulkanContext& context, uint32_t width, uint32_t height);
     void writeDescriptors(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, const std::vector<VulkanModel>& models, VkAccelerationStructureKHR tlas, VkImageView depthImageView, VkImageView normalsImageView, VkImageView albedoImageView);
 
-    void createRayTracingDescriptorSetLayout(const VulkanContext& context);
     void createRayTracingPipelineLayout(const VulkanContext& context);
     void createRayTracingPipeline(const VulkanContext& context);
     void createShaderBindingTable(const VulkanContext& context);
     
-    void createRayTracingResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkAccelerationStructureKHR tlas, const std::vector<VulkanModel>& models, std::vector<VkImageView>& outTextureViews);
+    void createRayTracingResources(const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkAccelerationStructureKHR tlas, const std::vector<VulkanModel>& models, std::vector<VkImageView>& outAlbedoTextureViews, std::vector<VkImageView>& outNormalTextureViews);
 
     void createDescriptorPool(const VulkanContext& context);
     void createDescriptorSet(const VulkanContext& context);
-    void writeDescriptorSet(const VulkanContext& context, VkImageView depthImageView, VkImageView normalsImageView, VkImageView albedoImageView, VkAccelerationStructureKHR tlas, const std::vector<VkImageView>& textureViews);
+    void writeDescriptorSet(const VulkanContext& context, VkImageView depthImageView, VkImageView normalsImageView, VkImageView albedoImageView, VkAccelerationStructureKHR tlas, const std::vector<VkImageView>& albedoTextureViews, const std::vector<VkImageView>& normalTextureViews);
     
     void createStorageImage(const VulkanContext& context, uint32_t width, uint32_t height);
     void createUniformBuffer(const VulkanContext& context);

@@ -431,13 +431,12 @@ void VulkanUtils::Image::transitionImageLayout(const VulkanContext& context, Vul
     commandBufferManager.endSingleTimeCommands(context.device, context.graphicsQueue, commandBuffer);
 }
 
-void VulkanUtils::Textures::createSampler(const VulkanContext& context, VkSampler* sampler)
+void VulkanUtils::Textures::createSampler(const VulkanContext& context, VkSampler* sampler, VkFilter minFilter, VkFilter magFilter, VkSamplerMipmapMode mipMapMode)
 {
-    // TODO: Add params when necessary
     VkSamplerCreateInfo samplerInfo{};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerInfo.magFilter = VK_FILTER_LINEAR;
-    samplerInfo.minFilter = VK_FILTER_LINEAR;
+    samplerInfo.magFilter = magFilter;
+    samplerInfo.minFilter = minFilter;
 
     samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
@@ -453,7 +452,7 @@ void VulkanUtils::Textures::createSampler(const VulkanContext& context, VkSample
     samplerInfo.compareEnable = VK_FALSE;
     samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 
-    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    samplerInfo.mipmapMode = mipMapMode;
     samplerInfo.mipLodBias = 0.0f;
     samplerInfo.minLod = 0.0f;
     samplerInfo.maxLod = 0.0f;
@@ -511,8 +510,6 @@ void VulkanUtils::Buffers::copyBuffer(const VulkanContext& context, VulkanComman
 
     commandBuffers.endSingleTimeCommands(context.device, context.graphicsQueue, commandBuffer);
 }
-
-// createAndfill buffer is in header since it is templated
 
 void VulkanUtils::Buffers::createScratchBuffer(const VulkanContext& context, VkDeviceSize size, VkBuffer& scratchBuffer, VkDeviceMemory& scratchBufferMemory)
 {

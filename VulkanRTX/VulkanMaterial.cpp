@@ -12,12 +12,21 @@ void VulkanMaterial::init(const PBRMaterialInfo& info, const VulkanContext& cont
         // Use albedo map only if available
         if (!info.albedoTexture.empty())
         {
-            albedoTexture.init(info.albedoTexture, context, commandBufferManager);
+            albedoMap.init(info.albedoTexture, context, commandBufferManager);
         }
         // Otherwise create 1x1 texture with appropriate color
         else
         {
-            albedoTexture = VulkanTexture::create1x1Texture(info.albedoFactor[0], info.albedoFactor[1], info.albedoFactor[2], context, commandBufferManager);
+            albedoMap = VulkanTexture::create1x1TextureRGBA(static_cast<uint8_t>(info.albedoFactor[0] * 255), static_cast<uint8_t>(info.albedoFactor[1] * 255), static_cast<uint8_t>(info.albedoFactor[2] * 255), context, commandBufferManager);
+        }
+        if (!info.bumpTexture.empty())
+        {
+            // TODO: Use last channel for specular or something ?
+            bumpMap.init(info.bumpTexture, context, commandBufferManager, VK_FORMAT_R8G8B8A8_UNORM); // Use UNORM for vectors
+        }
+        else
+        {
+            bumpMap = VulkanTexture::create1x1TextureRGBA(128, 128, 255, context, commandBufferManager, VK_FORMAT_R8G8B8A8_UNORM);
         }
     }
 	createDescriptorSets(context, DescriptorSetLayoutManager::getMaterialLayout(), descriptorPool);
@@ -78,19 +87,30 @@ void VulkanMaterial::createDescriptorSets(const VulkanContext& context, VkDescri
     // Update descriptor sets with texture data
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        VkDescriptorImageInfo albedoInfo{};
+        albedoInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkDescriptorImageInfo bumpInfo{};
+        bumpInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         if (!hasError)
         {
-            imageInfo.imageView = albedoTexture.imageView;
-            imageInfo.sampler = albedoTexture.sampler;
+            albedoInfo.imageView = albedoMap.imageView;
+            albedoInfo.sampler = albedoMap.sampler;
+
+            bumpInfo.imageView = bumpMap.imageView;
+            bumpInfo.sampler = bumpMap.sampler;
         }
         else
         {
-            imageInfo.imageView = TextureManager::errorTexture.imageView;
-            imageInfo.sampler = TextureManager::errorTexture.sampler;
+            albedoInfo.imageView = TextureManager::errorAlbedoTexture.imageView;
+            albedoInfo.sampler = TextureManager::errorAlbedoTexture.sampler;
+
+            bumpInfo.imageView = TextureManager::errorBumpTexture.imageView;
+            bumpInfo.sampler = TextureManager::errorBumpTexture.sampler;
         }
+
+        std::vector< VkWriteDescriptorSet> descriptorWrites;
 
         VkWriteDescriptorSet albedoWrite{};
         albedoWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -99,15 +119,27 @@ void VulkanMaterial::createDescriptorSets(const VulkanContext& context, VkDescri
         albedoWrite.dstArrayElement = 0;
         albedoWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         albedoWrite.descriptorCount = 1;
-        albedoWrite.pImageInfo = &imageInfo;
+        albedoWrite.pImageInfo = &albedoInfo;
+        descriptorWrites.push_back(albedoWrite);
 
-        vkUpdateDescriptorSets(context.device, 1, &albedoWrite, 0, nullptr);
+        VkWriteDescriptorSet bumpWrite{};
+        bumpWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        bumpWrite.dstSet = descriptorSets[i];
+        bumpWrite.dstBinding = 1;
+        bumpWrite.dstArrayElement = 0;
+        bumpWrite.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        bumpWrite.descriptorCount = 1;
+        bumpWrite.pImageInfo = &bumpInfo;
+        descriptorWrites.push_back(bumpWrite);
+
+        vkUpdateDescriptorSets(context.device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
     }
 }
 
 void VulkanMaterial::cleanup(VkDevice device)
 {
     // Cleanup albedo texture
-    albedoTexture.cleanup(device);
+    albedoMap.cleanup(device);
+    bumpMap.cleanup(device);
     descriptorSets.clear();
 }

@@ -14,10 +14,10 @@ public:
     VkSampler sampler;
 
 public:
-    void init(std::string path, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager);
-    void createImageView(const VulkanContext& context);
-    void createImage(std::string path, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager);
+    void init(std::string path, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkFormat format = VK_FORMAT_R8G8B8A8_SRGB);
+    void createImageView(const VulkanContext& context, VkFormat format = VK_FORMAT_R8G8B8A8_SRGB);
+    void createImage(std::string path, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkFormat format = VK_FORMAT_R8G8B8A8_SRGB);
     void cleanup(VkDevice device);
 
-    static VulkanTexture create1x1Texture(float r, float g, float b, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager);
+    static VulkanTexture create1x1TextureRGBA(uint8_t r, uint8_t g, uint8_t b, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkFormat format = VK_FORMAT_R8G8B8A8_SRGB);
 };

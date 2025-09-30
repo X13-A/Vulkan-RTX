@@ -16,9 +16,9 @@ VkVertexInputBindingDescription VulkanVertex::getBindingDescription()
     return bindingDescription;
 }
 
-std::array<VkVertexInputAttributeDescription, 3> VulkanVertex::getAttributeDescriptions()
+std::array<VkVertexInputAttributeDescription, 5> VulkanVertex::getAttributeDescriptions()
 {
-    std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
+    std::array<VkVertexInputAttributeDescription, 5> attributeDescriptions{};
 
     attributeDescriptions[0].binding = 0;
     attributeDescriptions[0].location = 0;
@@ -35,6 +35,16 @@ std::array<VkVertexInputAttributeDescription, 3> VulkanVertex::getAttributeDescr
     attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
     attributeDescriptions[2].offset = offsetof(VulkanVertex, normal);
 
+    attributeDescriptions[3].binding = 0;
+    attributeDescriptions[3].location = 3;
+    attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[3].offset = offsetof(VulkanVertex, tangent);
+
+    attributeDescriptions[4].binding = 0;
+    attributeDescriptions[4].location = 4;
+    attributeDescriptions[4].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[4].offset = offsetof(VulkanVertex, bitangent);
+    
     return attributeDescriptions;
 }
 
@@ -45,9 +55,11 @@ namespace std
         size_t h1 = hash<glm::vec3>()(vertex.pos);
         size_t h2 = hash<glm::vec2>()(vertex.texCoord);
         size_t h3 = hash<glm::vec3>()(vertex.normal);
+        size_t h4 = hash<glm::vec3>()(vertex.tangent);
 
         size_t combined = h1 ^ (h2 << 1);
         combined = (combined >> 1) ^ (h3 << 1);
+        combined = (combined >> 1) ^ (h4 << 1);
 
         return combined;
     }

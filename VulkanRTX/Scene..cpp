@@ -4,6 +4,72 @@
 
 const ModelLoadInfo Scene::modelLoadInfos[] =
 {
+	// FOR DEBUG:
+	// arrowGizmo must be the first model
+	// the first model is currently used as a gizmo for debug purposes
+	{
+		"arrowGizmo",
+		"models/gizmos/arrow/arrow.obj",
+		glm::vec3(0, 0, 0),
+		glm::vec3(0.25, 0.25, 0.25),
+		glm::vec3(0, 0, 0)
+	},
+	{
+		"atrium",
+		"models/Atrium/atrium.obj",
+		glm::vec3(0, 0, 0),
+		glm::vec3(1, 1, 1),
+		glm::vec3(0, 0, 0)
+	},
+	{
+		"brickwall",
+		"models/wall/quad.obj",
+		glm::vec3(3, 3, -2),
+		glm::vec3(5, 5, 5),
+		glm::vec3(0, 180, 0)
+	},
+	{
+		"brickwall2",
+		"models/wall/quad.obj",
+		glm::vec3(3, 3, -1.75),
+		glm::vec3(5, 5, 5),
+		glm::vec3(0, 0, 0)
+	},
+	{
+		"portal_gun",
+		"models/portal_gun_pbr/portal_gun.obj",
+		glm::vec3(0, 2.2, 0),
+		glm::vec3(5, 5, 5),
+		glm::vec3(0, 0, 0)
+	},
+	//{
+	//	"sphere",
+	//	"models/sphere/sphere.obj",
+	//	glm::vec3(0, 0, 0),
+	//	glm::vec3(0.2, 0.2, 0.2),
+	//	glm::vec3(0, 0, 0)
+	//},
+	//{
+	//	"sphere",
+	//	"models/sphere/sphere.obj",
+	//	glm::vec3(2, 0, 0),
+	//	glm::vec3(0.2, 0.2, 0.2),
+	//	glm::vec3(0, 0, 0)
+	//},
+	//{
+	//	"sphere",
+	//	"models/sphere/sphere.obj",
+	//	glm::vec3(0, 2, 0),
+	//	glm::vec3(0.2, 0.2, 0.2),
+	//	glm::vec3(0, 0, 0)
+	//},
+	//{
+	//	"sphere",
+	//	"models/sphere/sphere.obj",
+	//	glm::vec3(0, 0, 2),
+	//	glm::vec3(0.2, 0.2, 0.2),
+	//	glm::vec3(0, 0, 0)
+	//},
 	//{
 	//	"ancient-temple-stylized",
 	//	"models/ancient-temple-stylized/ancient-temple-stylized.obj",
@@ -11,20 +77,20 @@ const ModelLoadInfo Scene::modelLoadInfos[] =
 	//	glm::vec3(0.25f, 0.25f, 0.25f),
 	//	glm::vec3(-36, 90, 0)
 	//},
-	{
-		"sponza",
-		"models/Sponza/sponza.obj",
-		glm::vec3(0, 0, 0),
-		glm::vec3(0.01, 0.01, 0.01),
-		glm::vec3(0, 0, 0)
-	},
-	{
-		"atrium",
-		"models/Atrium/atrium.obj",
-		glm::vec3(50, 0, 0),
-		glm::vec3(1, 1, 1),
-		glm::vec3(0, 0, 0)
-	},
+	//{
+	//	"sponza",
+	//	"models/Sponza/sponza.obj",
+	//	glm::vec3(0, 0, 0),
+	//	glm::vec3(0.01, 0.01, 0.01),
+	//	glm::vec3(0, 0, 0)
+	//},
+	//{
+	//	"San miguel",
+	//	"models/San_Miguel/san-miguel-low-poly.obj",
+	//	glm::vec3(0, 0, 0),
+	//	glm::vec3(1, 1, 1),
+	//	glm::vec3(0, 0, 0)
+	//},
 	//{
 	//	"moai",
 	//	"models/Moai/moai.obj",
@@ -32,13 +98,6 @@ const ModelLoadInfo Scene::modelLoadInfos[] =
 	//	glm::vec3(0.2, 0.2, 0.2),
 	//	glm::vec3(0, 0, 0)
 	//},
-	{
-		"portal_gun",
-		"models/portal_gun_pbr/portal_gun.obj",
-		glm::vec3(50, 2.2, 0),
-		glm::vec3(5, 5, 5),
-		glm::vec3(0, 0, 0)
-	},
 	//{
 	//	"portal_gun_glass",
 	//	"models/portal_gun/portal_gun_glass.obj",
@@ -61,10 +120,11 @@ const ModelLoadInfo Scene::modelLoadInfos[] =
 	//	glm::vec3(2, 2, 2),
 	//	glm::vec3(3, 3, 3)
 	//},
+	// TODO: prevent double cleanup of error texture
 	//{
 	//	"sphere",
 	//	"models/sphere/sphere.obj",
-	//	glm::vec3(2.5, 5, 2.5),
+	//	glm::vec3(0, 0, 2.5),
 	//	glm::vec3(1, 1, 1),
 	//	glm::vec3(0, 0, 0)
 	//},

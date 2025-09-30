@@ -5,7 +5,8 @@
 class VulkanMaterial
 { 
 public:
-	VulkanTexture albedoTexture;
+	VulkanTexture albedoMap;
+	VulkanTexture bumpMap;
 	std::vector<VkDescriptorSet> descriptorSets;
 	bool hasError = false;
 

@@ -17,6 +17,7 @@ struct VulkanModelUBO
     alignas(16) glm::mat4 viewMat;
     alignas(16) glm::mat4 projMat;
     alignas(16) glm::mat4 normalMat;
+    bool debug;
 };
 
 struct ShadedMesh

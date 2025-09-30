@@ -4,6 +4,7 @@ struct UniformBufferObject
     float4x4 viewMat;
     float4x4 projMat;
     float4x4 normalMat;
+    bool debug;
 };
 
 [[vk::binding(0, 0)]] 
@@ -14,6 +15,8 @@ struct VertexInput
     float3 position : POSITION;
     float2 texCoord : TEXCOORD0;
     float3 normal : TEXCOORD1;
+    float3 tangent : TEXCOORD2;
+    float3 bitangent : TEXCOORD3;
 }
 
 struct VertexOutput 
@@ -21,6 +24,7 @@ struct VertexOutput
     float4 svPosition : SV_Position;
     float2 fragTexCoord : TEXCOORD0;
     float3 fragNormal : TEXCOORD1;
+    float3x3 TBN : TEXCOORD2;
 };
 
 VertexOutput main(VertexInput input) 
@@ -28,7 +32,14 @@ VertexOutput main(VertexInput input)
     VertexOutput output;
     output.svPosition = mul(ubo.projMat, mul(ubo.viewMat, mul(ubo.modelMat, float4(input.position, 1.0))));
     output.fragTexCoord = input.texCoord;
-    output.fragNormal = mul(ubo.normalMat, float4(input.normal, 0)).xyz;
-    output.fragNormal = (output.fragNormal * 0.5) + 0.5;
+
+    // TODO: pass TBN as VertexInput ?
+    float3 T = normalize(mul(ubo.normalMat, float4(input.tangent, 0.0)).xyz);
+    float3 B = normalize(mul(ubo.normalMat, float4(input.bitangent, 0.0)).xyz);
+    float3 N = normalize(mul(ubo.normalMat, float4(input.normal, 0.0)).xyz);
+
+    output.TBN = float3x3(T, B, N);
+    output.fragNormal = N;
+
     return output;
 }

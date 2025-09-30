@@ -11,6 +11,8 @@ void VulkanGraphicsPipelineManager::initPipelines(int nativeWidth, int nativeHei
     rtPipeline.init(context, scaledWidth, scaledHeight);
 }
 
+
+// TODO: Either use separate pools for models, full screen quad, etc or use this one for ray tracing as well
 void VulkanGraphicsPipelineManager::createDescriptorPool(const VulkanContext& context, size_t modelCount, size_t meshCount, size_t fullScreenQuadCount)
 {
     std::array<VkDescriptorPoolSize, 2> poolSizes{};
@@ -22,11 +24,11 @@ void VulkanGraphicsPipelineManager::createDescriptorPool(const VulkanContext& co
     poolSizes[0].descriptorCount = static_cast<uint32_t>((modelCount + fullScreenQuadCount) * MAX_FRAMES_IN_FLIGHT);
 
     // Combined image sampler descriptors
-    // - 1 per material (albedo texture) -> Use meshCount because a mesh 100% has a material (can be a fallback)
+    // - 2 per material (albedo + normal maps) -> Use meshCount because a mesh has exactly one material (can be a fallback)
     // - TODO: add normals, smoothness, etc
     // - 3 per fullscreen quad (G-Buffer textures: depth, normal, albedo)
     poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    poolSizes[1].descriptorCount = static_cast<uint32_t>((meshCount + fullScreenQuadCount * 3) * MAX_FRAMES_IN_FLIGHT);
+    poolSizes[1].descriptorCount = static_cast<uint32_t>((meshCount * 2 + fullScreenQuadCount * 3) * MAX_FRAMES_IN_FLIGHT);
 
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;

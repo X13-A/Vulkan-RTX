@@ -17,7 +17,8 @@ extern const std::vector<const char*> REQUIRED_DEVICE_EXTENSIONS;
 extern const int RT_MAX_RECURSION_DEPTH;
 extern const int RT_RAYGEN_SHADER_INDEX;
 extern const int RT_MISS_SHADER_INDEX;
+extern const int RT_MAX_SAMPLES;
 extern const int RT_CLOSEST_HIT_GENERAL_SHADER_INDEX;
 
-extern const int MAX_ALBEDO_TEXTURES;
+extern const int MAX_MESHES;
 extern const int FULLSCREEN_QUAD_COUNT;

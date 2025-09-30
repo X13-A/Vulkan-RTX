@@ -109,7 +109,7 @@ void VulkanLightingPipeline::createPipeline(const VulkanContext& context)
 
     // Define vertex input state (vertex binding and attributes)
     VkVertexInputBindingDescription bindingDescription = VulkanVertex::getBindingDescription();
-    std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = VulkanVertex::getAttributeDescriptions();
+    std::array<VkVertexInputAttributeDescription, 5> attributeDescriptions = VulkanVertex::getAttributeDescriptions();
 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

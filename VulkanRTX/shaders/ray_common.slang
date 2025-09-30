@@ -6,7 +6,16 @@ struct RayPayload
     float3 pos;
     int depth;
     int maxDepth;
+    uint rngState;
 };
+
+
+struct PushConstants
+{
+    uint frameCount;
+    uint rng;
+};
+
 
 struct SceneData
 {
@@ -17,6 +26,8 @@ struct SceneData
     float3 cameraPos;
     uint maxDepth;
     float2 nearFar;
+    int resolutionX;
+    int resolutionY;
     int spp;
 };
 
@@ -96,17 +107,33 @@ float3 random_on_hemisphere(const float3 normal, inout uint seed)
     }
 }
 
-uint whiteNoise(float2 uv, uint frameCount) 
+// Hash function for better seed distribution
+uint hash(uint x) 
 {
-    uint2 pixelPos = uint2(uv * 1024.0);
-    uint seed = pixelPos.x + pixelPos.y * 1024 + frameCount * 1048576;
-    
-    // Simple hash
-    seed = seed ^ (seed >> 16);
-    seed *= 0x9e3779b9;
-    seed = seed ^ (seed >> 16);
-    
-    return seed;
+    x ^= x >> 16;
+    x *= 0x85ebca6b;
+    x ^= x >> 13;
+    x *= 0xc2b2ae35;
+    x ^= x >> 16;
+    return x;
+}
+
+// Proper LCG with good constants
+uint stepRNG(uint rngState) 
+{
+    return rngState * 1664525u + 1013904223u;
+}
+
+uint rngInt(inout uint rngState) 
+{
+    rngState = stepRNG(rngState);
+    return rngState;
+}
+
+float rngFloat(inout uint rngState) 
+{
+    rngState = stepRNG(rngState);
+    return float(rngState) * (1.0 / 4294967296.0);
 }
 
 float linearize_depth(float d,float zNear,float zFar)

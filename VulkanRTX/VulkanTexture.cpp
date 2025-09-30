@@ -9,21 +9,21 @@
     #include <stb_image.h>
 #endif
 
-void VulkanTexture::init(std::string path, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager)
+void VulkanTexture::init(std::string path, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkFormat format)
 {
-    createImage(path, context, commandBufferManager);
-    createImageView(context);
+    createImage(path, context, commandBufferManager, format);
+    createImageView(context, format);
 
     // TODO: don't create a sampler everytime, reuse a sampler instead
-    VulkanUtils::Textures::createSampler(context, &sampler);
+    VulkanUtils::Textures::createSampler(context, &sampler, VK_FILTER_LINEAR, VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_LINEAR);
 }
 
-void VulkanTexture::createImageView(const VulkanContext& context)
+void VulkanTexture::createImageView(const VulkanContext& context, VkFormat format)
 {
-    imageView = VulkanUtils::Image::createImageView(context, image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+    imageView = VulkanUtils::Image::createImageView(context, image, format, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
-void VulkanTexture::createImage(std::string path, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager)
+void VulkanTexture::createImage(std::string path, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkFormat format)
 {
     int texWidth, texHeight, texChannels;
     stbi_uc* pixels = stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
@@ -45,11 +45,11 @@ void VulkanTexture::createImage(std::string path, const VulkanContext& context, 
 
     stbi_image_free(pixels);
 
-    VulkanUtils::Image::createImage(context, texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image, imageMemory);
+    VulkanUtils::Image::createImage(context, texWidth, texHeight, format, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, image, imageMemory);
 
-    VulkanUtils::Image::transitionImageLayout(context, commandBufferManager, image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    VulkanUtils::Image::transitionImageLayout(context, commandBufferManager, image, format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     VulkanUtils::Image::copyBufferToImage(context, commandBufferManager, stagingBuffer, image, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-    VulkanUtils::Image::transitionImageLayout(context, commandBufferManager, image, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    VulkanUtils::Image::transitionImageLayout(context, commandBufferManager, image, format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     vkDestroyBuffer(context.device, stagingBuffer, nullptr);
     vkFreeMemory(context.device, stagingBufferMemory, nullptr);
@@ -63,15 +63,15 @@ void VulkanTexture::cleanup(VkDevice device)
     vkFreeMemory(device, imageMemory, nullptr);
 }
 
-VulkanTexture VulkanTexture::create1x1Texture(float r, float g, float b, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager)
+VulkanTexture VulkanTexture::create1x1TextureRGBA(uint8_t r, uint8_t g, uint8_t b, const VulkanContext& context, VulkanCommandBufferManager& commandBufferManager, VkFormat format)
 {
     VulkanTexture texture;
 
     // Create 1x1 pixel data
     std::array<uint8_t, 4> pixelData = {
-        static_cast<uint8_t>(r * 255.0f),
-        static_cast<uint8_t>(g * 255.0f),
-        static_cast<uint8_t>(b * 255.0f),
+        r,
+        g,
+        b,
         255
     };
 
@@ -98,7 +98,7 @@ VulkanTexture VulkanTexture::create1x1Texture(float r, float g, float b, const V
     VulkanUtils::Image::createImage(
         context,
         1, 1,
-        VK_FORMAT_R8G8B8A8_SRGB,
+        format,
         VK_IMAGE_TILING_OPTIMAL,
         VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
@@ -111,7 +111,7 @@ VulkanTexture VulkanTexture::create1x1Texture(float r, float g, float b, const V
         context,
         commandBufferManager,
         texture.image,
-        VK_FORMAT_R8G8B8A8_SRGB,
+        format,
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
     );
@@ -130,7 +130,7 @@ VulkanTexture VulkanTexture::create1x1Texture(float r, float g, float b, const V
         context,
         commandBufferManager,
         texture.image,
-        VK_FORMAT_R8G8B8A8_SRGB,
+        format,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
     );
@@ -139,7 +139,7 @@ VulkanTexture VulkanTexture::create1x1Texture(float r, float g, float b, const V
     texture.imageView = VulkanUtils::Image::createImageView(
         context,
         texture.image,
-        VK_FORMAT_R8G8B8A8_SRGB,
+        format,
         VK_IMAGE_ASPECT_COLOR_BIT
     );
 
@@ -148,6 +148,6 @@ VulkanTexture VulkanTexture::create1x1Texture(float r, float g, float b, const V
     vkFreeMemory(context.device, stagingBufferMemory, nullptr);
 
     // Create a sampler
-    VulkanUtils::Textures::createSampler(context, &texture.sampler);
+    VulkanUtils::Textures::createSampler(context, &texture.sampler, VK_FILTER_NEAREST, VK_FILTER_NEAREST, VK_SAMPLER_MIPMAP_MODE_NEAREST);
     return texture;
 }
